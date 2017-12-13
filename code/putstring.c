@@ -7,25 +7,6 @@ int main(){
 	 len++;
 	for(int i=0;i<len;i++)
 	 putchar(input[i]);
-	while(getchar(input[i]==false)
-			semwait();
-	}
+
 	Halt();
-
-}
-
-void getchar(){
-
-void print(char c){
-
-	PutChar(c);
-
-}
-int main(){
-	char ch;
-	ch=GetChar();
-	PutChar(ch);
-	Halt();
-
-}
 }
