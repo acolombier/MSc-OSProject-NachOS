@@ -40,14 +40,14 @@ class Console {
     Console(char *readFile, char *writeFile, VoidFunctionPtr readAvail, 
 	VoidFunctionPtr writeDone, int callArg);
 				// initialize the hardware console device
-    ~Console();			// clean up console emulation
+    virtual ~Console();			// clean up console emulation
 
 // external interface -- Nachos kernel code can call these
-    void PutChar(char ch);	// Write "ch" to the console display, 
+    virtual void PutChar(char ch);	// Write "ch" to the console display, 
 				// and return immediately.  "writeHandler" 
 				// is called when the I/O completes. 
 
-    char GetChar();	   	// Poll the console input.  If a char is 
+    virtual char GetChar();	   	// Poll the console input.  If a char is 
 				// available, return it.  Otherwise, return EOF.
     				// "readHandler" is called whenever there is 
 				// a char to be gotten

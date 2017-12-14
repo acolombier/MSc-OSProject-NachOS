@@ -588,24 +588,25 @@ Machine::OneInstruction(Instruction *instr)
 	break;
     	
       case OP_SYSCALL:
-	RaiseException(SyscallException, 0);
-	return; 
+		RaiseException(SyscallException, 0);
+		return; 
 	
       case OP_XOR:
-	registers[instr->rd] = registers[instr->rs] ^ registers[instr->rt];
-	break;
+		registers[instr->rd] = registers[instr->rs] ^ registers[instr->rt];
+		break;
 	
       case OP_XORI:
-	registers[instr->rt] = registers[instr->rs] ^ (instr->extra & 0xffff);
-	break;
+		registers[instr->rt] = registers[instr->rs] ^ (instr->extra & 0xffff);
+		break;
 	
       case OP_RES:
+      
       case OP_UNIMP:
-	RaiseException(IllegalInstrException, 0);
-	return;
+		RaiseException(IllegalInstrException, 0);
+		return;
 	
       default:
-	ASSERT(FALSE);
+		ASSERT(FALSE);
     }
     
     // Now we have successfully executed the instruction.
