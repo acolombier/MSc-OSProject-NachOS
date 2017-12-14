@@ -30,6 +30,7 @@
 #define SC_Fork		9
 #define SC_Yield	10
 #define SC_PutChar	11
+#define SC_GetChar	12
 
 #ifdef IN_USER_MODE
 
@@ -130,7 +131,7 @@ void Fork (void (*func) ());
 void Yield ();
 
 void PutChar(char ch);
-void GetChar(char ch);
+char GetChar();
 
 #endif // IN_USER_MODE
 

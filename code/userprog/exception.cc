@@ -94,7 +94,8 @@ ExceptionHandler (ExceptionType which)
 
 			case SC_GetChar: {
 				DEBUG('i', "GetChar syscall, initiated by user program.\n");
-				synchconsole->GetChar((char) reg4);
+				int ch = synchconsole->GetChar();
+				machine->WriteRegister(2, ch);
 				break;
 			}
 
