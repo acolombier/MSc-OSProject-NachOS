@@ -13,7 +13,7 @@ class SynchConsole : public Console {
 		~SynchConsole();                    // clean up console emulation
 		
 		void PutChar(const char ch);   // Unix putchar(3S)
-		char GetChar();                // Unix getchar(3S)
+		int GetChar();                // Unix getchar(3S)
 		
 		void PutString(const char *s); // Unix puts(3S)
 		void GetString(char *s, int n);       // Unix fgets(3S)	

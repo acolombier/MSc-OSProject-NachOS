@@ -31,7 +31,7 @@ void SynchConsole::PutChar(const char ch){
 	mWriteDone->P();
 }
 
-char SynchConsole::GetChar(){
+int SynchConsole::GetChar(){
 	mReadAvail->P();
 	return Console::GetChar();
 }
