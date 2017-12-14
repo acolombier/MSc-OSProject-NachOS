@@ -67,20 +67,41 @@ UpdatePC ()
 void
 ExceptionHandler (ExceptionType which)
 {
-    int type = machine->ReadRegister (2);
+    int type = machine->ReadRegister(2);
+    // argument registers used by the syscall functions
+    int reg4; // reg5, reg6, reg7, returnvalue;
+    
+    reg4 = machine->ReadRegister(4);
+    //reg5 = machine->ReadRegister(5);
+    //reg6 = machine->ReadRegister(6);
+    //reg7 = machine->ReadRegister(7);
+    
+    
+    if (which == SyscallException) {
+		switch (type) {
+			
+			case SC_Halt: {
+				DEBUG('a', "Shutdown, initiated by user program.\n");
+				interrupt->Halt();
+				break;
+			}
+			
+			case SC_PutChar: {
+				DEBUG('i', "PutChar syscall, initiated by user program.\n");
+				// TODO call
+				synchconsole->PutChar((char) reg4);
+				break;
+			}
+			
+			default: {
+				printf("Unexpected user mode exception %d %d\n", which, type);
+				ASSERT(FALSE);
+			}
+		}
+		
+		// LB: Do not forget to increment the pc before returning!
+		UpdatePC ();
+		// End of addition
+	}
 
-    if ((which == SyscallException) && (type == SC_Halt))
-      {
-	  DEBUG ('a', "Shutdown, initiated by user program.\n");
-	  interrupt->Halt ();
-      }
-    else
-      {
-	  printf ("Unexpected user mode exception %d %d\n", which, type);
-	  ASSERT (FALSE);
-      }
-
-    // LB: Do not forget to increment the pc before returning!
-    UpdatePC ();
-    // End of addition
 }
