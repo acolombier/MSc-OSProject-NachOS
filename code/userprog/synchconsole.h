@@ -24,12 +24,9 @@ class SynchConsole : public Console {
 		static void handlerReadAvail(int);
 		static void handlerWriteDone(int);
 		
-		static unsigned int current_sync;
-		static std::map<unsigned int, SynchConsole*> Table;
 	private:
 		Semaphore *mReadAvail;
 		Semaphore *mWriteDone;
-		unsigned int mSync_pnt;
 		
 };
 

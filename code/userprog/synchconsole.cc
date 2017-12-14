@@ -3,22 +3,25 @@
 #include "synchconsole.h"
 #include "synch.h"
 
-unsigned int SynchConsole::current_sync = 0;
-std::map<unsigned int, SynchConsole*> SynchConsole::Table;
+
+void SynchConsole::handlerReadAvail(int sync){
+	if (sync)
+		((SynchConsole*)sync)->handlerReadAvail();
+}
+void SynchConsole::handlerWriteDone(int sync){
+	if (sync)
+		((SynchConsole*)sync)->handlerWriteDone();
+}
 
 SynchConsole::SynchConsole(char *readFile, char *writeFile):
-	Console(readFile, writeFile, &SynchConsole::handlerReadAvail, &SynchConsole::handlerWriteDone, SynchConsole::current_sync),
+	Console(readFile, writeFile, &SynchConsole::handlerReadAvail, &SynchConsole::handlerWriteDone, (int)this),
 	mReadAvail(new Semaphore("read avail", 0)),
-	mWriteDone(new Semaphore("write done", 0)),
-	mSync_pnt(SynchConsole::current_sync++)
+	mWriteDone(new Semaphore("write done", 0))
 {
-	SynchConsole::Table.insert ( std::pair<int, SynchConsole*>(mSync_pnt, this) );
-
 }
 
 SynchConsole::~SynchConsole()
 {
-	SynchConsole::Table.erase (mSync_pnt);
 	delete mWriteDone;
 	delete mReadAvail;
 }
@@ -40,11 +43,3 @@ void SynchConsole::PutString(const char s[]){
 void SynchConsole::GetString(char *s, int n){
 }
 
-void SynchConsole::handlerReadAvail(int sync){
-	if (SynchConsole::Table.find(sync) != SynchConsole::Table.end())
-		SynchConsole::Table.find(sync)->second->handlerReadAvail();
-}
-void SynchConsole::handlerWriteDone(int sync){
-	if (SynchConsole::Table.find(sync) != SynchConsole::Table.end())
-		SynchConsole::Table.find(sync)->second->handlerWriteDone();
-}
