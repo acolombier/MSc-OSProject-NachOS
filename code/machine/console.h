@@ -40,7 +40,7 @@ class Console {
     Console(char *readFile, char *writeFile, VoidFunctionPtr readAvail, 
 	VoidFunctionPtr writeDone, int callArg);
 				// initialize the hardware console device
-    ~Console();			// clean up console emulation
+    virtual ~Console();			// clean up console emulation
 
 // external interface -- Nachos kernel code can call these
     virtual void PutChar(char ch);	// Write "ch" to the console display, 
