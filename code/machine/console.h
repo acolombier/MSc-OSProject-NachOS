@@ -43,11 +43,11 @@ class Console {
     ~Console();			// clean up console emulation
 
 // external interface -- Nachos kernel code can call these
-    void PutChar(char ch);	// Write "ch" to the console display, 
+    virtual void PutChar(char ch);	// Write "ch" to the console display, 
 				// and return immediately.  "writeHandler" 
 				// is called when the I/O completes. 
 
-    char GetChar();	   	// Poll the console input.  If a char is 
+    virtual char GetChar();	   	// Poll the console input.  If a char is 
 				// available, return it.  Otherwise, return EOF.
     				// "readHandler" is called whenever there is 
 				// a char to be gotten
