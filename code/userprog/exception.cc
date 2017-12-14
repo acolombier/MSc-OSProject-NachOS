@@ -1,4 +1,4 @@
-// exception.cc 
+// exception.cc
 //      Entry point into the Nachos kernel from user programs.
 //      There are two kinds of things that can cause control to
 //      transfer back to here from user code:
@@ -9,7 +9,7 @@
 //
 //      exceptions -- The user code does something that the CPU can't handle.
 //      For instance, accessing memory that doesn't exist, arithmetic errors,
-//      etc.  
+//      etc.
 //
 //      Interrupts (which can also cause control to transfer from user
 //      code into the Nachos kernel) are handled elsewhere.
@@ -18,7 +18,7 @@
 // Everything else core dumps.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
@@ -55,12 +55,12 @@ UpdatePC ()
 //              arg3 -- r6
 //              arg4 -- r7
 //
-//      The result of the system call, if any, must be put back into r2. 
+//      The result of the system call, if any, must be put back into r2.
 //
 // And don't forget to increment the pc before returning. (Or else you'll
 // loop making the same system call forever!
 //
-//      "which" is the kind of exception.  The list of possible exceptions 
+//      "which" is the kind of exception.  The list of possible exceptions
 //      are in machine.h.
 //----------------------------------------------------------------------
 
@@ -70,35 +70,40 @@ ExceptionHandler (ExceptionType which)
     int type = machine->ReadRegister(2);
     // argument registers used by the syscall functions
     int reg4; // reg5, reg6, reg7, returnvalue;
-    
+
     reg4 = machine->ReadRegister(4);
     //reg5 = machine->ReadRegister(5);
     //reg6 = machine->ReadRegister(6);
     //reg7 = machine->ReadRegister(7);
-    
-    
+
+
     if (which == SyscallException) {
 		switch (type) {
-			
+
 			case SC_Halt: {
 				DEBUG('a', "Shutdown, initiated by user program.\n");
 				interrupt->Halt();
 				break;
 			}
-			
+
 			case SC_PutChar: {
 				DEBUG('i', "PutChar syscall, initiated by user program.\n");
-				// TODO call
 				synchconsole->PutChar((char) reg4);
 				break;
 			}
-			
+
+			case SC_GetChar: {
+				DEBUG('i', "GetChar syscall, initiated by user program.\n");
+				synchconsole->GetChar((char) reg4);
+				break;
+			}
+
 			default: {
 				printf("Unexpected user mode exception %d %d\n", which, type);
 				ASSERT(FALSE);
 			}
 		}
-		
+
 		// LB: Do not forget to increment the pc before returning!
 		UpdatePC ();
 		// End of addition
