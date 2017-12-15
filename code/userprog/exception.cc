@@ -85,6 +85,14 @@ ExceptionHandler (ExceptionType which)
 				interrupt->Halt();
 				break;
 			}
+			
+			case SC_Exit: {
+				DEBUG('i', "Exit syscall, initiated by user program.\n");
+				// todo call sth
+				currentThread->Finish();
+				//Exit((int) reg4);
+				break;
+			}
 
 			case SC_PutChar: {
 				DEBUG('i', "PutChar syscall, initiated by user program.\n");
