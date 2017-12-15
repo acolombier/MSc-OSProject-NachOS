@@ -30,6 +30,8 @@ extern Statistics *stats;	// performance metrics
 extern Timer *timer;		// the hardware alarm clock
 
 #ifdef USER_PROGRAM
+#define MAX_STRING_SIZE 512
+
 #include "machine.h"
 extern Machine *machine;	// user program memory and registers
 #include "synchconsole.h"

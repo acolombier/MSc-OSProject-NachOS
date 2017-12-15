@@ -5,7 +5,6 @@
 #include "utility.h"
 #include "console.h"
 #include "synch.h"
-#include "map"
 
 class SynchConsole : public Console {
 	public:
@@ -27,6 +26,7 @@ class SynchConsole : public Console {
 	private:
 		Semaphore *mReadAvail;
 		Semaphore *mWriteDone;
+		Semaphore *mReadingMode;
 		
 };
 

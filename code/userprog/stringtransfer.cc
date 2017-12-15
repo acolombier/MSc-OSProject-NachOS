@@ -1,8 +1,8 @@
-#include "systemcall.h"
+#include "system.h"
 #include "machine.h"
 
 
-char * copyStringFromMachine(int from, int max_size) {
+char * copyStringFromMachine(int from, unsigned int max_size) {
 
   int byte;
   unsigned int i;
