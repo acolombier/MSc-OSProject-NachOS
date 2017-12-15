@@ -102,15 +102,23 @@ ExceptionHandler (ExceptionType which)
 			case SC_PutInt: {
 				DEBUG('i', "PutInt syscall, initiated by user program.\n");
 				char *buffer = (char *) malloc(sizeof(char) * 11);
+
 				snprintf(buffer, 11, "%d", reg4);
 				synchconsole->PutString(buffer);
+
 				free(buffer);
 				break;
 			}
 
 			case SC_GetInt: {
 				DEBUG('i', "GetInt syscall, initiated by user program.\n");
+				char *buffer = (char *) malloc(sizeof(char) * 11);
 
+				synchconsole->GetString(buffer, 11);
+				sscanf(buffer, "%d", &returnvalue);
+				machine->WriteMem(reg4, 11, returnvalue);
+
+				free(buffer);
 				break;
 			}
 
