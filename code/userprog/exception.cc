@@ -88,7 +88,10 @@ ExceptionHandler (ExceptionType which)
 			
 			case SC_Exit: {
 				DEBUG('i', "Exit syscall, initiated by user program.\n");
-				currentThread->Finish();
+				// TODO in later steps. 
+				//currentThread->Finish();
+				//For now just call Halt()
+				interrupt->Halt();
 				break;
 			}
 
