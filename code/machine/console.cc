@@ -125,7 +125,7 @@ Console::WriteDone()
 //	Either return the character, or EOF if none buffered.
 //----------------------------------------------------------------------
 
-char
+int
 Console::GetChar()
 {
    char ch = incoming;

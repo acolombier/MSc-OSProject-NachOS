@@ -47,7 +47,7 @@ class Console {
 				// and return immediately.  "writeHandler" 
 				// is called when the I/O completes. 
 
-    virtual char GetChar();	   	// Poll the console input.  If a char is 
+    virtual int GetChar();	   	// Poll the console input.  If a char is 
 				// available, return it.  Otherwise, return EOF.
     				// "readHandler" is called whenever there is 
 				// a char to be gotten

@@ -69,7 +69,7 @@ ExceptionHandler (ExceptionType which)
 {
     int type = machine->ReadRegister(2);
     // argument registers used by the syscall functions
-    int reg4; // reg5, reg6, reg7, returnvalue;
+    int reg4, returnvalue; // reg5, reg6, reg7;
 
     reg4 = machine->ReadRegister(4);
     //reg5 = machine->ReadRegister(5);
@@ -86,6 +86,15 @@ ExceptionHandler (ExceptionType which)
 				break;
 			}
 
+			case SC_Exit: {
+				DEBUG('i', "Exit syscall, initiated by user program.\n");
+				// TODO in later steps.
+				//currentThread->Finish();
+				//For now just call Halt()
+				interrupt->Halt();
+				break;
+			}
+
 			case SC_PutChar: {
 				DEBUG('i', "PutChar syscall, initiated by user program.\n");
 				synchconsole->PutChar((char) reg4);
@@ -94,8 +103,31 @@ ExceptionHandler (ExceptionType which)
 
 			case SC_GetChar: {
 				DEBUG('i', "GetChar syscall, initiated by user program.\n");
-				int ch = synchconsole->GetChar();
-				machine->WriteRegister(2, ch);
+				returnvalue = synchconsole->GetChar();
+				machine->WriteRegister(2, returnvalue);
+				break;
+			}
+
+			case SC_PutInt: {
+				DEBUG('i', "PutInt syscall, initiated by user program.\n");
+				char *buffer = (char *) malloc(sizeof(char) * 11);
+
+				snprintf(buffer, 11, "%d", reg4);
+				synchconsole->PutString(buffer);
+
+				free(buffer);
+				break;
+			}
+
+			case SC_GetInt: {
+				DEBUG('i', "GetInt syscall, initiated by user program.\n");
+				char *buffer = (char *) malloc(sizeof(char) * 11);
+
+				synchconsole->GetString(buffer, 11);
+				sscanf(buffer, "%d", &returnvalue);
+				machine->WriteMem(reg4, 11, returnvalue);
+
+				free(buffer);
 				break;
 			}
 
