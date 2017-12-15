@@ -98,6 +98,18 @@ ExceptionHandler (ExceptionType which)
 				machine->WriteRegister(2, ch);
 				break;
 			}
+			
+			case SC_PutInt: {
+				DEBUG('i', "PutInt syscall, initiated by user program.\n");
+
+				break;
+			}
+			
+			case SC_GetInt: {
+				DEBUG('i', "GetInt syscall, initiated by user program.\n");
+
+				break;
+			}
 
 			default: {
 				printf("Unexpected user mode exception %d %d\n", which, type);

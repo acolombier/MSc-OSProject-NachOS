@@ -31,6 +31,8 @@
 #define SC_Yield	10
 #define SC_PutChar	11
 #define SC_GetChar	12
+#define SC_PutInt	13
+#define SC_GetInt	14
 
 #ifdef IN_USER_MODE
 
@@ -132,6 +134,12 @@ void Yield ();
 
 void PutChar(char ch);
 char GetChar();
+
+/* Write a signed integer using the function snprintf to obtain the external
+ * decimal write operation
+ */
+void PutInt(int n);
+void GetInt(int *n);
 
 #endif // IN_USER_MODE
 

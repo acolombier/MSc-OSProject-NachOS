@@ -144,6 +144,22 @@ GetChar:
 	syscall
 	j	$31
 	.end GetChar
+	
+	.globl PutInt
+	.ent	PutInt
+PutInt:
+	addiu $2,$0,SC_PutInt
+	syscall
+	j	$31
+	.end PutInt
+	
+	.globl GetInt
+	.ent	GetInt
+GetInt:
+	addiu $2,$0,SC_GetInt
+	syscall
+	j	$31
+	.end GetInt
 
 /* dummy function to keep gcc happy */
         .globl  __main
