@@ -16,7 +16,8 @@ void SynchConsole::handlerWriteDone(int sync){
 SynchConsole::SynchConsole(char *readFile, char *writeFile):
 	Console(readFile, writeFile, &SynchConsole::handlerReadAvail, &SynchConsole::handlerWriteDone, (int)this),
 	mReadAvail(new Semaphore("read avail", 0)),
-	mWriteDone(new Semaphore("write done", 0))
+	mWriteDone(new Semaphore("write done", 0)),
+	mReadingMode(new Semaphore("single/array exclusion", 1))
 {
 }
 
@@ -32,14 +33,32 @@ void SynchConsole::PutChar(const char ch){
 }
 
 int SynchConsole::GetChar(){
+	mReadingMode->P();
 	mReadAvail->P();
-	return Console::GetChar();
+	int c = Console::GetChar();
+	mReadingMode->V();
+	return c;	
 }
 
 void SynchConsole::PutString(const char s[]){ 
-	
+	int c, i = 0;
+	while (i < MAX_STRING_SIZE - 1 && s[i])
+		PutChar(s[i++]);
+	PutChar(0);	
 }
 
 void SynchConsole::GetString(char *s, int n){
+	mReadingMode->P();
+	
+	int c, i = 0;
+	while (i < MIN(MAX_STRING_SIZE, n) - 1){
+		mReadAvail->P();
+		int c;
+		if ((c = Console::GetChar()) == EOF || !c) break;
+		s[i++] = c;
+	}
+	s[i] = 0;	
+	mReadingMode->V();
+	return s;	
 }
 

@@ -8,7 +8,14 @@ void print(char c, int n) {
     PutChar('\n');
 }
 
+void interract() {
+    int c;
+    while ((c = GetChar()) != EOF)
+		PutChar(c);
+}
+
 int main() {
     print('a', 4);
+    //~ interract();
     Halt();
 }

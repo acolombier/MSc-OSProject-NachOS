@@ -78,5 +78,6 @@ extern void DEBUG (char flag, const char *format, ...);	// Print debug message
         Abort();                                                              \
     }
 
+#define MIN(a, b) (a > b ? b : a)
 
 #endif /* UTILITY_H */

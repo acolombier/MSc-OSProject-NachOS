@@ -92,6 +92,8 @@ typedef int OpenFileId;
 #define ConsoleInput	0
 #define ConsoleOutput	1
 
+#define EOF	0xFFFFFFFF
+
 /* Create a Nachos file, with "name" */
 void Create (char *name);
 
