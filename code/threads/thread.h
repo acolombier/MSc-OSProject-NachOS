@@ -102,15 +102,15 @@ class Thread
     // overflowed its stack
     void setStatus (ThreadStatus st)
     {
-	status = st;
+		status = st;
     }
     const char *getName ()
     {
-	return (name);
+		return (name);
     }
     void Print ()
     {
-	printf ("%s, ", name);
+		printf ("%s, ", name);
     }
 
   private:

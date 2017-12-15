@@ -15,7 +15,7 @@ include ../Makefile.rules-nachos
 # CFLAGS= -I./ -I../threads -DHOST_IS_BIG_ENDIAN
 # all: coff2noff
 
-INCDIRS+= bin threads filesys machine
+INCDIRS+= bin threads filesys machine vm
 
 ifeq ($(NACHOS_ARCH),SPARC_ARCH)
 CPPFLAGS += -DHOST_IS_BIG_ENDIAN

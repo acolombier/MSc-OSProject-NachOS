@@ -24,8 +24,8 @@
 	.ent	__start
 __start:
 	jal	main
-	move	$4,$0
-	jal	Exit	 /* if we return from main, exit(0) */
+	move	$4,$2
+	jal	Exit	 /* if we return from main, exit(*retValFromMain*) */
 	.end __start
 
 /* -------------------------------------------------------------
@@ -144,6 +144,38 @@ GetChar:
 	syscall
 	j	$31
 	.end GetChar
+	
+	.globl PutInt
+	.ent	PutInt
+PutString:
+	addiu $2,$0,SC_PutString
+	syscall
+	j	$31
+	.end PutChar
+
+	.globl GetChar
+	.ent	GetChar
+GetString:
+	addiu $2,$0,SC_GetString
+	syscall
+	j	$31
+	.end GetChar
+	
+	.globl PutInt
+	.ent	PutInt
+PutInt:
+	addiu $2,$0,SC_PutInt
+	syscall
+	j	$31
+	.end PutInt
+	
+	.globl GetInt
+	.ent	GetInt
+GetInt:
+	addiu $2,$0,SC_GetInt
+	syscall
+	j	$31
+	.end GetInt
 
 /* dummy function to keep gcc happy */
         .globl  __main
