@@ -69,7 +69,7 @@ ExceptionHandler (ExceptionType which)
 {
     int type = machine->ReadRegister(2);
     // argument registers used by the syscall functions
-    int reg4; // reg5, reg6, reg7, returnvalue;
+    int reg4; // reg5, reg6, reg7;
 
     reg4 = machine->ReadRegister(4);
     //reg5 = machine->ReadRegister(5);
@@ -88,9 +88,7 @@ ExceptionHandler (ExceptionType which)
 			
 			case SC_Exit: {
 				DEBUG('i', "Exit syscall, initiated by user program.\n");
-				// todo call sth
 				currentThread->Finish();
-				//Exit((int) reg4);
 				break;
 			}
 
