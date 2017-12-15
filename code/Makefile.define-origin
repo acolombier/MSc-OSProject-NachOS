@@ -42,9 +42,9 @@ THREAD_SRC      :=      main.cc list.cc scheduler.cc synch.cc synchlist.cc \
                         stats.cc sysdep.cc timer.cc switch.S
 
 USERPROG_SRC    :=      addrspace.cc bitmap.cc exception.cc synchconsole.cc console.cc \
-                        machine.cc mipssim.cc translate.cc progtest.cc 
+                        machine.cc mipssim.cc translate.cc progtest.cc stringtransfer.cc
 
-VM_SRC          :=		stringtransfer.cc
+VM_SRC          :=	
 
 FILESYS_SRC     :=      directory.cc filehdr.cc filesys.cc fstest.cc openfile.cc \
                         synchdisk.cc disk.cc

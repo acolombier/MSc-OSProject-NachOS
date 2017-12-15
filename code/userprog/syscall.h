@@ -139,7 +139,7 @@ void Yield ();
 void PutChar(char ch);
 char GetChar();
 
-void PutString(const char *s);
+void PutString(char *s);
 char GetString(char *s, int n);
 
 /* Write a signed integer using the function snprintf to obtain the external
