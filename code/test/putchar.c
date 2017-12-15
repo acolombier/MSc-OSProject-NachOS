@@ -10,5 +10,10 @@ void print(char c, int n) {
 
 int main() {
     print('a', 4);
-    Halt();
+    
+    /* Do not call Halt() as SC_Exit is called
+     * automatically at the end of the main
+     * (as seen in __start in start.S
+     */
+    //Halt();
 }

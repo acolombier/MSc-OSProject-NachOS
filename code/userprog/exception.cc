@@ -86,6 +86,15 @@ ExceptionHandler (ExceptionType which)
 				break;
 			}
 
+			case SC_Exit: {
+				DEBUG('i', "Exit syscall, initiated by user program.\n");
+				// TODO in later steps.
+				//currentThread->Finish();
+				//For now just call Halt()
+				interrupt->Halt();
+				break;
+			}
+
 			case SC_PutChar: {
 				DEBUG('i', "PutChar syscall, initiated by user program.\n");
 				synchconsole->PutChar((char) reg4);
