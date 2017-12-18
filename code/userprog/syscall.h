@@ -140,7 +140,7 @@ void PutChar(char ch);
 char GetChar();
 
 void PutString(char *s);
-char GetString(char *s, int n);
+void GetString(char *s, int n);
 
 /* Write a signed integer using the function snprintf to obtain the external
  * decimal write operation
