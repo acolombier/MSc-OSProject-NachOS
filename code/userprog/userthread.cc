@@ -1,17 +1,16 @@
 #include "system.h"
-#include "userthreads.h"
+#include "userthread.h"
 
 typedef struct bundle {
     int function;
     int arg;
 } bundle_t;
 
-//static void StartUserThread(int f);
+void StartUserThread(int f) {
+}
 
 int do_UserThreadCreate(int f, int arg) {
     Thread *t = new Thread("");
-
-    bundle_t bundle = {f, arg};
 
     // the new user thread needs to share its space with the old one
     t->space = currentThread->space;
@@ -22,12 +21,13 @@ int do_UserThreadCreate(int f, int arg) {
         return -1;
     }
 
-    t->Fork(StartUserThread, bundle);
+    bundle_t bundle = {f, arg};
+    t->Fork(StartUserThread, (int) &bundle);
 
     return 0;
 }
 
-int do_UserThreadExit() {
+void do_UserThreadExit() {
     // we destroy the kernel thread because it was created
     // only to run the user thread
     currentThread->Finish();
