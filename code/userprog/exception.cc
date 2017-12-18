@@ -114,8 +114,8 @@ ExceptionHandler (ExceptionType which)
 
 			case SC_PutString: {
 				DEBUG('i', "PutString syscall, initiated by user program.\n");
-				
-				char* buffer = copyStringFromMachine(reg4, MAX_STRING_SIZE);				
+
+				char* buffer = copyStringFromMachine(reg4, MAX_STRING_SIZE);
 				synchconsole->PutString(buffer);
 				free(buffer);
 				break;
@@ -151,12 +151,13 @@ ExceptionHandler (ExceptionType which)
 				free(buffer);
 				break;
 			}
-			
+
 			case SC_CreateUserThread: {
-                // TODO return -1 if creating thread fails
+				returnvalue = do_UserThreadCreate(reg4, reg5);
+				machine->WriteRegister(2, returnvalue);
                 break;
             }
-            
+
             case SC_ExitUserThread: {
                 // TODO
                 break;
