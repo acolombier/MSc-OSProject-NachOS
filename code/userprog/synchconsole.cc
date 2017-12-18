@@ -51,7 +51,7 @@ void SynchConsole::GetString(char *s, int n){
 	mReadingMode->P();
 	
 	int i = 0;
-	while (i < MIN(MAX_STRING_SIZE, n) - 1){
+	while (i < MIN(MAX_STRING_SIZE-1, n)){
 		mReadAvail->P();
 		int c;
 		if (!(c = Console::GetChar()) || c == EOF || c == '\n') break;
