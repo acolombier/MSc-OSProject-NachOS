@@ -27,6 +27,7 @@ class SynchConsole : public Console {
 	private:
 		Semaphore *mReadAvail;
 		Semaphore *mWriteDone;
+		Semaphore *mReadingMode;
 		
 };
 
