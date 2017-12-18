@@ -12,7 +12,7 @@
 int cmp_strings(char* string1, char* string2, int size){
     int same = 1;
     int index = 0;
-    while(same && index < size){
+    while(same && index < size-1){
 	same = (string1[index] == string2[index]);
 	index ++;
     }
@@ -28,8 +28,8 @@ int cmp_strings(char* string1, char* string2, int size){
  *          If the test failed then PutString("FAILED") and return 0.
  */
 int phase1_correct_string(){
-    PutString("\tPhase 1 : Correct string : ");
-    int  size = 35;
+    PutString("\tPhase 1 : Correct string  : ");
+    int  size = 36;
     char* ref_string = "Phase 1 : This is a correct string";
     char string[size];
     GetString(string, size);
@@ -54,25 +54,23 @@ int phase1_correct_string(){
 int phase1_too_long_string(){
     PutString("\tPhase 1 : String too long : ");
     char* ref_string = "Phase 1 : This string is longer than what will be read";
-    int size1 = 10;
+    int size1 = 12;
     char string1[size1];
-    int size2 = 47;
+    int size2 = 42;
     char string2[size2];
     // First read
     GetString(string1, size1);
     if(!cmp_strings(ref_string, string1, size1)){
-	PutChar('\n');
-	PutString(string1);
-	PutChar('\n');
-	PutString("FAILED1\n");
+	PutString("FAILED\n");
 	return 0;
     }
     // Second read
     GetString(string2, size2);
-    if(!cmp_strings(ref_string+size1+1, string2, size2)){
-	PutString("FAILED2\n");
+    if(!cmp_strings(ref_string+size1, string2, size2)){
+	PutString("FAILED\n");
 	return 0;
     }
+    PutString("PASSED\n");
     return 1;
 }
 
@@ -90,7 +88,7 @@ int main() {
     //~ interract();
     
     phase1_correct_string();
-    phase1_correct_string();
-    //    phase1_too_long_string();
+    //phase1_correct_string();
+    phase1_too_long_string();
     Halt();
 }
