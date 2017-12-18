@@ -153,13 +153,15 @@ ExceptionHandler (ExceptionType which)
 			}
 
 			case SC_CreateUserThread: {
+				DEBUG('i', "CreateUserThread syscall, initiated by user program.\n");
 				returnvalue = do_UserThreadCreate(reg4, reg5);
 				machine->WriteRegister(2, returnvalue);
                 break;
             }
 
             case SC_ExitUserThread: {
-                // TODO
+				DEBUG('i', "ExitUserThread syscall, initiated by user program.\n");
+                do_UserThreadExit();
                 break;
             }
 

@@ -26,3 +26,9 @@ int do_UserThreadCreate(int f, int arg) {
 
     return 0;
 }
+
+int do_UserThreadExit() {
+    // we destroy the kernel thread because it was created
+    // only to run the user thread
+    currentThread->Finish();
+}
