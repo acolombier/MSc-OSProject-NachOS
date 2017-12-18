@@ -101,75 +101,63 @@ Semaphore::V ()
 // Dummy functions -- so we can compile our later assignments
 // Note -- without a correct implementation of Condition::Wait(),
 // the test case in the network assignment won't work!
-Lock::Lock (const char *debugName)
+Lock::Lock (const char *debugName):
+	mName(debugName),
+	mThreadHolder(nullptr),
+	mMutexLock(new Semaphore("mutexLock",1))
 {
-  name=*debugName;
-  mutexLock= new Semaphore("mutexLock",1);***
-  ThreadHolder= NULL;
 }
 
-Lock::~Lock ()
-{
-  delete mutexLock; //mutexLock and ThreadHold defined in synch.h
-}
-void
-Lock::Acquire ()
-{
-  mutexLock->P();
-  THreadHolder=currentThread;
-}
-void
-Lock::Release ()
-{
-  ThreadHolder= NULL;
-  ASSERT(isHeldByCurrentThread());
-  mutexLock->V();
+Lock::~Lock (){
+  delete mMutexLock; //mutexLock and ThreadHold defined in synch.h
 }
 
-bool
-Lock::isHdeldByCurrentThread ()
-{
-currentThread=ThreadHold;
-return ThreadHold;
-
+void Lock::Acquire (){
+	mMutexLock->P();
+	mThreadHolder=currentThread;
 }
 
-
-Condition::Condition (const char *debugName)
-{
-  name =debugName;
-  threadsQueue=new List();
+void Lock::Release (){
+	mThreadHolder = nullptr;
+	ASSERT(isHeldByCurrentThread());
+	mMutexLock->V();
 }
 
-Condition::~Condition ()
-{
-  delete threadsQueue;
-}
-void
-Condition::Wait (Lock * conditionLock)
-{
-  ASSERT(conditionLock->isHeldByCurrentThread());
-  Semaphore* csem= new Semaphore("condition lock", 0);
-  threadsQueue->Append((void*)csem);
-  conditionLock->Release();
-  csem->P();
-  conditionLock->Acquire();
+bool Lock::isHeldByCurrentThread() const {
+	return currentThread == mThreadHolder;
 }
 
-void
-Condition::Signal (Lock * conditionLock)
+Condition::Condition (const char *debugName):
+	mName(debugName), mThreadsQueue(new List())
 {
-  ASSERT(conditionLock->isHeldByCurrentThread());
-    if(!threadsQueue->IsEmpty()){
-        Semaphore* sigsem = (Semaphore*) threadsQueue->Remove();
-sigsem->V();
 }
-void
-Condition::Broadcast (Lock * conditionLock)
-{
-  ASSERT(conditionLock->isHeldByCurrentThread());
+
+Condition::~Condition (){
+  delete mThreadsQueue;
+}
+
+void Condition::Wait (Lock * conditionLock){
+	ASSERT(conditionLock->isHeldByCurrentThread());
+	Semaphore* csem = new Semaphore("condition lock", 0);
+	mThreadsQueue->Append((void*)csem);
+	conditionLock->Release();
+	csem->P();
+	conditionLock->Acquire();
+}
+
+void Condition::Signal (Lock * conditionLock){
+	ASSERT(conditionLock->isHeldByCurrentThread());
+    if(!mThreadsQueue->IsEmpty()){
+        Semaphore* sigsem = (Semaphore*) mThreadsQueue->Remove();
+		sigsem->V();
+	}
+}
+
+void Condition::Broadcast (Lock * conditionLock){
+	ASSERT(conditionLock->isHeldByCurrentThread());
     Semaphore* brdcast;
-    while(!threadsQueue->IsEmpty()){
-        sigsem = (Semaphore*) threadsQueue->Remove();
-brdcast->V();
+    while(!mThreadsQueue->IsEmpty()){
+        brdcast = (Semaphore*) mThreadsQueue->Remove();
+		brdcast->V();
+	}
 }

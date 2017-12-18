@@ -72,24 +72,21 @@ class Lock
   public:
     Lock (const char *debugName);	// initialize lock to be FREE
      ~Lock ();			// deallocate lock
-    const char *getName ()
-    {
-	return name;
-    }				// debugging assist
+    inline const char *getName () const { return mName;}				// debugging assist
 
     void Acquire ();		// these are the only operations on a lock
     void Release ();		// they are both *atomic*
 
-    bool isHeldByCurrentThread ();	// true if the current thread
+    bool isHeldByCurrentThread() const;
     // holds this lock.  Useful for
     // checking in Release, and in
     // Condition variable ops below.
 
   private:
-    const char *name;		// for debugging
+    const char *mName;		// for debugging
     // plus some other stuff you'll need to define
-    Thread* ThreadHold;
-    Semaphore* mutexLock;
+    Thread* mThreadHolder;
+    Semaphore* mMutexLock;
 };
 
 // The following class defines a "condition variable".  A condition
@@ -130,10 +127,7 @@ class Condition
     Condition (const char *debugName);	// initialize condition to
     // "no one waiting"
      ~Condition ();		// deallocate the condition
-    const char *getName ()
-    {
-	return (name);
-    }
+    inline const char *getName() const { return mName;}
 
     void Wait (Lock * conditionLock);	// these are the 3 operations on
     // condition variables; releasing the
@@ -144,8 +138,8 @@ class Condition
     // these operations
 
   private:
-    const char *name;
-    List* threadsQueue;
+    const char *mName;
+    List* mThreadsQueue;
     // plus some other stuff you'll need to define
 };
 #endif // SYNCH_H
