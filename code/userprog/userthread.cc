@@ -7,7 +7,8 @@ typedef struct bundle {
     int arg;
 } bundle_t;
 
-//static void StartUserThread(int f);
+void StartUserThread(int f) {
+}
 
 int do_UserThreadCreate(int f, int arg) {
     Thread *t = new Thread("");
@@ -23,7 +24,7 @@ int do_UserThreadCreate(int f, int arg) {
         return -1;
     }
 
-    t->Fork(StartUserThread, bundle);
+    t->Fork(StartUserThread, (int) &bundle);
 
     return 0;
 }
