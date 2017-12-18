@@ -176,6 +176,22 @@ GetInt:
 	syscall
 	j	$31
 	.end GetInt
+	
+	.globl CreateThread
+    .ent    CreateThread
+CreateThread:
+    addiu $2,$0,SC_CreateUserThread
+    syscall
+    j   $31
+    .end CreateThread
+
+    .globl ExitThread
+    .ent    ExitThread
+ExitThread:
+    addiu $2,$0,SC_ExitUserThread
+    syscall
+    j   $31
+    .end ExitThread
 
 /* dummy function to keep gcc happy */
         .globl  __main

@@ -25,6 +25,7 @@
 #include "system.h"
 #include "syscall.h"
 #include "stringtransfer.h"
+#include "userthreads.h"
 
 //----------------------------------------------------------------------
 // UpdatePC : Increments the Program Counter register in order to resume
@@ -150,6 +151,16 @@ ExceptionHandler (ExceptionType which)
 				free(buffer);
 				break;
 			}
+			
+			case SC_CreateUserThread: {
+                // TODO return -1 if creating thread fails
+                break;
+            }
+            
+            case SC_ExitUserThread: {
+                // TODO
+                break;
+            }
 
 			default: {
 				printf("Unexpected user mode exception %d %d\n", which, type);
