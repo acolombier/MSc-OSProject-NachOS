@@ -125,7 +125,7 @@ ExceptionHandler (ExceptionType which)
 				DEBUG('i', "GetString syscall, initiated by user program.\n");
 				char *buffer = (char *) malloc(sizeof(char) * MAX_STRING_SIZE);
 				synchconsole->GetString(buffer, reg5);
-				copyStringToMachine(buffer, reg4, MIN(MAX_STRING_SIZE, n));
+				copyStringToMachine(buffer, reg4, MIN(MAX_STRING_SIZE, reg5));
 				break;
 			}
 

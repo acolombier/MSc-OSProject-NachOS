@@ -145,21 +145,21 @@ GetChar:
 	j	$31
 	.end GetChar
 	
-	.globl PutInt
-	.ent	PutInt
+	.globl PutString
+	.ent	PutString
 PutString:
 	addiu $2,$0,SC_PutString
 	syscall
 	j	$31
-	.end PutChar
+	.end PutString
 
-	.globl GetChar
-	.ent	GetChar
+	.globl GetString
+	.ent	GetString
 GetString:
 	addiu $2,$0,SC_GetString
 	syscall
 	j	$31
-	.end GetChar
+	.end GetString
 	
 	.globl PutInt
 	.ent	PutInt

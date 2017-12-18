@@ -1,3 +1,3 @@
 
-char * copyStringFromMachine(int from, int max_size);
+char * copyStringFromMachine(int from, unsigned int max_size);
 void copyStringToMachine(char * string, int to, unsigned max_size);
