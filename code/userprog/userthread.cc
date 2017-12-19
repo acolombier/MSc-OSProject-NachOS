@@ -1,16 +1,42 @@
 #include "system.h"
 #include "userthread.h"
-#define PAGESPERTHREAD 10
 
 typedef struct bundle {
     int function;
     int arg;
 } bundle_t;
 
-static void StartUserThread (int f);
+static void StartUserThread (int f){
+
+    bundle_t *bundle = (bundle_t *) f;
+    DEBUG('t', "Inside start user thread\n");
+
+    fprintf(stderr, "SC %d %d\n", bundle->function, bundle->arg);
+
+    currentThread->space->RestoreState();  // load addspace into the machine
+    currentThread->space->InitRegisters();  // init registers, including stack pointer
+
+    machine->WriteRegister(4, bundle->arg);
+    machine->WriteRegister(PCReg, bundle->function);
+    machine->WriteRegister(NextPCReg, bundle->function + 4);
+
+    int sp = machine->ReadRegister(StackReg);
+    int new_sp = (sp / PageSize) - (2 * PageSize);
+    // we check if we are too close to the heap to have another stack
+    // for now we decided (hope) that code and heap should fit into two pages
+    if (new_sp < 2 * PageSize) {
+        fprintf(stderr, "Insufficient Space for New Thread Creation \n");
+        do_UserThreadExit();
+    }
+
+    machine->WriteRegister(StackReg, new_sp);
+
+    // call this function to run the system
+    machine->Run();
+}
 
 int do_UserThreadCreate(int f, int arg) {
-    Thread *t = new Thread("");
+    Thread *t = new Thread("new User Thread");
 
     bundle_t bundle = {f, arg};
 
@@ -32,36 +58,4 @@ void do_UserThreadExit() {
     // we destroy the kernel thread because it was created
     // only to run the user thread
     currentThread->Finish();
-}
-
-static void StartUserThread (int f){
-
-    bundle_t *bundle = (bundle_t *) f;
-    DEBUG('t', "Inside start user thread\n");
-
-    fprintf(stderr, "SC %d %d\n", bundle->function, bundle->arg);
-
-    currentThread->space->RestoreState();  // load addspace into the machine
-    currentThread->space->InitRegisters();  // init registers, including stack pointer
-
-    machine->WriteRegister(4, bundle->arg);
-    machine->WriteRegister(PCReg, bundle->function);
-    machine->WriteRegister(NextPCReg, bundle->function + 4);
-
-    int pos = machine->ReadRegister(StackReg);
-    // TODO: check if we are too close to the heap to have another stack
-    if (pos < 0) {
-        fprintf(stderr, "Insufficient Space for New Thread Creation \n");
-        do_UserThreadExit();
-    }
-    currentThread->bitmapID= pos;
-
-  	//fprintf(stderr, "%d\n", temp);
-    // TODO initialize the new stack pointer for the usr program
-  	machine->WriteRegister (StackReg,  PAGESPERTHREAD *(pos+1) * PageSize);
-  	//machine->WriteRegister (StackReg, currentThread->space->numPages*PageSize -16 - 3 * tid * PageSize);
-
-  	// call this function to run the system
-  	machine->Run();
-  }
 }
