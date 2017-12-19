@@ -9,7 +9,7 @@ export DEFAULT_VERBOSITY
 # nachos code still compile
 check:
 
-all: build doc
+all: build 
 
 doc:
 	cd .. && doxygen -b doc/Doxyfile
