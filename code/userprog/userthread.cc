@@ -9,9 +9,9 @@ typedef struct bundle {
 static void StartUserThread(int f) {
 
     bundle_t *bundle = (bundle_t *) f;
-    DEBUG('t', "Inside start user thread\n");
+    DEBUG('t', "Inside StartUserThread\n");
 
-    fprintf(stderr, "SC %d %d\n", bundle->function, bundle->arg);
+    fprintf(stderr, "userThread to run %d(%d)\n", bundle->function, bundle->arg);
 
     currentThread->space->RestoreState();  // load addspace into the machine
     currentThread->space->InitRegisters();  // init registers, including stack pointer
@@ -19,6 +19,8 @@ static void StartUserThread(int f) {
     machine->WriteRegister(4, bundle->arg);
     machine->WriteRegister(PCReg, bundle->function);
     machine->WriteRegister(NextPCReg, bundle->function + 4);
+
+    //delete bundle;
 
     int sp = machine->ReadRegister(StackReg);
     int new_sp = ((sp / PageSize) * PageSize) - (2 * PageSize);
@@ -38,7 +40,9 @@ static void StartUserThread(int f) {
 int do_UserThreadCreate(int f, int arg) {
     Thread *t = new Thread("new User Thread");
 
-    bundle_t bundle = {f, arg};
+    bundle_t *bundle = new bundle_t;
+    bundle->function = f;
+    bundle->arg = arg;
 
     // the new user thread needs to share its space with the old one
     t->space = currentThread->space;
@@ -49,7 +53,9 @@ int do_UserThreadCreate(int f, int arg) {
         return -1;
     }
 
+    fprintf(stderr, " v v v\n");
     t->Fork(StartUserThread, (int) &bundle);
+    fprintf(stderr, " ^ ^ ^\n");
 
     return 0;
 }
