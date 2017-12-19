@@ -86,6 +86,10 @@ ExceptionHandler (ExceptionType which)
 
 			case SC_Halt: {
 				DEBUG('a', "Shutdown, initiated by user program.\n");
+				// the prog shouldnt exit while the thread is still running
+				// if it has exited before; then nothing happens here
+				// otherwise the halting of the main is made clean
+				do_UserThreadExit();
 				interrupt->Halt();
 				break;
 			}
