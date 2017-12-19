@@ -90,6 +90,7 @@ ExceptionHandler (ExceptionType which)
 				// if it has exited before; then nothing happens here
 				// otherwise the halting of the main is made clean
 				do_UserThreadExit();
+				// TODO we are not sure
 				interrupt->Halt();
 				break;
 			}

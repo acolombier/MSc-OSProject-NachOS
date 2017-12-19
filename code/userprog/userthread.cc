@@ -36,42 +36,32 @@ void do_UserThreadExit() {
 
 static void StartUserThread (int f){
 
-  DEBUG('t', "Inside start user thread\n");
-  	int Fnaddress = (bundle* f->function);
-  	int arg_list = (bundle*f->arg);
-//TODO Remove after testing the control of program
-  	int tid;
-    tid=  currentThread->getThreadID();
-    fprintf(stderr, "SC %d %d\n", Fnaddress,arg_list );
-    fprintf(stderr, "Thread Execution  %d\n",tid );
-    //upto this part
-    currentThread->space->RestoreState();
-    currentThread->space->InitRegisters();
+    bundle_t *bundle = (bundle_t *) f;
+    DEBUG('t', "Inside start user thread\n");
 
-  	machine->WriteRegister(4, arg_list);
-  	machine->WriteRegister (PCReg,Fnaddress);
-  	machine->WriteRegister (NextPCReg, Fnaddress + 4);
-  	//int temp_stack_addr = currentThread->space->numPages ;
-  	//temp_stack_addr = machine->ReadRegister(StackReg);
-  	int pos;
+    fprintf(stderr, "SC %d %d\n", bundle->function, bundle->arg);
 
-  	pos = currentThread->space->GetStack();
-  	if (pos == -1)
-  	{
-  		fprintf(stderr, "Insufficient Space for New Thread Creation \n" );
-  		do_UserThreadExit();
-  	}
-  	currentThread->bitmapID= pos;
+    currentThread->space->RestoreState();  // load addspace into the machine
+    currentThread->space->InitRegisters();  // init registers, including stack pointer
+
+    machine->WriteRegister(4, bundle->arg);
+    machine->WriteRegister(PCReg, bundle->function);
+    machine->WriteRegister(NextPCReg, bundle->function + 4);
+
+    int pos = machine->ReadRegister(StackReg);
+    // TODO: check if we are too close to the heap to have another stack
+    if (pos < 0) {
+        fprintf(stderr, "Insufficient Space for New Thread Creation \n");
+        do_UserThreadExit();
+    }
+    currentThread->bitmapID= pos;
 
   	//fprintf(stderr, "%d\n", temp);
+    // TODO initialize the new stack pointer for the usr program
   	machine->WriteRegister (StackReg,  PAGESPERTHREAD *(pos+1) * PageSize);
   	//machine->WriteRegister (StackReg, currentThread->space->numPages*PageSize -16 - 3 * tid * PageSize);
 
   	// call this function to run the system
   	machine->Run();
-
-
-
-
   }
 }
