@@ -4,3 +4,6 @@ code/bin/*.o
 code/bin/.*.d
 nachos.geany
 nachos.tags
+doc/html
+doc/latex
+doc/man
