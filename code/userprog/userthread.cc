@@ -1,5 +1,5 @@
 #include "system.h"
-#include "userthreads.h"
+#include "userthread.h"
 #define PAGESPERTHREAD 10
 
 typedef struct bundle {
@@ -7,8 +7,7 @@ typedef struct bundle {
     int arg;
 } bundle_t;
 
-void StartUserThread(int f) {
-}
+static void StartUserThread (int f);
 
 int do_UserThreadCreate(int f, int arg) {
     Thread *t = new Thread("");
@@ -27,6 +26,12 @@ int do_UserThreadCreate(int f, int arg) {
     t->Fork(StartUserThread, (int) &bundle);
 
     return 0;
+}
+
+void do_UserThreadExit() {
+    // we destroy the kernel thread because it was created
+    // only to run the user thread
+    currentThread->Finish();
 }
 
 static void StartUserThread (int f){
