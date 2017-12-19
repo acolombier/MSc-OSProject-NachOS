@@ -30,6 +30,12 @@ extern Statistics *stats;	// performance metrics
 extern Timer *timer;		// the hardware alarm clock
 
 #ifdef USER_PROGRAM
+
+
+/*! \def MAX_STRING_SIZE
+   
+    The maximun string size that the kernel can handle. By default 512, including the \0 char.
+*/
 #define MAX_STRING_SIZE 512
 
 #include "machine.h"

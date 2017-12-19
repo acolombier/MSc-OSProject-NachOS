@@ -1,6 +1,0 @@
-<map id="code/machine/machine.h" name="code/machine/machine.h">
-<area shape="rect" id="node2" href="$machine_8cc.html" title="code/machine/machine.cc" alt="" coords="5,80,180,107"/>
-<area shape="rect" id="node3" href="$mipssim_8cc.html" title="code/machine/mipssim.cc" alt="" coords="204,80,379,107"/>
-<area shape="rect" id="node4" href="$translate_8cc.html" title="code/machine/translate.cc" alt="" coords="403,80,577,107"/>
-<area shape="rect" id="node5" href="$stringtransfer_8cc.html" title="code/userprog/stringtransfer.cc" alt="" coords="602,80,805,107"/>
-</map>

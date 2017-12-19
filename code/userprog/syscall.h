@@ -96,6 +96,10 @@ typedef int OpenFileId;
 #define ConsoleInput	0
 #define ConsoleOutput	1
 
+/*! \def EOF
+   
+    The EOF reprensation on 4 bits.
+*/
 #define EOF	0xFFFFFFFF
 
 /* Create a Nachos file, with "name" */
@@ -142,10 +146,15 @@ char GetChar();
 void PutString(char *s);
 void GetString(char *s, int n);
 
-/* Write a signed integer using the function snprintf to obtain the external
- * decimal write operation
- */
+/*! \fn void PutInt(int n)
+    \brief Write integer in the STDOUT using ascii representation.
+    \param n The integer to put on the NachOS STDOUT.
+*/
 void PutInt(int n);
+/*! \fn void PutInt(int *n)
+    \brief Read integer in the STDOUT using ascii representation.
+    \param *n Pointer to an integer where the read int from ascii STDIN will be stored.
+*/
 void GetInt(int *n);
 
 #endif // IN_USER_MODE

@@ -1,9 +1,0 @@
-<map id="code/userprog/syscall.h" name="code/userprog/syscall.h">
-<area shape="rect" id="node2" href="$system_8c.html" title="code/bin/system.c" alt="" coords="5,80,135,107"/>
-<area shape="rect" id="node3" href="$halt_8c.html" title="code/test/halt.c" alt="" coords="158,80,270,107"/>
-<area shape="rect" id="node4" href="$matmult_8c.html" title="code/test/matmult.c" alt="" coords="294,80,433,107"/>
-<area shape="rect" id="node5" href="$putchar_8c.html" title="code/test/putchar.c" alt="" coords="457,80,592,107"/>
-<area shape="rect" id="node6" href="$shell_8c.html" title="code/test/shell.c" alt="" coords="616,80,735,107"/>
-<area shape="rect" id="node7" href="$sort_8c.html" title="code/test/sort.c" alt="" coords="759,80,872,107"/>
-<area shape="rect" id="node8" href="$exception_8cc.html" title="code/userprog/exception.cc" alt="" coords="896,80,1079,107"/>
-</map>
