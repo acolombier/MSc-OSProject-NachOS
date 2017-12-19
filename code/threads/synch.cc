@@ -118,8 +118,8 @@ void Lock::Acquire (){
 }
 
 void Lock::Release (){
-	mThreadHolder = nullptr;
 	ASSERT(isHeldByCurrentThread());
+	mThreadHolder = nullptr;
 	mMutexLock->V();
 }
 

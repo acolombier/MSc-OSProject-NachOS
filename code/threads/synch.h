@@ -49,6 +49,13 @@ class Semaphore
     void P ();			// these are the only operations on a semaphore
     void V ();			// they are both *atomic*
 
+	//----------------------------------------------------------------------
+	// Semaphore::E
+	//      Return the internal value of the samphore
+	//----------------------------------------------------------------------
+
+    inline int E () const {return value;}			// they are both *atomic*
+
   private:
     const char *name;		// useful for debugging
     int value;			// semaphore value, always >= 0

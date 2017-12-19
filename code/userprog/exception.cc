@@ -107,6 +107,7 @@ ExceptionHandler (ExceptionType which)
 			case SC_GetChar: {
 				DEBUG('i', "GetChar syscall, initiated by user program.\n");
 				returnvalue = synchconsole->GetChar();
+				DEBUG('i', "GetChar syscall, returned.\n");
 				machine->WriteRegister(2, returnvalue);
 				break;
 			}
