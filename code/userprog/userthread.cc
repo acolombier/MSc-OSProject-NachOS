@@ -6,7 +6,7 @@ typedef struct bundle {
     int arg;
 } bundle_t;
 
-static void StartUserThread (int f){
+static void StartUserThread(int f) {
 
     bundle_t *bundle = (bundle_t *) f;
     DEBUG('t', "Inside start user thread\n");
@@ -21,17 +21,17 @@ static void StartUserThread (int f){
     machine->WriteRegister(NextPCReg, bundle->function + 4);
 
     int sp = machine->ReadRegister(StackReg);
-    int new_sp = (sp / PageSize) - (2 * PageSize);
+    int new_sp = ((sp / PageSize) * PageSize) - (2 * PageSize);
     // we check if we are too close to the heap to have another stack
     // for now we decided (hope) that code and heap should fit into two pages
     if (new_sp < 2 * PageSize) {
-        fprintf(stderr, "Insufficient Space for New Thread Creation \n");
+        fprintf(stderr, "Insufficient Space for New Thread Creation\n");
         do_UserThreadExit();
     }
 
     machine->WriteRegister(StackReg, new_sp);
 
-    // call this function to run the system
+    // call this function to run the user code
     machine->Run();
 }
 

@@ -144,7 +144,7 @@ GetChar:
 	syscall
 	j	$31
 	.end GetChar
-	
+
 	.globl PutString
 	.ent	PutString
 PutString:
@@ -160,7 +160,7 @@ GetString:
 	syscall
 	j	$31
 	.end GetString
-	
+
 	.globl PutInt
 	.ent	PutInt
 PutInt:
@@ -168,7 +168,7 @@ PutInt:
 	syscall
 	j	$31
 	.end PutInt
-	
+
 	.globl GetInt
 	.ent	GetInt
 GetInt:
@@ -176,22 +176,22 @@ GetInt:
 	syscall
 	j	$31
 	.end GetInt
-	
-	.globl CreateThread
-    .ent    CreateThread
-CreateThread:
+
+	.globl UserThreadCreate
+    .ent    UserThreadCreate
+UserThreadCreate:
     addiu $2,$0,SC_CreateUserThread
     syscall
     j   $31
-    .end CreateThread
+    .end UserThreadCreate
 
-    .globl ExitThread
-    .ent    ExitThread
-ExitThread:
+    .globl UserThreadExit
+    .ent    UserThreadExit
+UserThreadExit:
     addiu $2,$0,SC_ExitUserThread
     syscall
     j   $31
-    .end ExitThread
+    .end UserThreadExit
 
 /* dummy function to keep gcc happy */
         .globl  __main
