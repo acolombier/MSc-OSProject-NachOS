@@ -1,0 +1,65 @@
+.TH "code/filesys/filesys.cc" 3 "Tue Dec 19 2017" "Version nachos-teamd" "OS-Project" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+code/filesys/filesys.cc \- 
+.SH SYNOPSIS
+.br
+.PP
+\fC#include 'copyright\&.h'\fP
+.br
+\fC#include 'disk\&.h'\fP
+.br
+\fC#include 'bitmap\&.h'\fP
+.br
+\fC#include 'directory\&.h'\fP
+.br
+\fC#include 'filehdr\&.h'\fP
+.br
+\fC#include 'filesys\&.h'\fP
+.br
+
+.SS "Macros"
+
+.in +1c
+.ti -1c
+.RI "#define \fBFreeMapSector\fP   0"
+.br
+.ti -1c
+.RI "#define \fBDirectorySector\fP   1"
+.br
+.ti -1c
+.RI "#define \fBFreeMapFileSize\fP   (\fBNumSectors\fP / \fBBitsInByte\fP)"
+.br
+.ti -1c
+.RI "#define \fBNumDirEntries\fP   10"
+.br
+.ti -1c
+.RI "#define \fBDirectoryFileSize\fP   (sizeof(\fBDirectoryEntry\fP) * \fBNumDirEntries\fP)"
+.br
+.in -1c
+.SH "Macro Definition Documentation"
+.PP 
+.SS "#define DirectoryFileSize   (sizeof(\fBDirectoryEntry\fP) * \fBNumDirEntries\fP)"
+
+.PP
+Definition at line 65 of file filesys\&.cc\&.
+.SS "#define DirectorySector   1"
+
+.PP
+Definition at line 58 of file filesys\&.cc\&.
+.SS "#define FreeMapFileSize   (\fBNumSectors\fP / \fBBitsInByte\fP)"
+
+.PP
+Definition at line 63 of file filesys\&.cc\&.
+.SS "#define FreeMapSector   0"
+
+.PP
+Definition at line 57 of file filesys\&.cc\&.
+.SS "#define NumDirEntries   10"
+
+.PP
+Definition at line 64 of file filesys\&.cc\&.
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for OS-Project from the source code\&.

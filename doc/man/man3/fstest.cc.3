@@ -1,0 +1,94 @@
+.TH "code/filesys/fstest.cc" 3 "Tue Dec 19 2017" "Version nachos-teamd" "OS-Project" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+code/filesys/fstest.cc \- 
+.SH SYNOPSIS
+.br
+.PP
+\fC#include 'copyright\&.h'\fP
+.br
+\fC#include 'utility\&.h'\fP
+.br
+\fC#include 'filesys\&.h'\fP
+.br
+\fC#include 'system\&.h'\fP
+.br
+\fC#include 'thread\&.h'\fP
+.br
+\fC#include 'disk\&.h'\fP
+.br
+\fC#include 'stats\&.h'\fP
+.br
+
+.SS "Macros"
+
+.in +1c
+.ti -1c
+.RI "#define \fBTransferSize\fP   10"
+.br
+.ti -1c
+.RI "#define \fBFileName\fP   'TestFile'"
+.br
+.ti -1c
+.RI "#define \fBContents\fP   '1234567890'"
+.br
+.ti -1c
+.RI "#define \fBContentSize\fP   strlen(\fBContents\fP)"
+.br
+.ti -1c
+.RI "#define \fBFileSize\fP   ((int)(\fBContentSize\fP * 5000))"
+.br
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "void \fBCopy\fP (const char *from, const char *to)"
+.br
+.ti -1c
+.RI "void \fBPrint\fP (char *name)"
+.br
+.ti -1c
+.RI "void \fBPerformanceTest\fP ()"
+.br
+.in -1c
+.SH "Macro Definition Documentation"
+.PP 
+.SS "#define Contents   '1234567890'"
+
+.PP
+Definition at line 112 of file fstest\&.cc\&.
+.SS "#define ContentSize   strlen(\fBContents\fP)"
+
+.PP
+Definition at line 113 of file fstest\&.cc\&.
+.SS "#define FileName   'TestFile'"
+
+.PP
+Definition at line 111 of file fstest\&.cc\&.
+.SS "#define FileSize   ((int)(\fBContentSize\fP * 5000))"
+
+.PP
+Definition at line 114 of file fstest\&.cc\&.
+.SS "#define TransferSize   10"
+
+.PP
+Definition at line 24 of file fstest\&.cc\&.
+.SH "Function Documentation"
+.PP 
+.SS "void Copy (const char * from, const char * to)"
+
+.PP
+Definition at line 32 of file fstest\&.cc\&.
+.SS "void PerformanceTest (void)"
+
+.PP
+Definition at line 173 of file fstest\&.cc\&.
+.SS "void Print (char * name)"
+
+.PP
+Definition at line 78 of file fstest\&.cc\&.
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for OS-Project from the source code\&.

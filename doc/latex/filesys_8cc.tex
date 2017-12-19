@@ -1,0 +1,67 @@
+\section{code/filesys/filesys.cc File Reference}
+\label{filesys_8cc}\index{code/filesys/filesys.\+cc@{code/filesys/filesys.\+cc}}
+{\ttfamily \#include \char`\"{}copyright.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}disk.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}bitmap.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}directory.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}filehdr.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}filesys.\+h\char`\"{}}\\*
+Include dependency graph for filesys.\+cc\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{filesys_8cc__incl}
+\end{center}
+\end{figure}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define {\bf Free\+Map\+Sector}~0
+\item 
+\#define {\bf Directory\+Sector}~1
+\item 
+\#define {\bf Free\+Map\+File\+Size}~({\bf Num\+Sectors} / {\bf Bits\+In\+Byte})
+\item 
+\#define {\bf Num\+Dir\+Entries}~10
+\item 
+\#define {\bf Directory\+File\+Size}~(sizeof({\bf Directory\+Entry}) $\ast$ {\bf Num\+Dir\+Entries})
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{filesys.\+cc@{filesys.\+cc}!Directory\+File\+Size@{Directory\+File\+Size}}
+\index{Directory\+File\+Size@{Directory\+File\+Size}!filesys.\+cc@{filesys.\+cc}}
+\subsubsection[{Directory\+File\+Size}]{\setlength{\rightskip}{0pt plus 5cm}\#define Directory\+File\+Size~(sizeof({\bf Directory\+Entry}) $\ast$ {\bf Num\+Dir\+Entries})}\label{filesys_8cc_a7fa3c2eb16686ae45ae59ff299c933d8}
+
+
+Definition at line 65 of file filesys.\+cc.
+
+\index{filesys.\+cc@{filesys.\+cc}!Directory\+Sector@{Directory\+Sector}}
+\index{Directory\+Sector@{Directory\+Sector}!filesys.\+cc@{filesys.\+cc}}
+\subsubsection[{Directory\+Sector}]{\setlength{\rightskip}{0pt plus 5cm}\#define Directory\+Sector~1}\label{filesys_8cc_a1e8a87bff0b10df73c4c8aebd74cd115}
+
+
+Definition at line 58 of file filesys.\+cc.
+
+\index{filesys.\+cc@{filesys.\+cc}!Free\+Map\+File\+Size@{Free\+Map\+File\+Size}}
+\index{Free\+Map\+File\+Size@{Free\+Map\+File\+Size}!filesys.\+cc@{filesys.\+cc}}
+\subsubsection[{Free\+Map\+File\+Size}]{\setlength{\rightskip}{0pt plus 5cm}\#define Free\+Map\+File\+Size~({\bf Num\+Sectors} / {\bf Bits\+In\+Byte})}\label{filesys_8cc_a38a724e7fcf2a63b3281f36fac7e1d22}
+
+
+Definition at line 63 of file filesys.\+cc.
+
+\index{filesys.\+cc@{filesys.\+cc}!Free\+Map\+Sector@{Free\+Map\+Sector}}
+\index{Free\+Map\+Sector@{Free\+Map\+Sector}!filesys.\+cc@{filesys.\+cc}}
+\subsubsection[{Free\+Map\+Sector}]{\setlength{\rightskip}{0pt plus 5cm}\#define Free\+Map\+Sector~0}\label{filesys_8cc_acfabd79a397da2bebf0645af84a9885c}
+
+
+Definition at line 57 of file filesys.\+cc.
+
+\index{filesys.\+cc@{filesys.\+cc}!Num\+Dir\+Entries@{Num\+Dir\+Entries}}
+\index{Num\+Dir\+Entries@{Num\+Dir\+Entries}!filesys.\+cc@{filesys.\+cc}}
+\subsubsection[{Num\+Dir\+Entries}]{\setlength{\rightskip}{0pt plus 5cm}\#define Num\+Dir\+Entries~10}\label{filesys_8cc_a68dc84ed1ccf98eee5190f1a2120079a}
+
+
+Definition at line 64 of file filesys.\+cc.
+

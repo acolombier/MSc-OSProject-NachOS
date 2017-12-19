@@ -1,0 +1,90 @@
+.TH "code/threads/thread.h" 3 "Tue Dec 19 2017" "Version nachos-teamd" "OS-Project" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+code/threads/thread.h \- 
+.SH SYNOPSIS
+.br
+.PP
+\fC#include 'copyright\&.h'\fP
+.br
+\fC#include 'utility\&.h'\fP
+.br
+
+.SS "Classes"
+
+.in +1c
+.ti -1c
+.RI "class \fBThread\fP"
+.br
+.in -1c
+.SS "Macros"
+
+.in +1c
+.ti -1c
+.RI "#define \fBMachineStateSize\fP   18"
+.br
+.ti -1c
+.RI "#define \fBStackSize\fP   (4 * 1024)"
+.br
+.in -1c
+.SS "Enumerations"
+
+.in +1c
+.ti -1c
+.RI "enum \fBThreadStatus\fP { \fBJUST_CREATED\fP, \fBRUNNING\fP, \fBREADY\fP, \fBBLOCKED\fP }"
+.br
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "void \fBThreadPrint\fP (int arg)"
+.br
+.ti -1c
+.RI "void \fBThreadRoot\fP ()"
+.br
+.ti -1c
+.RI "void \fBSWITCH\fP (\fBThread\fP *oldThread, \fBThread\fP *newThread)"
+.br
+.in -1c
+.SH "Macro Definition Documentation"
+.PP 
+.SS "#define MachineStateSize   18"
+
+.PP
+Definition at line 51 of file thread\&.h\&.
+.SS "#define StackSize   (4 * 1024)"
+
+.PP
+Definition at line 56 of file thread\&.h\&.
+.SH "Enumeration Type Documentation"
+.PP 
+.SS "enum \fBThreadStatus\fP"
+
+.PP
+\fBEnumerator\fP
+.in +1c
+.TP
+\fB\fIJUST_CREATED \fP\fP
+.TP
+\fB\fIRUNNING \fP\fP
+.TP
+\fB\fIREADY \fP\fP
+.TP
+\fB\fIBLOCKED \fP\fP
+.PP
+Definition at line 60 of file thread\&.h\&.
+.SH "Function Documentation"
+.PP 
+.SS "void SWITCH (\fBThread\fP * oldThread, \fBThread\fP * newThread)"
+
+.SS "void ThreadPrint (int arg)"
+
+.PP
+Definition at line 319 of file thread\&.cc\&.
+.SS "void ThreadRoot ()"
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for OS-Project from the source code\&.

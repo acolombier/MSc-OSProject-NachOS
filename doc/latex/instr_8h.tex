@@ -1,0 +1,143 @@
+\section{code/bin/instr.h File Reference}
+\label{instr_8h}\index{code/bin/instr.\+h@{code/bin/instr.\+h}}
+{\ttfamily \#include \char`\"{}copyright.\+h\char`\"{}}\\*
+Include dependency graph for instr.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=163pt]{instr_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=272pt]{instr_8h__dep__incl}
+\end{center}
+\end{figure}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define {\bf rd}({\bf i})~((({\bf i}) $>$$>$ 11) \& 0x1f)
+\item 
+\#define {\bf rt}({\bf i})~((({\bf i}) $>$$>$ 16) \& 0x1f)
+\item 
+\#define {\bf rs}({\bf i})~((({\bf i}) $>$$>$ 21) \& 0x1f)
+\item 
+\#define {\bf shamt}({\bf i})~((({\bf i}) $>$$>$ 6) \& 0x1f)
+\item 
+\#define {\bf immed}({\bf i})~((({\bf i}) \& 0x8000) ? (i)$\vert$(-\/0x8000) \+: (i)\&0x7fff)
+\item 
+\#define {\bf off26}({\bf i})~((({\bf i})\&((1$<$$<$26)-\/1))$<$$<$2)
+\item 
+\#define {\bf top4}({\bf i})~((({\bf i})\&($\sim$((1$<$$<$28)-\/1))))
+\item 
+\#define {\bf off16}({\bf i})~({\bf immed}({\bf i})$<$$<$2)
+\item 
+\#define {\bf extend}({\bf i},  hibitmask)~((({\bf i})\&(hibitmask)) ? (({\bf i})$\vert$(-\/(hibitmask))) \+: ({\bf i}))
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{instr.\+h@{instr.\+h}!extend@{extend}}
+\index{extend@{extend}!instr.\+h@{instr.\+h}}
+\subsubsection[{extend}]{\setlength{\rightskip}{0pt plus 5cm}\#define extend(
+\begin{DoxyParamCaption}
+\item[{}]{{\bf i}, }
+\item[{}]{hibitmask}
+\end{DoxyParamCaption}
+)~((({\bf i})\&(hibitmask)) ? (({\bf i})$\vert$(-\/(hibitmask))) \+: ({\bf i}))}\label{instr_8h_a07ba1b8958925d11277121a071f49b08}
+
+
+Definition at line 21 of file instr.\+h.
+
+\index{instr.\+h@{instr.\+h}!immed@{immed}}
+\index{immed@{immed}!instr.\+h@{instr.\+h}}
+\subsubsection[{immed}]{\setlength{\rightskip}{0pt plus 5cm}\#define immed(
+\begin{DoxyParamCaption}
+\item[{}]{{\bf i}}
+\end{DoxyParamCaption}
+)~((({\bf i}) \& 0x8000) ? (i)$\vert$(-\/0x8000) \+: (i)\&0x7fff)}\label{instr_8h_a46180b1a699336d4176b162858ece83b}
+
+
+Definition at line 15 of file instr.\+h.
+
+\index{instr.\+h@{instr.\+h}!off16@{off16}}
+\index{off16@{off16}!instr.\+h@{instr.\+h}}
+\subsubsection[{off16}]{\setlength{\rightskip}{0pt plus 5cm}\#define off16(
+\begin{DoxyParamCaption}
+\item[{}]{{\bf i}}
+\end{DoxyParamCaption}
+)~({\bf immed}({\bf i})$<$$<$2)}\label{instr_8h_aa2feaf0fef6d2be1b21c5f5eb0e8e870}
+
+
+Definition at line 19 of file instr.\+h.
+
+\index{instr.\+h@{instr.\+h}!off26@{off26}}
+\index{off26@{off26}!instr.\+h@{instr.\+h}}
+\subsubsection[{off26}]{\setlength{\rightskip}{0pt plus 5cm}\#define off26(
+\begin{DoxyParamCaption}
+\item[{}]{{\bf i}}
+\end{DoxyParamCaption}
+)~((({\bf i})\&((1$<$$<$26)-\/1))$<$$<$2)}\label{instr_8h_a512d72f40d03a920c690cab263dea55f}
+
+
+Definition at line 17 of file instr.\+h.
+
+\index{instr.\+h@{instr.\+h}!rd@{rd}}
+\index{rd@{rd}!instr.\+h@{instr.\+h}}
+\subsubsection[{rd}]{\setlength{\rightskip}{0pt plus 5cm}\#define rd(
+\begin{DoxyParamCaption}
+\item[{}]{{\bf i}}
+\end{DoxyParamCaption}
+)~((({\bf i}) $>$$>$ 11) \& 0x1f)}\label{instr_8h_abc8417c51ad8d314b0298e4295609df7}
+
+
+Definition at line 11 of file instr.\+h.
+
+\index{instr.\+h@{instr.\+h}!rs@{rs}}
+\index{rs@{rs}!instr.\+h@{instr.\+h}}
+\subsubsection[{rs}]{\setlength{\rightskip}{0pt plus 5cm}\#define rs(
+\begin{DoxyParamCaption}
+\item[{}]{{\bf i}}
+\end{DoxyParamCaption}
+)~((({\bf i}) $>$$>$ 21) \& 0x1f)}\label{instr_8h_aaa613748b16a807cde5ba89e57efdd75}
+
+
+Definition at line 13 of file instr.\+h.
+
+\index{instr.\+h@{instr.\+h}!rt@{rt}}
+\index{rt@{rt}!instr.\+h@{instr.\+h}}
+\subsubsection[{rt}]{\setlength{\rightskip}{0pt plus 5cm}\#define rt(
+\begin{DoxyParamCaption}
+\item[{}]{{\bf i}}
+\end{DoxyParamCaption}
+)~((({\bf i}) $>$$>$ 16) \& 0x1f)}\label{instr_8h_aa31992d7e6dd98e94b1383501b8ac4f6}
+
+
+Definition at line 12 of file instr.\+h.
+
+\index{instr.\+h@{instr.\+h}!shamt@{shamt}}
+\index{shamt@{shamt}!instr.\+h@{instr.\+h}}
+\subsubsection[{shamt}]{\setlength{\rightskip}{0pt plus 5cm}\#define shamt(
+\begin{DoxyParamCaption}
+\item[{}]{{\bf i}}
+\end{DoxyParamCaption}
+)~((({\bf i}) $>$$>$ 6) \& 0x1f)}\label{instr_8h_af0087b2273e9ace68947ea1973aad004}
+
+
+Definition at line 14 of file instr.\+h.
+
+\index{instr.\+h@{instr.\+h}!top4@{top4}}
+\index{top4@{top4}!instr.\+h@{instr.\+h}}
+\subsubsection[{top4}]{\setlength{\rightskip}{0pt plus 5cm}\#define top4(
+\begin{DoxyParamCaption}
+\item[{}]{{\bf i}}
+\end{DoxyParamCaption}
+)~((({\bf i})\&($\sim$((1$<$$<$28)-\/1))))}\label{instr_8h_ae466e54cb05f9c004d95d3b16053af19}
+
+
+Definition at line 18 of file instr.\+h.
+

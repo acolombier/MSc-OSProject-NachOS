@@ -1,0 +1,162 @@
+\section{code/threads/utility.h File Reference}
+\label{utility_8h}\index{code/threads/utility.\+h@{code/threads/utility.\+h}}
+{\ttfamily \#include \char`\"{}copyright.\+h\char`\"{}}\\*
+{\ttfamily \#include $<$bool.\+h$>$}\\*
+{\ttfamily \#include \char`\"{}sysdep.\+h\char`\"{}}\\*
+Include dependency graph for utility.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=343pt]{utility_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{utility_8h__dep__incl}
+\end{center}
+\end{figure}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define {\bf div\+Round\+Down}(n,  s)~((n) / (s))
+\item 
+\#define {\bf div\+Round\+Up}(n,  s)~(((n) / (s)) + ((((n) \% (s)) $>$ 0) ? 1 \+: 0))
+\item 
+\#define {\bf A\+S\+S\+E\+RT}(condition)
+\item 
+\#define {\bf M\+IN}(a,  b)~(a $>$ b ? b \+: a)
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef void($\ast$ {\bf Void\+Function\+Ptr}) (int arg)
+\item 
+typedef void($\ast$ {\bf Void\+No\+Arg\+Function\+Ptr}) ()
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void {\bf Debug\+Init} (const char $\ast$flags)
+\item 
+bool {\bf Debug\+Is\+Enabled} (char flag)
+\item 
+void {\bf D\+E\+B\+UG} (char flag, const char $\ast$format,...)
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{utility.\+h@{utility.\+h}!A\+S\+S\+E\+RT@{A\+S\+S\+E\+RT}}
+\index{A\+S\+S\+E\+RT@{A\+S\+S\+E\+RT}!utility.\+h@{utility.\+h}}
+\subsubsection[{A\+S\+S\+E\+RT}]{\setlength{\rightskip}{0pt plus 5cm}\#define A\+S\+S\+E\+RT(
+\begin{DoxyParamCaption}
+\item[{}]{condition}
+\end{DoxyParamCaption}
+)}\label{utility_8h_ac22830a985e1daed0c9eadba8c6f606e}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+\textcolor{keywordflow}{if} (!(condition)) \{                                                       \(\backslash\)
+        fprintf(stderr, \textcolor{stringliteral}{"Assertion failed: line %d, file \(\backslash\)"%s\(\backslash\)"\(\backslash\)n"},           \(\backslash\)
+                \_\_LINE\_\_, \_\_FILE\_\_);                                          \(\backslash\)
+    fflush(stderr);                               \
+        Abort();                                                              \(\backslash\)
+    \}
+\end{DoxyCode}
+
+
+Definition at line 73 of file utility.\+h.
+
+\index{utility.\+h@{utility.\+h}!div\+Round\+Down@{div\+Round\+Down}}
+\index{div\+Round\+Down@{div\+Round\+Down}!utility.\+h@{utility.\+h}}
+\subsubsection[{div\+Round\+Down}]{\setlength{\rightskip}{0pt plus 5cm}\#define div\+Round\+Down(
+\begin{DoxyParamCaption}
+\item[{}]{n, }
+\item[{}]{s}
+\end{DoxyParamCaption}
+)~((n) / (s))}\label{utility_8h_ae61628ecc89bbfc8b664a2f003530707}
+
+
+Definition at line 36 of file utility.\+h.
+
+\index{utility.\+h@{utility.\+h}!div\+Round\+Up@{div\+Round\+Up}}
+\index{div\+Round\+Up@{div\+Round\+Up}!utility.\+h@{utility.\+h}}
+\subsubsection[{div\+Round\+Up}]{\setlength{\rightskip}{0pt plus 5cm}\#define div\+Round\+Up(
+\begin{DoxyParamCaption}
+\item[{}]{n, }
+\item[{}]{s}
+\end{DoxyParamCaption}
+)~(((n) / (s)) + ((((n) \% (s)) $>$ 0) ? 1 \+: 0))}\label{utility_8h_a3e064d026802877474f05f33fb0c9883}
+
+
+Definition at line 37 of file utility.\+h.
+
+\index{utility.\+h@{utility.\+h}!M\+IN@{M\+IN}}
+\index{M\+IN@{M\+IN}!utility.\+h@{utility.\+h}}
+\subsubsection[{M\+IN}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+IN(
+\begin{DoxyParamCaption}
+\item[{}]{a, }
+\item[{}]{b}
+\end{DoxyParamCaption}
+)~(a $>$ b ? b \+: a)}\label{utility_8h_a3acffbd305ee72dcd4593c0d8af64a4f}
+
+
+Definition at line 81 of file utility.\+h.
+
+
+
+\subsection{Typedef Documentation}
+\index{utility.\+h@{utility.\+h}!Void\+Function\+Ptr@{Void\+Function\+Ptr}}
+\index{Void\+Function\+Ptr@{Void\+Function\+Ptr}!utility.\+h@{utility.\+h}}
+\subsubsection[{Void\+Function\+Ptr}]{\setlength{\rightskip}{0pt plus 5cm}typedef void($\ast$ Void\+Function\+Ptr) (int arg)}\label{utility_8h_ac6d6e2318bdb00564cd4b743479d5e5d}
+
+
+Definition at line 48 of file utility.\+h.
+
+\index{utility.\+h@{utility.\+h}!Void\+No\+Arg\+Function\+Ptr@{Void\+No\+Arg\+Function\+Ptr}}
+\index{Void\+No\+Arg\+Function\+Ptr@{Void\+No\+Arg\+Function\+Ptr}!utility.\+h@{utility.\+h}}
+\subsubsection[{Void\+No\+Arg\+Function\+Ptr}]{\setlength{\rightskip}{0pt plus 5cm}typedef void($\ast$ Void\+No\+Arg\+Function\+Ptr) ()}\label{utility_8h_a9c6f12cbff87535a17c52ca7d975f2a5}
+
+
+Definition at line 49 of file utility.\+h.
+
+
+
+\subsection{Function Documentation}
+\index{utility.\+h@{utility.\+h}!D\+E\+B\+UG@{D\+E\+B\+UG}}
+\index{D\+E\+B\+UG@{D\+E\+B\+UG}!utility.\+h@{utility.\+h}}
+\subsubsection[{D\+E\+B\+U\+G(char flag, const char $\ast$format,...)}]{\setlength{\rightskip}{0pt plus 5cm}void D\+E\+B\+UG (
+\begin{DoxyParamCaption}
+\item[{char}]{flag, }
+\item[{const char $\ast$}]{format, }
+\item[{}]{...}
+\end{DoxyParamCaption}
+)}\label{utility_8h_a18667ebc3d15800f701d318f82bad4d3}
+
+
+Definition at line 61 of file utility.\+cc.
+
+\index{utility.\+h@{utility.\+h}!Debug\+Init@{Debug\+Init}}
+\index{Debug\+Init@{Debug\+Init}!utility.\+h@{utility.\+h}}
+\subsubsection[{Debug\+Init(const char $\ast$flags)}]{\setlength{\rightskip}{0pt plus 5cm}void Debug\+Init (
+\begin{DoxyParamCaption}
+\item[{const char $\ast$}]{flags}
+\end{DoxyParamCaption}
+)}\label{utility_8h_afc682cbb96a87037ea2da11e5aa939e1}
+
+
+Definition at line 34 of file utility.\+cc.
+
+\index{utility.\+h@{utility.\+h}!Debug\+Is\+Enabled@{Debug\+Is\+Enabled}}
+\index{Debug\+Is\+Enabled@{Debug\+Is\+Enabled}!utility.\+h@{utility.\+h}}
+\subsubsection[{Debug\+Is\+Enabled(char flag)}]{\setlength{\rightskip}{0pt plus 5cm}bool Debug\+Is\+Enabled (
+\begin{DoxyParamCaption}
+\item[{char}]{flag}
+\end{DoxyParamCaption}
+)}\label{utility_8h_a79c7d1acabdb48f6f6a80ec0abf7cf89}
+
+
+Definition at line 45 of file utility.\+cc.
+

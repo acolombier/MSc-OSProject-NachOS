@@ -1,0 +1,14 @@
+<map id="code/threads/synch.h" name="code/threads/synch.h">
+<area shape="rect" id="node2" href="$synchdisk_8h.html" title="code/filesys/synchdisk.h" alt="" coords="9,80,175,107"/>
+<area shape="rect" id="node4" href="$synch_8cc.html" title="code/threads/synch.cc" alt="" coords="200,80,355,107"/>
+<area shape="rect" id="node5" href="$synchlist_8h.html" title="code/threads/synchlist.h" alt="" coords="379,80,543,107"/>
+<area shape="rect" id="node10" href="$thread_8cc.html" title="code/threads/thread.cc" alt="" coords="568,80,723,107"/>
+<area shape="rect" id="node11" href="$synchconsole_8h.html" title="code/userprog/synchconsole.h" alt="" coords="797,80,995,107"/>
+<area shape="rect" id="node12" href="$progtest_8cc.html" title="code/userprog/progtest.cc" alt="" coords="688,155,861,181"/>
+<area shape="rect" id="node13" href="$synchconsole_8cc.html" title="code/userprog/synchconsole.cc" alt="" coords="914,155,1121,181"/>
+<area shape="rect" id="node3" href="$synchdisk_8cc.html" title="code/filesys/synchdisk.cc" alt="" coords="5,155,179,181"/>
+<area shape="rect" id="node6" href="$post_8h.html" title="code/network/post.h" alt="" coords="262,155,402,181"/>
+<area shape="rect" id="node9" href="$synchlist_8cc.html" title="code/threads/synchlist.cc" alt="" coords="427,155,597,181"/>
+<area shape="rect" id="node7" href="$nettest_8cc.html" title="code/network/nettest.cc" alt="" coords="161,229,324,256"/>
+<area shape="rect" id="node8" href="$post_8cc.html" title="code/network/post.cc" alt="" coords="348,229,495,256"/>
+</map>

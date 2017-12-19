@@ -1,0 +1,97 @@
+.TH "code/bin/system.c" 3 "Tue Dec 19 2017" "Version nachos-teamd" "OS-Project" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+code/bin/system.c \- 
+.SH SYNOPSIS
+.br
+.PP
+\fC#include 'copyright\&.h'\fP
+.br
+\fC#include <stdio\&.h>\fP
+.br
+\fC#include <syscall\&.h>\fP
+.br
+\fC#include 'int\&.h'\fP
+.br
+
+.SS "Macros"
+
+.in +1c
+.ti -1c
+.RI "#define \fBIOCPARM_MASK\fP   0x7f	/* parameters must be < 128 bytes */"
+.br
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "char * \fBu_to_int_addr\fP ()"
+.br
+.ti -1c
+.RI "\fBsystem_break\fP ()"
+.br
+.ti -1c
+.RI "\fBsystem_trap\fP ()"
+.br
+.ti -1c
+.RI "char * \fBu_to_int_addr\fP (int ptr)"
+.br
+.ti -1c
+.RI "\fBu_to_int_fd\fP (fd)"
+.br
+.in -1c
+.SS "Variables"
+
+.in +1c
+.ti -1c
+.RI "int \fBReg\fP []"
+.br
+.ti -1c
+.RI "char \fBmem\fP []"
+.br
+.ti -1c
+.RI "int \fBTraptrace\fP"
+.br
+.in -1c
+.SH "Macro Definition Documentation"
+.PP 
+.SS "#define IOCPARM_MASK   0x7f	/* parameters must be < 128 bytes */"
+
+.SH "Function Documentation"
+.PP 
+.SS "system_break ()"
+
+.PP
+Definition at line 19 of file system\&.c\&.
+.SS "system_trap ()"
+
+.PP
+Definition at line 26 of file system\&.c\&.
+.SS "char* u_to_int_addr ()"
+
+.SS "char* u_to_int_addr (int ptr)"
+
+.PP
+Definition at line 125 of file system\&.c\&.
+.SS "u_to_int_fd (fd)"
+
+.PP
+Definition at line 133 of file system\&.c\&.
+.SH "Variable Documentation"
+.PP 
+.SS "char mem[]"
+
+.PP
+Definition at line 25 of file disasm\&.c\&.
+.SS "int Reg[]"
+
+.PP
+Definition at line 23 of file execute\&.c\&.
+.SS "int Traptrace"
+
+.PP
+Definition at line 26 of file disasm\&.c\&.
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for OS-Project from the source code\&.

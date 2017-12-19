@@ -1,0 +1,223 @@
+.TH "code/machine/machine.h" 3 "Tue Dec 19 2017" "Version nachos-teamd" "OS-Project" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+code/machine/machine.h \- 
+.SH SYNOPSIS
+.br
+.PP
+\fC#include 'copyright\&.h'\fP
+.br
+\fC#include 'utility\&.h'\fP
+.br
+\fC#include 'translate\&.h'\fP
+.br
+\fC#include 'disk\&.h'\fP
+.br
+
+.SS "Classes"
+
+.in +1c
+.ti -1c
+.RI "class \fBInstruction\fP"
+.br
+.ti -1c
+.RI "class \fBMachine\fP"
+.br
+.in -1c
+.SS "Macros"
+
+.in +1c
+.ti -1c
+.RI "#define \fBPageSize\fP   \fBSectorSize\fP"
+.br
+.ti -1c
+.RI "#define \fBNumPhysPages\fP   32"
+.br
+.ti -1c
+.RI "#define \fBMemorySize\fP   (\fBNumPhysPages\fP * \fBPageSize\fP)"
+.br
+.ti -1c
+.RI "#define \fBTLBSize\fP   4"
+.br
+.ti -1c
+.RI "#define \fBStackReg\fP   29"
+.br
+.ti -1c
+.RI "#define \fBRetAddrReg\fP   31"
+.br
+.ti -1c
+.RI "#define \fBNumGPRegs\fP   32"
+.br
+.ti -1c
+.RI "#define \fBHiReg\fP   32"
+.br
+.ti -1c
+.RI "#define \fBLoReg\fP   33"
+.br
+.ti -1c
+.RI "#define \fBPCReg\fP   34"
+.br
+.ti -1c
+.RI "#define \fBNextPCReg\fP   35"
+.br
+.ti -1c
+.RI "#define \fBPrevPCReg\fP   36"
+.br
+.ti -1c
+.RI "#define \fBLoadReg\fP   37"
+.br
+.ti -1c
+.RI "#define \fBLoadValueReg\fP   38"
+.br
+.ti -1c
+.RI "#define \fBBadVAddrReg\fP   39"
+.br
+.ti -1c
+.RI "#define \fBNumTotalRegs\fP   40"
+.br
+.in -1c
+.SS "Enumerations"
+
+.in +1c
+.ti -1c
+.RI "enum \fBExceptionType\fP { \fBNoException\fP, \fBSyscallException\fP, \fBPageFaultException\fP, \fBReadOnlyException\fP, \fBBusErrorException\fP, \fBAddressErrorException\fP, \fBOverflowException\fP, \fBIllegalInstrException\fP, \fBNumExceptionTypes\fP }"
+.br
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "void \fBExceptionHandler\fP (\fBExceptionType\fP which)"
+.br
+.ti -1c
+.RI "unsigned int \fBWordToHost\fP (unsigned int word)"
+.br
+.ti -1c
+.RI "unsigned short \fBShortToHost\fP (unsigned short shortword)"
+.br
+.ti -1c
+.RI "unsigned int \fBWordToMachine\fP (unsigned int word)"
+.br
+.ti -1c
+.RI "unsigned short \fBShortToMachine\fP (unsigned short shortword)"
+.br
+.in -1c
+.SH "Macro Definition Documentation"
+.PP 
+.SS "#define BadVAddrReg   39"
+
+.PP
+Definition at line 70 of file machine\&.h\&.
+.SS "#define HiReg   32"
+
+.PP
+Definition at line 63 of file machine\&.h\&.
+.SS "#define LoadReg   37"
+
+.PP
+Definition at line 68 of file machine\&.h\&.
+.SS "#define LoadValueReg   38"
+
+.PP
+Definition at line 69 of file machine\&.h\&.
+.SS "#define LoReg   33"
+
+.PP
+Definition at line 64 of file machine\&.h\&.
+.SS "#define MemorySize   (\fBNumPhysPages\fP * \fBPageSize\fP)"
+
+.PP
+Definition at line 36 of file machine\&.h\&.
+.SS "#define NextPCReg   35"
+
+.PP
+Definition at line 66 of file machine\&.h\&.
+.SS "#define NumGPRegs   32"
+
+.PP
+Definition at line 62 of file machine\&.h\&.
+.SS "#define NumPhysPages   32"
+
+.PP
+Definition at line 35 of file machine\&.h\&.
+.SS "#define NumTotalRegs   40"
+
+.PP
+Definition at line 72 of file machine\&.h\&.
+.SS "#define PageSize   \fBSectorSize\fP"
+
+.PP
+Definition at line 31 of file machine\&.h\&.
+.SS "#define PCReg   34"
+
+.PP
+Definition at line 65 of file machine\&.h\&.
+.SS "#define PrevPCReg   36"
+
+.PP
+Definition at line 67 of file machine\&.h\&.
+.SS "#define RetAddrReg   31"
+
+.PP
+Definition at line 61 of file machine\&.h\&.
+.SS "#define StackReg   29"
+
+.PP
+Definition at line 60 of file machine\&.h\&.
+.SS "#define TLBSize   4"
+
+.PP
+Definition at line 37 of file machine\&.h\&.
+.SH "Enumeration Type Documentation"
+.PP 
+.SS "enum \fBExceptionType\fP"
+
+.PP
+\fBEnumerator\fP
+.in +1c
+.TP
+\fB\fINoException \fP\fP
+.TP
+\fB\fISyscallException \fP\fP
+.TP
+\fB\fIPageFaultException \fP\fP
+.TP
+\fB\fIReadOnlyException \fP\fP
+.TP
+\fB\fIBusErrorException \fP\fP
+.TP
+\fB\fIAddressErrorException \fP\fP
+.TP
+\fB\fIOverflowException \fP\fP
+.TP
+\fB\fIIllegalInstrException \fP\fP
+.TP
+\fB\fINumExceptionTypes \fP\fP
+.PP
+Definition at line 39 of file machine\&.h\&.
+.SH "Function Documentation"
+.PP 
+.SS "void ExceptionHandler (\fBExceptionType\fP which)"
+
+.PP
+Definition at line 69 of file exception\&.cc\&.
+.SS "unsigned short ShortToHost (unsigned short shortword)"
+
+.PP
+Definition at line 59 of file coff2noff\&.c\&.
+.SS "unsigned short ShortToMachine (unsigned short shortword)"
+
+.PP
+Definition at line 71 of file translate\&.cc\&.
+.SS "unsigned int WordToHost (unsigned int word)"
+
+.PP
+Definition at line 45 of file coff2noff\&.c\&.
+.SS "unsigned int WordToMachine (unsigned int word)"
+
+.PP
+Definition at line 68 of file translate\&.cc\&.
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for OS-Project from the source code\&.

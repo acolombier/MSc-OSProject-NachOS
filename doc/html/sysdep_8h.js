@@ -1,0 +1,28 @@
+var sysdep_8h =
+[
+    [ "Abort", "sysdep_8h.html#a12b9283f52eaf7610afe4b04fbca2ff0", null ],
+    [ "AllocBoundedArray", "sysdep_8h.html#a183868423241d09c586310b2d5d266c7", null ],
+    [ "AssignNameToSocket", "sysdep_8h.html#a5609fdc7bbe878c35e95cd378dbb1ede", null ],
+    [ "CallOnUserAbort", "sysdep_8h.html#a87b7e2768d527868344abcf22f9fefe6", null ],
+    [ "Close", "sysdep_8h.html#ade6d4842f21ea284e126636e424e6614", null ],
+    [ "CloseSocket", "sysdep_8h.html#a0f43cc86f59a90746979f53a452a4e0a", null ],
+    [ "DeallocBoundedArray", "sysdep_8h.html#a76ed51e3376b728f6e0c03705a71d8e3", null ],
+    [ "DeAssignNameToSocket", "sysdep_8h.html#aec36659fb6a7ed1e6b4ec57f5ddcc76b", null ],
+    [ "Delay", "sysdep_8h.html#a20cfb7568775ef01bd7c43ee8051495c", null ],
+    [ "Exit", "sysdep_8h.html#a8b9ef9330856c5a5a02f2d3ef0497e04", null ],
+    [ "Lseek", "sysdep_8h.html#a5e24d90699a8caf5d5ecf0ea461050b4", null ],
+    [ "OpenForReadWrite", "sysdep_8h.html#a65769583d8f332abff719d4665a3fd8d", null ],
+    [ "OpenForWrite", "sysdep_8h.html#aa2de662339cf5720253d92012231f4cc", null ],
+    [ "OpenSocket", "sysdep_8h.html#a776b711cbcad75a385ef20d8cb04a907", null ],
+    [ "PollFile", "sysdep_8h.html#a6d54b43fc541aae810be164b449b331a", null ],
+    [ "PollSocket", "sysdep_8h.html#a2d20b6480716b75b5e1deab47a1f2731", null ],
+    [ "Random", "sysdep_8h.html#aac8c6c00a0e52489ecf8e8a6d9eba228", null ],
+    [ "RandomInit", "sysdep_8h.html#ae08b1beb5fa6e506cd63a2637f34e912", null ],
+    [ "Read", "sysdep_8h.html#a6140dcc97ab52a9406e6d3f5749fa43c", null ],
+    [ "ReadFromSocket", "sysdep_8h.html#a1fe94ec77f8866b6f7c75f7c7e0e91c1", null ],
+    [ "ReadPartial", "sysdep_8h.html#af39214b3fb93cfbbd141c2bfb0688a4e", null ],
+    [ "SendToSocket", "sysdep_8h.html#a416cd1a34c0b5e2197f22a692f35546d", null ],
+    [ "Tell", "sysdep_8h.html#a031f3b5d904def89e5f0cb71bcd31f91", null ],
+    [ "Unlink", "sysdep_8h.html#a4a5d56db5016ba0eb22084072738dee5", null ],
+    [ "WriteFile", "sysdep_8h.html#ae286192dbb756f7ff419d420aed49c68", null ]
+];

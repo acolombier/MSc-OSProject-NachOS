@@ -1,0 +1,37 @@
+.TH "PostOffice" 3 "Tue Dec 19 2017" "Version nachos-teamd" "OS-Project" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+PostOffice \- 
+.SH SYNOPSIS
+.br
+.PP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBPostOffice\fP (NetworkAddress addr, double reliability, int nBoxes)"
+.br
+.ti -1c
+.RI "void \fBSend\fP (\fBPacketHeader\fP pktHdr, \fBMailHeader\fP mailHdr, const char *data)"
+.br
+.ti -1c
+.RI "void \fBReceive\fP (int box, \fBPacketHeader\fP *pktHdr, \fBMailHeader\fP *mailHdr, char *data)"
+.br
+.ti -1c
+.RI "void \fBPostalDelivery\fP ()"
+.br
+.ti -1c
+.RI "void \fBPacketSent\fP ()"
+.br
+.ti -1c
+.RI "void \fBIncomingPacket\fP ()"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 102 of file post\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for OS-Project from the source code\&.

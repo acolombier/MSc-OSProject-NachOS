@@ -1,0 +1,93 @@
+.TH "code/bin/coff2flat.c" 3 "Tue Dec 19 2017" "Version nachos-teamd" "OS-Project" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+code/bin/coff2flat.c \- 
+.SH SYNOPSIS
+.br
+.PP
+\fC#include 'copyright\&.h'\fP
+.br
+\fC#include <filehdr\&.h>\fP
+.br
+\fC#include <aouthdr\&.h>\fP
+.br
+\fC#include <scnhdr\&.h>\fP
+.br
+\fC#include <reloc\&.h>\fP
+.br
+\fC#include <syms\&.h>\fP
+.br
+\fC#include <sys/types\&.h>\fP
+.br
+\fC#include <sys/stat\&.h>\fP
+.br
+\fC#include <fcntl\&.h>\fP
+.br
+\fC#include <limits\&.h>\fP
+.br
+\fC#include <stdio\&.h>\fP
+.br
+
+.SS "Macros"
+
+.in +1c
+.ti -1c
+.RI "#define \fBMAIN\fP"
+.br
+.ti -1c
+.RI "#define \fBStackSize\fP   1024      /* in bytes */"
+.br
+.ti -1c
+.RI "#define \fBReadStruct\fP(f,  s)   \fBRead\fP(f,(char *)&s,sizeof(s))"
+.br
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "char * \fBmalloc\fP ()"
+.br
+.ti -1c
+.RI "void \fBRead\fP (int fd, char *buf, int nBytes)"
+.br
+.ti -1c
+.RI "void \fBWrite\fP (int fd, char *buf, int nBytes)"
+.br
+.ti -1c
+.RI "\fBmain\fP (int argc, char **argv)"
+.br
+.in -1c
+.SH "Macro Definition Documentation"
+.PP 
+.SS "#define MAIN"
+
+.PP
+Definition at line 15 of file coff2flat\&.c\&.
+.SS "#define ReadStruct(f, s)   \fBRead\fP(f,(char *)&s,sizeof(s))"
+
+.PP
+Definition at line 32 of file coff2flat\&.c\&.
+.SS "#define StackSize   1024      /* in bytes */"
+
+.PP
+Definition at line 31 of file coff2flat\&.c\&.
+.SH "Function Documentation"
+.PP 
+.SS "main (int argc, char ** argv)"
+
+.PP
+Definition at line 55 of file coff2flat\&.c\&.
+.SS "char* malloc ()"
+
+.SS "void Read (int fd, char * buf, int nBytes)"
+
+.PP
+Definition at line 37 of file coff2flat\&.c\&.
+.SS "void Write (int fd, char * buf, int nBytes)"
+
+.PP
+Definition at line 46 of file coff2flat\&.c\&.
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for OS-Project from the source code\&.

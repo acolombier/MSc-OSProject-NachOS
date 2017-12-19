@@ -1,0 +1,327 @@
+\section{code/bin/out.c File Reference}
+\label{out_8c}\index{code/bin/out.\+c@{code/bin/out.\+c}}
+{\ttfamily \#include \char`\"{}copyright.\+h\char`\"{}}\\*
+{\ttfamily \#include $<$filehdr.\+h$>$}\\*
+{\ttfamily \#include $<$aouthdr.\+h$>$}\\*
+{\ttfamily \#include $<$scnhdr.\+h$>$}\\*
+{\ttfamily \#include $<$reloc.\+h$>$}\\*
+{\ttfamily \#include $<$syms.\+h$>$}\\*
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$varargs.\+h$>$}\\*
+{\ttfamily \#include \char`\"{}d.\+c\char`\"{}}\\*
+Include dependency graph for out.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{out_8c__incl}
+\end{center}
+\end{figure}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct {\bf data}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define {\bf M\+A\+IN}
+\item 
+\#define {\bf read\+\_\+struct}(f,  s)~(fread(\&s,sizeof(s),1,f)==1)
+\item 
+\#define {\bf M\+A\+X\+R\+E\+L\+O\+CS}~1000
+\item 
+\#define {\bf M\+A\+X\+D\+A\+TA}~10000
+\item 
+\#define {\bf M\+A\+X\+S\+C\+NS}~10
+\item 
+\#define {\bf M\+A\+X\+S\+Y\+MS}~300
+\item 
+\#define {\bf M\+A\+X\+S\+S\+P\+A\+CE}~20000
+\item 
+\#define {\bf printf}~{\bf myprintf}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bf main} (int argc, argv)
+\item 
+{\bf myprintf} (va\+\_\+alist)
+\item 
+{\bf mytab} (int n)
+\item 
+{\bf mysetfile} (F\+I\+LE $\ast$f)
+\item 
+{\bf print\+\_\+section} (int {\bf i})
+\item 
+{\bf print\+\_\+reloc} (vaddr, int {\bf i}, int j)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+struct {\bf filehdr} {\bf filehdr}
+\item 
+struct {\bf aouthdr} {\bf aouthdr}
+\item 
+struct {\bf scnhdr} {\bf scnhdr} [{\bf M\+A\+X\+S\+C\+NS}]
+\item 
+struct {\bf data} {\bf section} [{\bf M\+A\+X\+S\+C\+NS}]
+\item 
+H\+D\+RR {\bf symhdr}
+\item 
+E\+X\+TR {\bf symbols} [{\bf M\+A\+X\+S\+Y\+MS}]
+\item 
+char {\bf sspace} [20000]
+\item 
+char $\ast$ {\bf symbol\+\_\+type} [$\,$]
+\item 
+char $\ast$ {\bf storage\+\_\+class} [$\,$]
+\item 
+char $\ast$ {\bf section\+\_\+name} [$\,$]
+\item 
+char $\ast$ {\bf reloc\+\_\+type} [$\,$]
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{out.\+c@{out.\+c}!M\+A\+IN@{M\+A\+IN}}
+\index{M\+A\+IN@{M\+A\+IN}!out.\+c@{out.\+c}}
+\subsubsection[{M\+A\+IN}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+A\+IN}\label{out_8c_a34b04bd23b07b485921a728ad0805ac4}
+
+
+Definition at line 7 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!M\+A\+X\+D\+A\+TA@{M\+A\+X\+D\+A\+TA}}
+\index{M\+A\+X\+D\+A\+TA@{M\+A\+X\+D\+A\+TA}!out.\+c@{out.\+c}}
+\subsubsection[{M\+A\+X\+D\+A\+TA}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+A\+X\+D\+A\+TA~10000}\label{out_8c_ae7e715c270481406658bbd2bafa2897f}
+
+
+Definition at line 34 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!M\+A\+X\+R\+E\+L\+O\+CS@{M\+A\+X\+R\+E\+L\+O\+CS}}
+\index{M\+A\+X\+R\+E\+L\+O\+CS@{M\+A\+X\+R\+E\+L\+O\+CS}!out.\+c@{out.\+c}}
+\subsubsection[{M\+A\+X\+R\+E\+L\+O\+CS}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+A\+X\+R\+E\+L\+O\+CS~1000}\label{out_8c_a926b405638c6ec47d673824649b826df}
+
+
+Definition at line 31 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!M\+A\+X\+S\+C\+NS@{M\+A\+X\+S\+C\+NS}}
+\index{M\+A\+X\+S\+C\+NS@{M\+A\+X\+S\+C\+NS}!out.\+c@{out.\+c}}
+\subsubsection[{M\+A\+X\+S\+C\+NS}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+A\+X\+S\+C\+NS~10}\label{out_8c_a5b755fa4590b197a11b1ffc07e5d3987}
+
+
+Definition at line 43 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!M\+A\+X\+S\+S\+P\+A\+CE@{M\+A\+X\+S\+S\+P\+A\+CE}}
+\index{M\+A\+X\+S\+S\+P\+A\+CE@{M\+A\+X\+S\+S\+P\+A\+CE}!out.\+c@{out.\+c}}
+\subsubsection[{M\+A\+X\+S\+S\+P\+A\+CE}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+A\+X\+S\+S\+P\+A\+CE~20000}\label{out_8c_aba35211207b9c0553e9f96f95a12c91a}
+
+
+Definition at line 45 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!M\+A\+X\+S\+Y\+MS@{M\+A\+X\+S\+Y\+MS}}
+\index{M\+A\+X\+S\+Y\+MS@{M\+A\+X\+S\+Y\+MS}!out.\+c@{out.\+c}}
+\subsubsection[{M\+A\+X\+S\+Y\+MS}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+A\+X\+S\+Y\+MS~300}\label{out_8c_a8390bee79d08f80714582166875688d9}
+
+
+Definition at line 44 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!printf@{printf}}
+\index{printf@{printf}!out.\+c@{out.\+c}}
+\subsubsection[{printf}]{\setlength{\rightskip}{0pt plus 5cm}\#define printf~{\bf myprintf}}\label{out_8c_a3cb9f0894fab1c8fbb0753c9c7c2a8d9}
+
+
+Definition at line 190 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!read\+\_\+struct@{read\+\_\+struct}}
+\index{read\+\_\+struct@{read\+\_\+struct}!out.\+c@{out.\+c}}
+\subsubsection[{read\+\_\+struct}]{\setlength{\rightskip}{0pt plus 5cm}\#define read\+\_\+struct(
+\begin{DoxyParamCaption}
+\item[{}]{f, }
+\item[{}]{s}
+\end{DoxyParamCaption}
+)~(fread(\&s,sizeof(s),1,f)==1)}\label{out_8c_a9c0ae844fa0a735ca9f1323a2bd25213}
+
+
+Definition at line 29 of file out.\+c.
+
+
+
+\subsection{Function Documentation}
+\index{out.\+c@{out.\+c}!main@{main}}
+\index{main@{main}!out.\+c@{out.\+c}}
+\subsubsection[{main(int argc, argv)}]{\setlength{\rightskip}{0pt plus 5cm}main (
+\begin{DoxyParamCaption}
+\item[{int}]{argc, }
+\item[{argv}]{}
+\end{DoxyParamCaption}
+)}\label{out_8c_a0708a0954f39ecdc7aa901286295ad01}
+
+
+Definition at line 66 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!myprintf@{myprintf}}
+\index{myprintf@{myprintf}!out.\+c@{out.\+c}}
+\subsubsection[{myprintf(va\+\_\+alist)}]{\setlength{\rightskip}{0pt plus 5cm}myprintf (
+\begin{DoxyParamCaption}
+\item[{va\+\_\+alist}]{}
+\end{DoxyParamCaption}
+)}\label{out_8c_a7fbd5c2baa1ecaad49a15b71b5a55e26}
+
+
+Definition at line 153 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!mysetfile@{mysetfile}}
+\index{mysetfile@{mysetfile}!out.\+c@{out.\+c}}
+\subsubsection[{mysetfile(\+F\+I\+L\+E $\ast$f)}]{\setlength{\rightskip}{0pt plus 5cm}mysetfile (
+\begin{DoxyParamCaption}
+\item[{F\+I\+LE $\ast$}]{f}
+\end{DoxyParamCaption}
+)}\label{out_8c_a0ea7d7b3177363379c7f08e929a0e8a0}
+
+
+Definition at line 184 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!mytab@{mytab}}
+\index{mytab@{mytab}!out.\+c@{out.\+c}}
+\subsubsection[{mytab(int n)}]{\setlength{\rightskip}{0pt plus 5cm}mytab (
+\begin{DoxyParamCaption}
+\item[{int}]{n}
+\end{DoxyParamCaption}
+)}\label{out_8c_a0b642eef81ba91afb05c6b0aab11ac8a}
+
+
+Definition at line 174 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!print\+\_\+reloc@{print\+\_\+reloc}}
+\index{print\+\_\+reloc@{print\+\_\+reloc}!out.\+c@{out.\+c}}
+\subsubsection[{print\+\_\+reloc(vaddr, int i, int j)}]{\setlength{\rightskip}{0pt plus 5cm}print\+\_\+reloc (
+\begin{DoxyParamCaption}
+\item[{vaddr}]{, }
+\item[{int}]{i, }
+\item[{int}]{j}
+\end{DoxyParamCaption}
+)}\label{out_8c_a19adb410075d5b04b266a754d4506e45}
+
+
+Definition at line 233 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!print\+\_\+section@{print\+\_\+section}}
+\index{print\+\_\+section@{print\+\_\+section}!out.\+c@{out.\+c}}
+\subsubsection[{print\+\_\+section(int i)}]{\setlength{\rightskip}{0pt plus 5cm}print\+\_\+section (
+\begin{DoxyParamCaption}
+\item[{int}]{i}
+\end{DoxyParamCaption}
+)}\label{out_8c_ac3d08edb94a949a6be417a2eab6054c2}
+
+
+Definition at line 193 of file out.\+c.
+
+
+
+\subsection{Variable Documentation}
+\index{out.\+c@{out.\+c}!aouthdr@{aouthdr}}
+\index{aouthdr@{aouthdr}!out.\+c@{out.\+c}}
+\subsubsection[{aouthdr}]{\setlength{\rightskip}{0pt plus 5cm}struct {\bf aouthdr} {\bf aouthdr}}\label{out_8c_a2a0b0cf7e410b15145ca78d844d23587}
+
+
+Definition at line 48 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!filehdr@{filehdr}}
+\index{filehdr@{filehdr}!out.\+c@{out.\+c}}
+\subsubsection[{filehdr}]{\setlength{\rightskip}{0pt plus 5cm}struct {\bf filehdr} {\bf filehdr}}\label{out_8c_ae2cad495c9185256f6ee5155593c3dc4}
+
+
+Definition at line 47 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!reloc\+\_\+type@{reloc\+\_\+type}}
+\index{reloc\+\_\+type@{reloc\+\_\+type}!out.\+c@{out.\+c}}
+\subsubsection[{reloc\+\_\+type}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ reloc\+\_\+type[$\,$]}\label{out_8c_a5ef7cba993bb6e3daa67c9121cd60d21}
+{\bfseries Initial value\+:}
+\begin{DoxyCode}
+= \{
+  \textcolor{stringliteral}{"abs"}, \textcolor{stringliteral}{"16"}, \textcolor{stringliteral}{"32"}, \textcolor{stringliteral}{"26"}, \textcolor{stringliteral}{"hi16"}, \textcolor{stringliteral}{"lo16"}, \textcolor{stringliteral}{"gpdata"}, \textcolor{stringliteral}{"gplit"}
+\}
+\end{DoxyCode}
+
+
+Definition at line 229 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!scnhdr@{scnhdr}}
+\index{scnhdr@{scnhdr}!out.\+c@{out.\+c}}
+\subsubsection[{scnhdr}]{\setlength{\rightskip}{0pt plus 5cm}struct {\bf scnhdr} {\bf scnhdr}[{\bf M\+A\+X\+S\+C\+NS}]}\label{out_8c_a1d2d0976dbb2fb5fc8af48e030416b2d}
+
+
+Definition at line 49 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!section@{section}}
+\index{section@{section}!out.\+c@{out.\+c}}
+\subsubsection[{section}]{\setlength{\rightskip}{0pt plus 5cm}struct {\bf data} section[{\bf M\+A\+X\+S\+C\+NS}]}\label{out_8c_ab91b75e9b6dbaa62440ee2eafac9fccd}
+
+
+Definition at line 50 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!section\+\_\+name@{section\+\_\+name}}
+\index{section\+\_\+name@{section\+\_\+name}!out.\+c@{out.\+c}}
+\subsubsection[{section\+\_\+name}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ section\+\_\+name[$\,$]}\label{out_8c_ad5da7e486ce50ec0a857d2e17794de15}
+{\bfseries Initial value\+:}
+\begin{DoxyCode}
+= \{
+  \textcolor{stringliteral}{"(null)"}, \textcolor{stringliteral}{".text"}, \textcolor{stringliteral}{".rdata"}, \textcolor{stringliteral}{".data"}, \textcolor{stringliteral}{".sdata"}, \textcolor{stringliteral}{".sbss"}, \textcolor{stringliteral}{".bss"},
+  \textcolor{stringliteral}{".init"}, \textcolor{stringliteral}{".lit8"}, \textcolor{stringliteral}{".lit4"}
+\}
+\end{DoxyCode}
+
+
+Definition at line 224 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!sspace@{sspace}}
+\index{sspace@{sspace}!out.\+c@{out.\+c}}
+\subsubsection[{sspace}]{\setlength{\rightskip}{0pt plus 5cm}char sspace[20000]}\label{out_8c_abfdfdd25fce66a953708f5e983be050c}
+
+
+Definition at line 53 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!storage\+\_\+class@{storage\+\_\+class}}
+\index{storage\+\_\+class@{storage\+\_\+class}!out.\+c@{out.\+c}}
+\subsubsection[{storage\+\_\+class}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ storage\+\_\+class[$\,$]}\label{out_8c_a97b4f36407c7aeeee031bd65ef0d990d}
+{\bfseries Initial value\+:}
+\begin{DoxyCode}
+= \{
+  \textcolor{stringliteral}{"Nil"}, \textcolor{stringliteral}{"Text"}, \textcolor{stringliteral}{"Data"}, \textcolor{stringliteral}{"Bss"}, \textcolor{stringliteral}{"Register"}, \textcolor{stringliteral}{"Abs"}, \textcolor{stringliteral}{"Undefined"}, \textcolor{stringliteral}{"CdbLocal"},
+  \textcolor{stringliteral}{"Bits"}, \textcolor{stringliteral}{"CdbSystem"}, \textcolor{stringliteral}{"RegImage"}, \textcolor{stringliteral}{"Info"}, \textcolor{stringliteral}{"UserStruct"}, \textcolor{stringliteral}{"SData"}, \textcolor{stringliteral}{"SBss"},
+  \textcolor{stringliteral}{"RData"}, \textcolor{stringliteral}{"Var"}, \textcolor{stringliteral}{"Common"}, \textcolor{stringliteral}{"SCommon"}, \textcolor{stringliteral}{"VarRegister"}, \textcolor{stringliteral}{"Variant"}, \textcolor{stringliteral}{"SUndefined"},
+  \textcolor{stringliteral}{"Init"} \}
+\end{DoxyCode}
+
+
+Definition at line 60 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!symbol\+\_\+type@{symbol\+\_\+type}}
+\index{symbol\+\_\+type@{symbol\+\_\+type}!out.\+c@{out.\+c}}
+\subsubsection[{symbol\+\_\+type}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ symbol\+\_\+type[$\,$]}\label{out_8c_a5c3abc4fe141ab1bc5522d724df03c81}
+{\bfseries Initial value\+:}
+\begin{DoxyCode}
+= \{
+  \textcolor{stringliteral}{"Nil"}, \textcolor{stringliteral}{"Global"}, \textcolor{stringliteral}{"Static"}, \textcolor{stringliteral}{"Param"}, \textcolor{stringliteral}{"Local"}, \textcolor{stringliteral}{"Label"}, \textcolor{stringliteral}{"Proc"}, \textcolor{stringliteral}{"Block"},
+  \textcolor{stringliteral}{"End"}, \textcolor{stringliteral}{"Member"}, \textcolor{stringliteral}{"Type"}, \textcolor{stringliteral}{"File"}, \textcolor{stringliteral}{"Register"}, \textcolor{stringliteral}{"Forward"}, \textcolor{stringliteral}{"StaticProc"},
+  \textcolor{stringliteral}{"Constant"} \}
+\end{DoxyCode}
+
+
+Definition at line 55 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!symbols@{symbols}}
+\index{symbols@{symbols}!out.\+c@{out.\+c}}
+\subsubsection[{symbols}]{\setlength{\rightskip}{0pt plus 5cm}E\+X\+TR symbols[{\bf M\+A\+X\+S\+Y\+MS}]}\label{out_8c_a554b3d27c80146901a0e4e77eabccebc}
+
+
+Definition at line 52 of file out.\+c.
+
+\index{out.\+c@{out.\+c}!symhdr@{symhdr}}
+\index{symhdr@{symhdr}!out.\+c@{out.\+c}}
+\subsubsection[{symhdr}]{\setlength{\rightskip}{0pt plus 5cm}H\+D\+RR symhdr}\label{out_8c_a57180dec46147996607b066d5bc013cf}
+
+
+Definition at line 51 of file out.\+c.
+

@@ -1,0 +1,59 @@
+.TH "code/machine/network.h" 3 "Tue Dec 19 2017" "Version nachos-teamd" "OS-Project" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+code/machine/network.h \- 
+.SH SYNOPSIS
+.br
+.PP
+\fC#include 'copyright\&.h'\fP
+.br
+\fC#include 'utility\&.h'\fP
+.br
+
+.SS "Classes"
+
+.in +1c
+.ti -1c
+.RI "class \fBPacketHeader\fP"
+.br
+.ti -1c
+.RI "class \fBNetwork\fP"
+.br
+.in -1c
+.SS "Macros"
+
+.in +1c
+.ti -1c
+.RI "#define \fBMaxWireSize\fP   64"
+.br
+.ti -1c
+.RI "#define \fBMaxPacketSize\fP   (\fBMaxWireSize\fP \- sizeof(struct \fBPacketHeader\fP))"
+.br
+.in -1c
+.SS "Typedefs"
+
+.in +1c
+.ti -1c
+.RI "typedef int \fBNetworkAddress\fP"
+.br
+.in -1c
+.SH "Macro Definition Documentation"
+.PP 
+.SS "#define MaxPacketSize   (\fBMaxWireSize\fP \- sizeof(struct \fBPacketHeader\fP))"
+
+.PP
+Definition at line 41 of file network\&.h\&.
+.SS "#define MaxWireSize   64"
+
+.PP
+Definition at line 40 of file network\&.h\&.
+.SH "Typedef Documentation"
+.PP 
+.SS "typedef int \fBNetworkAddress\fP"
+
+.PP
+Definition at line 23 of file network\&.h\&.
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for OS-Project from the source code\&.

@@ -1,0 +1,130 @@
+\section{code/bin/d.c File Reference}
+\label{d_8c}\index{code/bin/d.\+c@{code/bin/d.\+c}}
+{\ttfamily \#include \char`\"{}copyright.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}instr.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}encode.\+h\char`\"{}}\\*
+Include dependency graph for d.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=211pt]{d_8c__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=158pt]{d_8c__dep__incl}
+\end{center}
+\end{figure}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define {\bf N\+U\+LL}~0
+\item 
+\#define {\bf R}({\bf i})~{\bf regstrings}[{\bf i}]
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bf dump\+\_\+ascii} (int instruction, int {\bf pc})
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+int {\bf sptr}
+\item 
+int {\bf longdis} = 1
+\item 
+char $\ast$ {\bf normalops} [$\,$]
+\item 
+char $\ast$ {\bf specialops} [$\,$]
+\item 
+char $\ast$ {\bf regstrings} [$\,$]
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{d.\+c@{d.\+c}!N\+U\+LL@{N\+U\+LL}}
+\index{N\+U\+LL@{N\+U\+LL}!d.\+c@{d.\+c}}
+\subsubsection[{N\+U\+LL}]{\setlength{\rightskip}{0pt plus 5cm}\#define N\+U\+LL~0}\label{d_8c_a070d2ce7b6bb7e5c05602aa8c308d0c4}
+
+
+Definition at line 11 of file d.\+c.
+
+\index{d.\+c@{d.\+c}!R@{R}}
+\index{R@{R}!d.\+c@{d.\+c}}
+\subsubsection[{R}]{\setlength{\rightskip}{0pt plus 5cm}\#define R(
+\begin{DoxyParamCaption}
+\item[{}]{{\bf i}}
+\end{DoxyParamCaption}
+)~{\bf regstrings}[{\bf i}]}\label{d_8c_a56ed27be0074ed2f9162fb0ec556064f}
+
+
+Definition at line 27 of file d.\+c.
+
+
+
+\subsection{Function Documentation}
+\index{d.\+c@{d.\+c}!dump\+\_\+ascii@{dump\+\_\+ascii}}
+\index{dump\+\_\+ascii@{dump\+\_\+ascii}!d.\+c@{d.\+c}}
+\subsubsection[{dump\+\_\+ascii(int instruction, int pc)}]{\setlength{\rightskip}{0pt plus 5cm}dump\+\_\+ascii (
+\begin{DoxyParamCaption}
+\item[{int}]{instruction, }
+\item[{int}]{pc}
+\end{DoxyParamCaption}
+)}\label{d_8c_ab3f938c83709a52c0e84a06466a7dacc}
+
+
+Definition at line 30 of file d.\+c.
+
+
+
+\subsection{Variable Documentation}
+\index{d.\+c@{d.\+c}!longdis@{longdis}}
+\index{longdis@{longdis}!d.\+c@{d.\+c}}
+\subsubsection[{longdis}]{\setlength{\rightskip}{0pt plus 5cm}int longdis = 1}\label{d_8c_a9b5e1fef7b4de5c3c5be5182887dee01}
+
+
+Definition at line 14 of file d.\+c.
+
+\index{d.\+c@{d.\+c}!normalops@{normalops}}
+\index{normalops@{normalops}!d.\+c@{d.\+c}}
+\subsubsection[{normalops}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ normalops[$\,$]}\label{d_8c_ab58f246552f6174dfbdbc39d3a9bd1e9}
+
+
+Definition at line 9 of file opstrings.\+c.
+
+\index{d.\+c@{d.\+c}!regstrings@{regstrings}}
+\index{regstrings@{regstrings}!d.\+c@{d.\+c}}
+\subsubsection[{regstrings}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ regstrings[$\,$]}\label{d_8c_a5fd0fa7dbf194f1fa896ed304ed7da4c}
+{\bfseries Initial value\+:}
+\begin{DoxyCode}
+=
+\{
+\textcolor{stringliteral}{"0"}, \textcolor{stringliteral}{"r1"}, \textcolor{stringliteral}{"r2"}, \textcolor{stringliteral}{"r3"}, \textcolor{stringliteral}{"r4"}, \textcolor{stringliteral}{"r5"}, \textcolor{stringliteral}{"r6"}, \textcolor{stringliteral}{"r7"}, \textcolor{stringliteral}{"r8"}, \textcolor{stringliteral}{"r9"},
+\textcolor{stringliteral}{"r10"}, \textcolor{stringliteral}{"r11"}, \textcolor{stringliteral}{"r12"}, \textcolor{stringliteral}{"r13"}, \textcolor{stringliteral}{"r14"}, \textcolor{stringliteral}{"r15"}, \textcolor{stringliteral}{"r16"}, \textcolor{stringliteral}{"r17"}, \textcolor{stringliteral}{"r18"}, \textcolor{stringliteral}{"r19"},
+\textcolor{stringliteral}{"r20"}, \textcolor{stringliteral}{"r21"}, \textcolor{stringliteral}{"r22"}, \textcolor{stringliteral}{"r23"}, \textcolor{stringliteral}{"r24"}, \textcolor{stringliteral}{"r25"}, \textcolor{stringliteral}{"r26"}, \textcolor{stringliteral}{"r27"}, \textcolor{stringliteral}{"gp"}, \textcolor{stringliteral}{"sp"},
+\textcolor{stringliteral}{"r30"}, \textcolor{stringliteral}{"r31"}
+\}
+\end{DoxyCode}
+
+
+Definition at line 19 of file d.\+c.
+
+\index{d.\+c@{d.\+c}!specialops@{specialops}}
+\index{specialops@{specialops}!d.\+c@{d.\+c}}
+\subsubsection[{specialops}]{\setlength{\rightskip}{0pt plus 5cm}char $\ast$ specialops[$\,$]}\label{d_8c_a1b270a15f140a650d2a21a5e4cffab0e}
+
+
+Definition at line 76 of file opstrings.\+c.
+
+\index{d.\+c@{d.\+c}!sptr@{sptr}}
+\index{sptr@{sptr}!d.\+c@{d.\+c}}
+\subsubsection[{sptr}]{\setlength{\rightskip}{0pt plus 5cm}int sptr}\label{d_8c_a8b08ff7be2cd55a03175cdd3ccf7575e}
+
+
+Definition at line 13 of file d.\+c.
+

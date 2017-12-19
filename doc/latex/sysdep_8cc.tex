@@ -1,0 +1,574 @@
+\section{code/machine/sysdep.cc File Reference}
+\label{sysdep_8cc}\index{code/machine/sysdep.\+cc@{code/machine/sysdep.\+cc}}
+{\ttfamily \#include \char`\"{}copyright.\+h\char`\"{}}\\*
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$signal.\+h$>$}\\*
+{\ttfamily \#include $<$sys/types.\+h$>$}\\*
+{\ttfamily \#include $<$sys/time.\+h$>$}\\*
+{\ttfamily \#include $<$sys/socket.\+h$>$}\\*
+{\ttfamily \#include $<$sys/file.\+h$>$}\\*
+{\ttfamily \#include $<$sys/un.\+h$>$}\\*
+{\ttfamily \#include $<$sys/mman.\+h$>$}\\*
+{\ttfamily \#include $<$sys/stat.\+h$>$}\\*
+{\ttfamily \#include $<$fcntl.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$errno.\+h$>$}\\*
+{\ttfamily \#include \char`\"{}interrupt.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}system.\+h\char`\"{}}\\*
+Include dependency graph for sysdep.\+cc\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{sysdep_8cc__incl}
+\end{center}
+\end{figure}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int {\bf creat} (const char $\ast$name, unsigned short mode)
+\item 
+int {\bf open} (const char $\ast$name, int flags,...)
+\item 
+int {\bf select} (int num\+Bits, void $\ast$read\+Fds, void $\ast$write\+Fds, void $\ast$except\+Fds, struct timeval $\ast$timeout)
+\item 
+int {\bf unlink} (char $\ast$name)
+\item 
+int {\bf read} (int filedes, char $\ast$buf, int num\+Bytes)
+\item 
+int {\bf write} (int filedes, char $\ast$buf, int num\+Bytes)
+\item 
+int {\bf lseek} (int filedes, int offset, int whence)
+\item 
+int {\bf tell} (int filedes)
+\item 
+int {\bf close} (int filedes)
+\item 
+void {\bf srand} (unsigned seed)
+\item 
+int {\bf rand} (void)
+\item 
+unsigned {\bf sleep} (unsigned)
+\item 
+void {\bf abort} ()
+\item 
+void {\bf exit} ()
+\item 
+int {\bf mprotect} (char $\ast$addr, int len, int prot)
+\item 
+int {\bf socket} (int, int, int)
+\item 
+int {\bf bind} (int, const void $\ast$, int)
+\item 
+int {\bf recvfrom} (int, void $\ast$, int, int, void $\ast$, int $\ast$)
+\item 
+int {\bf sendto} (int, const void $\ast$, int, int, void $\ast$, int)
+\item 
+bool {\bf Poll\+File} (int fd)
+\item 
+int {\bf Open\+For\+Write} (const char $\ast$name)
+\item 
+int {\bf Open\+For\+Read\+Write} (const char $\ast$name, bool crash\+On\+Error)
+\item 
+void {\bf Read} (int fd, char $\ast$buffer, int n\+Bytes)
+\item 
+int {\bf Read\+Partial} (int fd, char $\ast$buffer, int n\+Bytes)
+\item 
+void {\bf Write\+File} (int fd, const char $\ast$buffer, int n\+Bytes)
+\item 
+void {\bf Lseek} (int fd, int offset, int whence)
+\item 
+int {\bf Tell} (int fd)
+\item 
+void {\bf Close} (int fd)
+\item 
+bool {\bf Unlink} (const char $\ast$name)
+\item 
+int {\bf Open\+Socket} ()
+\item 
+void {\bf Close\+Socket} (int sock\+ID)
+\item 
+void {\bf Assign\+Name\+To\+Socket} (const char $\ast$socket\+Name, int sock\+ID)
+\item 
+void {\bf De\+Assign\+Name\+To\+Socket} (const char $\ast$socket\+Name)
+\item 
+bool {\bf Poll\+Socket} (int sock\+ID)
+\item 
+void {\bf Read\+From\+Socket} (int sock\+ID, char $\ast$buffer, int packet\+Size)
+\item 
+void {\bf Send\+To\+Socket} (int sock\+ID, const char $\ast$buffer, int packet\+Size, const char $\ast$to\+Name)
+\item 
+void {\bf Call\+On\+User\+Abort} ({\bf Void\+No\+Arg\+Function\+Ptr} func)
+\item 
+void {\bf Delay} (int seconds)
+\item 
+void {\bf Abort} ()
+\item 
+void {\bf Exit} (int exit\+Code)
+\item 
+void {\bf Random\+Init} (unsigned seed)
+\item 
+int {\bf Random} ()
+\item 
+char $\ast$ {\bf Alloc\+Bounded\+Array} (int size)
+\item 
+void {\bf Dealloc\+Bounded\+Array} (char $\ast$ptr, int size)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\index{sysdep.\+cc@{sysdep.\+cc}!abort@{abort}}
+\index{abort@{abort}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{abort()}]{\setlength{\rightskip}{0pt plus 5cm}void abort (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_ac54f53dc342019e8db34f4aa581a5792}
+\index{sysdep.\+cc@{sysdep.\+cc}!Abort@{Abort}}
+\index{Abort@{Abort}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Abort()}]{\setlength{\rightskip}{0pt plus 5cm}void Abort (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a12b9283f52eaf7610afe4b04fbca2ff0}
+
+
+Definition at line 426 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!Alloc\+Bounded\+Array@{Alloc\+Bounded\+Array}}
+\index{Alloc\+Bounded\+Array@{Alloc\+Bounded\+Array}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Alloc\+Bounded\+Array(int size)}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ Alloc\+Bounded\+Array (
+\begin{DoxyParamCaption}
+\item[{int}]{size}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a183868423241d09c586310b2d5d266c7}
+
+
+Definition at line 478 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!Assign\+Name\+To\+Socket@{Assign\+Name\+To\+Socket}}
+\index{Assign\+Name\+To\+Socket@{Assign\+Name\+To\+Socket}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Assign\+Name\+To\+Socket(const char $\ast$socket\+Name, int sock\+I\+D)}]{\setlength{\rightskip}{0pt plus 5cm}void Assign\+Name\+To\+Socket (
+\begin{DoxyParamCaption}
+\item[{const char $\ast$}]{socket\+Name, }
+\item[{int}]{sock\+ID}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a5609fdc7bbe878c35e95cd378dbb1ede}
+
+
+Definition at line 310 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!bind@{bind}}
+\index{bind@{bind}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{bind(int, const void $\ast$, int)}]{\setlength{\rightskip}{0pt plus 5cm}int bind (
+\begin{DoxyParamCaption}
+\item[{int}]{, }
+\item[{const void $\ast$}]{, }
+\item[{int}]{}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a10f9a6acf254526e09b4d217383d7386}
+\index{sysdep.\+cc@{sysdep.\+cc}!Call\+On\+User\+Abort@{Call\+On\+User\+Abort}}
+\index{Call\+On\+User\+Abort@{Call\+On\+User\+Abort}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Call\+On\+User\+Abort(\+Void\+No\+Arg\+Function\+Ptr func)}]{\setlength{\rightskip}{0pt plus 5cm}void Call\+On\+User\+Abort (
+\begin{DoxyParamCaption}
+\item[{{\bf Void\+No\+Arg\+Function\+Ptr}}]{func}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_abb2f3e6e1020ef5a3b89a8a870e9ddb1}
+
+
+Definition at line 402 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!close@{close}}
+\index{close@{close}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{close(int filedes)}]{\setlength{\rightskip}{0pt plus 5cm}int close (
+\begin{DoxyParamCaption}
+\item[{int}]{filedes}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_ac27bb3145ebeaec9b4661acfd47e4c51}
+\index{sysdep.\+cc@{sysdep.\+cc}!Close@{Close}}
+\index{Close@{Close}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Close(int fd)}]{\setlength{\rightskip}{0pt plus 5cm}void Close (
+\begin{DoxyParamCaption}
+\item[{int}]{fd}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_ade6d4842f21ea284e126636e424e6614}
+
+
+Definition at line 245 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!Close\+Socket@{Close\+Socket}}
+\index{Close\+Socket@{Close\+Socket}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Close\+Socket(int sock\+I\+D)}]{\setlength{\rightskip}{0pt plus 5cm}void Close\+Socket (
+\begin{DoxyParamCaption}
+\item[{int}]{sock\+ID}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a0f43cc86f59a90746979f53a452a4e0a}
+
+
+Definition at line 286 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!creat@{creat}}
+\index{creat@{creat}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{creat(const char $\ast$name, unsigned short mode)}]{\setlength{\rightskip}{0pt plus 5cm}int creat (
+\begin{DoxyParamCaption}
+\item[{const char $\ast$}]{name, }
+\item[{unsigned short}]{mode}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a282c8a42eabdf04f5177d4a88139d0ec}
+\index{sysdep.\+cc@{sysdep.\+cc}!Dealloc\+Bounded\+Array@{Dealloc\+Bounded\+Array}}
+\index{Dealloc\+Bounded\+Array@{Dealloc\+Bounded\+Array}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Dealloc\+Bounded\+Array(char $\ast$ptr, int size)}]{\setlength{\rightskip}{0pt plus 5cm}void Dealloc\+Bounded\+Array (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{ptr, }
+\item[{int}]{size}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_aa822bb4ab0a638915834056be1393abb}
+
+
+Definition at line 497 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!De\+Assign\+Name\+To\+Socket@{De\+Assign\+Name\+To\+Socket}}
+\index{De\+Assign\+Name\+To\+Socket@{De\+Assign\+Name\+To\+Socket}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{De\+Assign\+Name\+To\+Socket(const char $\ast$socket\+Name)}]{\setlength{\rightskip}{0pt plus 5cm}void De\+Assign\+Name\+To\+Socket (
+\begin{DoxyParamCaption}
+\item[{const char $\ast$}]{socket\+Name}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_aec36659fb6a7ed1e6b4ec57f5ddcc76b}
+
+
+Definition at line 328 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!Delay@{Delay}}
+\index{Delay@{Delay}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Delay(int seconds)}]{\setlength{\rightskip}{0pt plus 5cm}void Delay (
+\begin{DoxyParamCaption}
+\item[{int}]{seconds}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a20cfb7568775ef01bd7c43ee8051495c}
+
+
+Definition at line 415 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!exit@{exit}}
+\index{exit@{exit}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{exit()}]{\setlength{\rightskip}{0pt plus 5cm}void exit (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a358d2e2397ca11ccd17553e3c40e7901}
+\index{sysdep.\+cc@{sysdep.\+cc}!Exit@{Exit}}
+\index{Exit@{Exit}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Exit(int exit\+Code)}]{\setlength{\rightskip}{0pt plus 5cm}void Exit (
+\begin{DoxyParamCaption}
+\item[{int}]{exit\+Code}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a8b9ef9330856c5a5a02f2d3ef0497e04}
+
+
+Definition at line 437 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!lseek@{lseek}}
+\index{lseek@{lseek}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{lseek(int filedes, int offset, int whence)}]{\setlength{\rightskip}{0pt plus 5cm}int lseek (
+\begin{DoxyParamCaption}
+\item[{int}]{filedes, }
+\item[{int}]{offset, }
+\item[{int}]{whence}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a4ac81417ea099dcfaa618b46d7fc1ea2}
+\index{sysdep.\+cc@{sysdep.\+cc}!Lseek@{Lseek}}
+\index{Lseek@{Lseek}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Lseek(int fd, int offset, int whence)}]{\setlength{\rightskip}{0pt plus 5cm}void Lseek (
+\begin{DoxyParamCaption}
+\item[{int}]{fd, }
+\item[{int}]{offset, }
+\item[{int}]{whence}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a5e24d90699a8caf5d5ecf0ea461050b4}
+
+
+Definition at line 217 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!mprotect@{mprotect}}
+\index{mprotect@{mprotect}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{mprotect(char $\ast$addr, int len, int prot)}]{\setlength{\rightskip}{0pt plus 5cm}int mprotect (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{addr, }
+\item[{int}]{len, }
+\item[{int}]{prot}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_aa519270187f0f6c571726a3c75ac1025}
+\index{sysdep.\+cc@{sysdep.\+cc}!open@{open}}
+\index{open@{open}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{open(const char $\ast$name, int flags,...)}]{\setlength{\rightskip}{0pt plus 5cm}int open (
+\begin{DoxyParamCaption}
+\item[{const char $\ast$}]{name, }
+\item[{int}]{flags, }
+\item[{}]{...}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_ac843f2e35e60c3bbf1da47d84306f29b}
+\index{sysdep.\+cc@{sysdep.\+cc}!Open\+For\+Read\+Write@{Open\+For\+Read\+Write}}
+\index{Open\+For\+Read\+Write@{Open\+For\+Read\+Write}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Open\+For\+Read\+Write(const char $\ast$name, bool crash\+On\+Error)}]{\setlength{\rightskip}{0pt plus 5cm}int Open\+For\+Read\+Write (
+\begin{DoxyParamCaption}
+\item[{const char $\ast$}]{name, }
+\item[{bool}]{crash\+On\+Error}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a65769583d8f332abff719d4665a3fd8d}
+
+
+Definition at line 166 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!Open\+For\+Write@{Open\+For\+Write}}
+\index{Open\+For\+Write@{Open\+For\+Write}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Open\+For\+Write(const char $\ast$name)}]{\setlength{\rightskip}{0pt plus 5cm}int Open\+For\+Write (
+\begin{DoxyParamCaption}
+\item[{const char $\ast$}]{name}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_aa2de662339cf5720253d92012231f4cc}
+
+
+Definition at line 149 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!Open\+Socket@{Open\+Socket}}
+\index{Open\+Socket@{Open\+Socket}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Open\+Socket()}]{\setlength{\rightskip}{0pt plus 5cm}int Open\+Socket (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a776b711cbcad75a385ef20d8cb04a907}
+
+
+Definition at line 270 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!Poll\+File@{Poll\+File}}
+\index{Poll\+File@{Poll\+File}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Poll\+File(int fd)}]{\setlength{\rightskip}{0pt plus 5cm}bool Poll\+File (
+\begin{DoxyParamCaption}
+\item[{int}]{fd}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a6d54b43fc541aae810be164b449b331a}
+
+
+Definition at line 115 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!Poll\+Socket@{Poll\+Socket}}
+\index{Poll\+Socket@{Poll\+Socket}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Poll\+Socket(int sock\+I\+D)}]{\setlength{\rightskip}{0pt plus 5cm}bool Poll\+Socket (
+\begin{DoxyParamCaption}
+\item[{int}]{sock\+ID}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a2d20b6480716b75b5e1deab47a1f2731}
+
+
+Definition at line 339 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!rand@{rand}}
+\index{rand@{rand}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{rand(void)}]{\setlength{\rightskip}{0pt plus 5cm}int rand (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_ae23144bcbb8e3742b00eb687c36654d1}
+\index{sysdep.\+cc@{sysdep.\+cc}!Random@{Random}}
+\index{Random@{Random}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Random()}]{\setlength{\rightskip}{0pt plus 5cm}int Random (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_aac8c6c00a0e52489ecf8e8a6d9eba228}
+
+
+Definition at line 460 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!Random\+Init@{Random\+Init}}
+\index{Random\+Init@{Random\+Init}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Random\+Init(unsigned seed)}]{\setlength{\rightskip}{0pt plus 5cm}void Random\+Init (
+\begin{DoxyParamCaption}
+\item[{unsigned}]{seed}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_ae08b1beb5fa6e506cd63a2637f34e912}
+
+
+Definition at line 449 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!read@{read}}
+\index{read@{read}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{read(int filedes, char $\ast$buf, int num\+Bytes)}]{\setlength{\rightskip}{0pt plus 5cm}int read (
+\begin{DoxyParamCaption}
+\item[{int}]{filedes, }
+\item[{char $\ast$}]{buf, }
+\item[{int}]{num\+Bytes}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_ad69dc0274328d82982430dc65be73623}
+\index{sysdep.\+cc@{sysdep.\+cc}!Read@{Read}}
+\index{Read@{Read}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Read(int fd, char $\ast$buffer, int n\+Bytes)}]{\setlength{\rightskip}{0pt plus 5cm}void Read (
+\begin{DoxyParamCaption}
+\item[{int}]{fd, }
+\item[{char $\ast$}]{buffer, }
+\item[{int}]{n\+Bytes}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a6140dcc97ab52a9406e6d3f5749fa43c}
+
+
+Definition at line 180 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!Read\+From\+Socket@{Read\+From\+Socket}}
+\index{Read\+From\+Socket@{Read\+From\+Socket}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Read\+From\+Socket(int sock\+I\+D, char $\ast$buffer, int packet\+Size)}]{\setlength{\rightskip}{0pt plus 5cm}void Read\+From\+Socket (
+\begin{DoxyParamCaption}
+\item[{int}]{sock\+ID, }
+\item[{char $\ast$}]{buffer, }
+\item[{int}]{packet\+Size}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a1fe94ec77f8866b6f7c75f7c7e0e91c1}
+
+
+Definition at line 349 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!Read\+Partial@{Read\+Partial}}
+\index{Read\+Partial@{Read\+Partial}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Read\+Partial(int fd, char $\ast$buffer, int n\+Bytes)}]{\setlength{\rightskip}{0pt plus 5cm}int Read\+Partial (
+\begin{DoxyParamCaption}
+\item[{int}]{fd, }
+\item[{char $\ast$}]{buffer, }
+\item[{int}]{n\+Bytes}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_af39214b3fb93cfbbd141c2bfb0688a4e}
+
+
+Definition at line 193 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!recvfrom@{recvfrom}}
+\index{recvfrom@{recvfrom}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{recvfrom(int, void $\ast$, int, int, void $\ast$, int $\ast$)}]{\setlength{\rightskip}{0pt plus 5cm}int recvfrom (
+\begin{DoxyParamCaption}
+\item[{int}]{, }
+\item[{void $\ast$}]{, }
+\item[{int}]{, }
+\item[{int}]{, }
+\item[{void $\ast$}]{, }
+\item[{int $\ast$}]{}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_afe6a6510f1a4b2e63b640b6c7ffb9905}
+\index{sysdep.\+cc@{sysdep.\+cc}!select@{select}}
+\index{select@{select}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{select(int num\+Bits, void $\ast$read\+Fds, void $\ast$write\+Fds, void $\ast$except\+Fds, struct timeval $\ast$timeout)}]{\setlength{\rightskip}{0pt plus 5cm}int select (
+\begin{DoxyParamCaption}
+\item[{int}]{num\+Bits, }
+\item[{void $\ast$}]{read\+Fds, }
+\item[{void $\ast$}]{write\+Fds, }
+\item[{void $\ast$}]{except\+Fds, }
+\item[{struct timeval $\ast$}]{timeout}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a2aec7b35176e92640714c91ef886f15c}
+\index{sysdep.\+cc@{sysdep.\+cc}!sendto@{sendto}}
+\index{sendto@{sendto}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{sendto(int, const void $\ast$, int, int, void $\ast$, int)}]{\setlength{\rightskip}{0pt plus 5cm}int sendto (
+\begin{DoxyParamCaption}
+\item[{int}]{, }
+\item[{const void $\ast$}]{, }
+\item[{int}]{, }
+\item[{int}]{, }
+\item[{void $\ast$}]{, }
+\item[{int}]{}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a5535d888ae2029d4bcb26e947c65bfdc}
+\index{sysdep.\+cc@{sysdep.\+cc}!Send\+To\+Socket@{Send\+To\+Socket}}
+\index{Send\+To\+Socket@{Send\+To\+Socket}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Send\+To\+Socket(int sock\+I\+D, const char $\ast$buffer, int packet\+Size, const char $\ast$to\+Name)}]{\setlength{\rightskip}{0pt plus 5cm}void Send\+To\+Socket (
+\begin{DoxyParamCaption}
+\item[{int}]{sock\+ID, }
+\item[{const char $\ast$}]{buffer, }
+\item[{int}]{packet\+Size, }
+\item[{const char $\ast$}]{to\+Name}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a416cd1a34c0b5e2197f22a692f35546d}
+
+
+Definition at line 383 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!sleep@{sleep}}
+\index{sleep@{sleep}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{sleep(unsigned)}]{\setlength{\rightskip}{0pt plus 5cm}unsigned sleep (
+\begin{DoxyParamCaption}
+\item[{unsigned}]{}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a2035cc6303b152bcae62b88aeb0a1113}
+\index{sysdep.\+cc@{sysdep.\+cc}!socket@{socket}}
+\index{socket@{socket}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{socket(int, int, int)}]{\setlength{\rightskip}{0pt plus 5cm}int socket (
+\begin{DoxyParamCaption}
+\item[{int}]{, }
+\item[{int}]{, }
+\item[{int}]{}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_ad8757ba7b643ff8279abf9593f543494}
+\index{sysdep.\+cc@{sysdep.\+cc}!srand@{srand}}
+\index{srand@{srand}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{srand(unsigned seed)}]{\setlength{\rightskip}{0pt plus 5cm}void srand (
+\begin{DoxyParamCaption}
+\item[{unsigned}]{seed}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a210f1bb7dc29a87394a25027e4231004}
+\index{sysdep.\+cc@{sysdep.\+cc}!tell@{tell}}
+\index{tell@{tell}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{tell(int filedes)}]{\setlength{\rightskip}{0pt plus 5cm}int tell (
+\begin{DoxyParamCaption}
+\item[{int}]{filedes}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_acd5fd461185c346576ade864b0cea305}
+\index{sysdep.\+cc@{sysdep.\+cc}!Tell@{Tell}}
+\index{Tell@{Tell}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Tell(int fd)}]{\setlength{\rightskip}{0pt plus 5cm}int Tell (
+\begin{DoxyParamCaption}
+\item[{int}]{fd}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a031f3b5d904def89e5f0cb71bcd31f91}
+
+
+Definition at line 229 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!unlink@{unlink}}
+\index{unlink@{unlink}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{unlink(char $\ast$name)}]{\setlength{\rightskip}{0pt plus 5cm}int unlink (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{name}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_ae6e154f3d23907c2f499b54d2d386fc9}
+\index{sysdep.\+cc@{sysdep.\+cc}!Unlink@{Unlink}}
+\index{Unlink@{Unlink}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Unlink(const char $\ast$name)}]{\setlength{\rightskip}{0pt plus 5cm}bool Unlink (
+\begin{DoxyParamCaption}
+\item[{const char $\ast$}]{name}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a4a5d56db5016ba0eb22084072738dee5}
+
+
+Definition at line 257 of file sysdep.\+cc.
+
+\index{sysdep.\+cc@{sysdep.\+cc}!write@{write}}
+\index{write@{write}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{write(int filedes, char $\ast$buf, int num\+Bytes)}]{\setlength{\rightskip}{0pt plus 5cm}int write (
+\begin{DoxyParamCaption}
+\item[{int}]{filedes, }
+\item[{char $\ast$}]{buf, }
+\item[{int}]{num\+Bytes}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_a9a432e107bd9a5102a2b6fe4e8d752ef}
+\index{sysdep.\+cc@{sysdep.\+cc}!Write\+File@{Write\+File}}
+\index{Write\+File@{Write\+File}!sysdep.\+cc@{sysdep.\+cc}}
+\subsubsection[{Write\+File(int fd, const char $\ast$buffer, int n\+Bytes)}]{\setlength{\rightskip}{0pt plus 5cm}void Write\+File (
+\begin{DoxyParamCaption}
+\item[{int}]{fd, }
+\item[{const char $\ast$}]{buffer, }
+\item[{int}]{n\+Bytes}
+\end{DoxyParamCaption}
+)}\label{sysdep_8cc_ae286192dbb756f7ff419d420aed49c68}
+
+
+Definition at line 205 of file sysdep.\+cc.
+

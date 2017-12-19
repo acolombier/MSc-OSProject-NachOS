@@ -1,0 +1,228 @@
+\section{code/bin/disasm.c File Reference}
+\label{disasm_8c}\index{code/bin/disasm.\+c@{code/bin/disasm.\+c}}
+{\ttfamily \#include \char`\"{}copyright.\+h\char`\"{}}\\*
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$filehdr.\+h$>$}\\*
+{\ttfamily \#include $<$scnhdr.\+h$>$}\\*
+{\ttfamily \#include $<$syms.\+h$>$}\\*
+{\ttfamily \#include $<$ldfcn.\+h$>$}\\*
+{\ttfamily \#include \char`\"{}int.\+h\char`\"{}}\\*
+Include dependency graph for disasm.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{disasm_8c__incl}
+\end{center}
+\end{figure}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define {\bf L\+O\+A\+D\+S\+E\+C\+T\+I\+ON}(head)~{\bf load\+\_\+section}(\&head);
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+char $\ast$ {\bf strcpy} ()
+\item 
+{\bf main} (int argc, argv)
+\item 
+{\bf load\+\_\+section} (S\+C\+N\+H\+DR $\ast$hd)
+\item 
+{\bf load\+\_\+program} (char $\ast$filename)
+\item 
+int $\ast$ {\bf m\+\_\+alloc} (int n)
+\item 
+{\bf disasm} (int startpc, int argc, argv)
+\item 
+{\bf dis1} (int xpc)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+char {\bf mem} [{\bf M\+E\+M\+S\+I\+ZE}]
+\item 
+int {\bf T\+R\+A\+CE}
+\item 
+int {\bf Traptrace}
+\item 
+int {\bf Regtrace}
+\item 
+int {\bf N\+R\+O\+WS} =64
+\item 
+int {\bf A\+S\+S\+OC} =1
+\item 
+int {\bf L\+I\+N\+E\+S\+I\+ZE} =4
+\item 
+int {\bf R\+A\+ND} =0
+\item 
+int {\bf L\+RD} =0
+\item 
+int {\bf pc}
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{disasm.\+c@{disasm.\+c}!L\+O\+A\+D\+S\+E\+C\+T\+I\+ON@{L\+O\+A\+D\+S\+E\+C\+T\+I\+ON}}
+\index{L\+O\+A\+D\+S\+E\+C\+T\+I\+ON@{L\+O\+A\+D\+S\+E\+C\+T\+I\+ON}!disasm.\+c@{disasm.\+c}}
+\subsubsection[{L\+O\+A\+D\+S\+E\+C\+T\+I\+ON}]{\setlength{\rightskip}{0pt plus 5cm}\#define L\+O\+A\+D\+S\+E\+C\+T\+I\+ON(
+\begin{DoxyParamCaption}
+\item[{}]{head}
+\end{DoxyParamCaption}
+)~{\bf load\+\_\+section}(\&head);}\label{disasm_8c_ade1b8a7c8ca8aff3676a1b07e28d59d5}
+
+
+Definition at line 69 of file disasm.\+c.
+
+
+
+\subsection{Function Documentation}
+\index{disasm.\+c@{disasm.\+c}!dis1@{dis1}}
+\index{dis1@{dis1}!disasm.\+c@{disasm.\+c}}
+\subsubsection[{dis1(int xpc)}]{\setlength{\rightskip}{0pt plus 5cm}dis1 (
+\begin{DoxyParamCaption}
+\item[{int}]{xpc}
+\end{DoxyParamCaption}
+)}\label{disasm_8c_a22b02790608460e65f12d8a3d8bcaa03}
+
+
+Definition at line 162 of file disasm.\+c.
+
+\index{disasm.\+c@{disasm.\+c}!disasm@{disasm}}
+\index{disasm@{disasm}!disasm.\+c@{disasm.\+c}}
+\subsubsection[{disasm(int startpc, int argc, argv)}]{\setlength{\rightskip}{0pt plus 5cm}disasm (
+\begin{DoxyParamCaption}
+\item[{int}]{startpc, }
+\item[{int}]{argc, }
+\item[{argv}]{}
+\end{DoxyParamCaption}
+)}\label{disasm_8c_a5d831af7834c07d31e83bd7fb7751627}
+
+
+Definition at line 148 of file disasm.\+c.
+
+\index{disasm.\+c@{disasm.\+c}!load\+\_\+program@{load\+\_\+program}}
+\index{load\+\_\+program@{load\+\_\+program}!disasm.\+c@{disasm.\+c}}
+\subsubsection[{load\+\_\+program(char $\ast$filename)}]{\setlength{\rightskip}{0pt plus 5cm}load\+\_\+program (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{filename}
+\end{DoxyParamCaption}
+)}\label{disasm_8c_ada24d1ce2974c9825e3363a8d5931333}
+
+
+Definition at line 88 of file disasm.\+c.
+
+\index{disasm.\+c@{disasm.\+c}!load\+\_\+section@{load\+\_\+section}}
+\index{load\+\_\+section@{load\+\_\+section}!disasm.\+c@{disasm.\+c}}
+\subsubsection[{load\+\_\+section(\+S\+C\+N\+H\+D\+R $\ast$hd)}]{\setlength{\rightskip}{0pt plus 5cm}load\+\_\+section (
+\begin{DoxyParamCaption}
+\item[{S\+C\+N\+H\+DR $\ast$}]{hd}
+\end{DoxyParamCaption}
+)}\label{disasm_8c_aff21d7ea7b238b40d6c76e532cd36c7d}
+
+
+Definition at line 71 of file disasm.\+c.
+
+\index{disasm.\+c@{disasm.\+c}!m\+\_\+alloc@{m\+\_\+alloc}}
+\index{m\+\_\+alloc@{m\+\_\+alloc}!disasm.\+c@{disasm.\+c}}
+\subsubsection[{m\+\_\+alloc(int n)}]{\setlength{\rightskip}{0pt plus 5cm}int$\ast$ m\+\_\+alloc (
+\begin{DoxyParamCaption}
+\item[{int}]{n}
+\end{DoxyParamCaption}
+)}\label{disasm_8c_a7eb0bb0fac42f341468ad27d57293833}
+
+
+Definition at line 140 of file disasm.\+c.
+
+\index{disasm.\+c@{disasm.\+c}!main@{main}}
+\index{main@{main}!disasm.\+c@{disasm.\+c}}
+\subsubsection[{main(int argc, argv)}]{\setlength{\rightskip}{0pt plus 5cm}main (
+\begin{DoxyParamCaption}
+\item[{int}]{argc, }
+\item[{argv}]{}
+\end{DoxyParamCaption}
+)}\label{disasm_8c_a0708a0954f39ecdc7aa901286295ad01}
+
+
+Definition at line 32 of file disasm.\+c.
+
+\index{disasm.\+c@{disasm.\+c}!strcpy@{strcpy}}
+\index{strcpy@{strcpy}!disasm.\+c@{disasm.\+c}}
+\subsubsection[{strcpy()}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ strcpy (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{disasm_8c_add539a5755e4c4070b0c8ca97477fe47}
+
+
+\subsection{Variable Documentation}
+\index{disasm.\+c@{disasm.\+c}!A\+S\+S\+OC@{A\+S\+S\+OC}}
+\index{A\+S\+S\+OC@{A\+S\+S\+OC}!disasm.\+c@{disasm.\+c}}
+\subsubsection[{A\+S\+S\+OC}]{\setlength{\rightskip}{0pt plus 5cm}int A\+S\+S\+OC =1}\label{disasm_8c_a798cfa29d929dc6f09926e7828af28e9}
+
+
+Definition at line 27 of file disasm.\+c.
+
+\index{disasm.\+c@{disasm.\+c}!L\+I\+N\+E\+S\+I\+ZE@{L\+I\+N\+E\+S\+I\+ZE}}
+\index{L\+I\+N\+E\+S\+I\+ZE@{L\+I\+N\+E\+S\+I\+ZE}!disasm.\+c@{disasm.\+c}}
+\subsubsection[{L\+I\+N\+E\+S\+I\+ZE}]{\setlength{\rightskip}{0pt plus 5cm}int L\+I\+N\+E\+S\+I\+ZE =4}\label{disasm_8c_a05e97b595955acf197c818570ae8dbd5}
+
+
+Definition at line 27 of file disasm.\+c.
+
+\index{disasm.\+c@{disasm.\+c}!L\+RD@{L\+RD}}
+\index{L\+RD@{L\+RD}!disasm.\+c@{disasm.\+c}}
+\subsubsection[{L\+RD}]{\setlength{\rightskip}{0pt plus 5cm}int L\+RD =0}\label{disasm_8c_ad966c5921b463587836809645be5449d}
+
+
+Definition at line 27 of file disasm.\+c.
+
+\index{disasm.\+c@{disasm.\+c}!mem@{mem}}
+\index{mem@{mem}!disasm.\+c@{disasm.\+c}}
+\subsubsection[{mem}]{\setlength{\rightskip}{0pt plus 5cm}char mem[{\bf M\+E\+M\+S\+I\+ZE}]}\label{disasm_8c_a8ac88ddcfca819936451a3c3e3a07377}
+
+
+Definition at line 25 of file disasm.\+c.
+
+\index{disasm.\+c@{disasm.\+c}!N\+R\+O\+WS@{N\+R\+O\+WS}}
+\index{N\+R\+O\+WS@{N\+R\+O\+WS}!disasm.\+c@{disasm.\+c}}
+\subsubsection[{N\+R\+O\+WS}]{\setlength{\rightskip}{0pt plus 5cm}int N\+R\+O\+WS =64}\label{disasm_8c_a3b8c90730100048e219ae18a925eab22}
+
+
+Definition at line 27 of file disasm.\+c.
+
+\index{disasm.\+c@{disasm.\+c}!pc@{pc}}
+\index{pc@{pc}!disasm.\+c@{disasm.\+c}}
+\subsubsection[{pc}]{\setlength{\rightskip}{0pt plus 5cm}int pc}\label{disasm_8c_ac8c81e61335635fa4709d82412b31f06}
+
+
+Definition at line 28 of file disasm.\+c.
+
+\index{disasm.\+c@{disasm.\+c}!R\+A\+ND@{R\+A\+ND}}
+\index{R\+A\+ND@{R\+A\+ND}!disasm.\+c@{disasm.\+c}}
+\subsubsection[{R\+A\+ND}]{\setlength{\rightskip}{0pt plus 5cm}int R\+A\+ND =0}\label{disasm_8c_a189a26e268458e3db1ef6c84efa993d4}
+
+
+Definition at line 27 of file disasm.\+c.
+
+\index{disasm.\+c@{disasm.\+c}!Regtrace@{Regtrace}}
+\index{Regtrace@{Regtrace}!disasm.\+c@{disasm.\+c}}
+\subsubsection[{Regtrace}]{\setlength{\rightskip}{0pt plus 5cm}int Regtrace}\label{disasm_8c_a38daff3d696277a81716a8200f659a21}
+
+
+Definition at line 26 of file disasm.\+c.
+
+\index{disasm.\+c@{disasm.\+c}!T\+R\+A\+CE@{T\+R\+A\+CE}}
+\index{T\+R\+A\+CE@{T\+R\+A\+CE}!disasm.\+c@{disasm.\+c}}
+\subsubsection[{T\+R\+A\+CE}]{\setlength{\rightskip}{0pt plus 5cm}int T\+R\+A\+CE}\label{disasm_8c_a231cbc535bda364aa70c8d0617211a65}
+
+
+Definition at line 26 of file disasm.\+c.
+
+\index{disasm.\+c@{disasm.\+c}!Traptrace@{Traptrace}}
+\index{Traptrace@{Traptrace}!disasm.\+c@{disasm.\+c}}
+\subsubsection[{Traptrace}]{\setlength{\rightskip}{0pt plus 5cm}int Traptrace}\label{disasm_8c_a652034e5a9e2bb432b8f4c841d0834ab}
+
+
+Definition at line 26 of file disasm.\+c.
+

@@ -1,0 +1,111 @@
+.TH "code/bin/int.h" 3 "Tue Dec 19 2017" "Version nachos-teamd" "OS-Project" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+code/bin/int.h \- 
+.SH SYNOPSIS
+.br
+.PP
+\fC#include 'copyright\&.h'\fP
+.br
+
+.SS "Macros"
+
+.in +1c
+.ti -1c
+.RI "#define \fBMEMSIZE\fP   (1<<24)"
+.br
+.ti -1c
+.RI "#define \fBmemoffset\fP   0x10000000"
+.br
+.ti -1c
+.RI "#define \fBamark\fP(x)   x"
+.br
+.ti -1c
+.RI "#define \fBimark\fP(x)   x"
+.br
+.ti -1c
+.RI "#define \fBifetch\fP(addr)   (*(int *)(int) (&(\fBmem\fP\-\fBmemoffset\fP)[\fBimark\fP(addr)]))"
+.br
+.ti -1c
+.RI "#define \fBfetch\fP(addr)   (*(int *)(int) (&(\fBmem\fP\-\fBmemoffset\fP)[\fBamark\fP(addr)]))"
+.br
+.ti -1c
+.RI "#define \fBsfetch\fP(addr)   (*(short *)(int) (&(\fBmem\fP\-\fBmemoffset\fP)[\fBamark\fP(addr)]))"
+.br
+.ti -1c
+.RI "#define \fBusfetch\fP(addr)   (*(unsigned short *)(int)(&(\fBmem\fP\-\fBmemoffset\fP)[\fBamark\fP(addr)]))"
+.br
+.ti -1c
+.RI "#define \fBcfetch\fP(addr)   (*(char *)(int) (&(\fBmem\fP\-\fBmemoffset\fP)[\fBamark\fP(addr)]))"
+.br
+.ti -1c
+.RI "#define \fBucfetch\fP(addr)   (*(unsigned char *)(int)(&(\fBmem\fP\-\fBmemoffset\fP)[\fBamark\fP(addr)]))"
+.br
+.ti -1c
+.RI "#define \fBstore\fP(addr,  \fBi\fP)   ((*(int *)(int) (&(\fBmem\fP\-\fBmemoffset\fP)[\fBamark\fP(addr)]) = (\fBi\fP)))"
+.br
+.ti -1c
+.RI "#define \fBsstore\fP(addr,  \fBi\fP)   ((*(short *)(int) (&(\fBmem\fP\-\fBmemoffset\fP)[\fBamark\fP(addr)]) = (\fBi\fP)))"
+.br
+.ti -1c
+.RI "#define \fBcstore\fP(addr,  \fBi\fP)   (((\fBmem\fP\-\fBmemoffset\fP)[\fBamark\fP(addr)] = (\fBi\fP)))"
+.br
+.in -1c
+.SH "Macro Definition Documentation"
+.PP 
+.SS "#define amark(x)   x"
+
+.PP
+Definition at line 15 of file int\&.h\&.
+.SS "#define cfetch(addr)   (*(char *)(int) (&(\fBmem\fP\-\fBmemoffset\fP)[\fBamark\fP(addr)]))"
+
+.PP
+Definition at line 22 of file int\&.h\&.
+.SS "#define cstore(addr, \fBi\fP)   (((\fBmem\fP\-\fBmemoffset\fP)[\fBamark\fP(addr)] = (\fBi\fP)))"
+
+.PP
+Definition at line 29 of file int\&.h\&.
+.SS "#define fetch(addr)   (*(int *)(int) (&(\fBmem\fP\-\fBmemoffset\fP)[\fBamark\fP(addr)]))"
+
+.PP
+Definition at line 19 of file int\&.h\&.
+.SS "#define ifetch(addr)   (*(int *)(int) (&(\fBmem\fP\-\fBmemoffset\fP)[\fBimark\fP(addr)]))"
+
+.PP
+Definition at line 18 of file int\&.h\&.
+.SS "#define imark(x)   x"
+
+.PP
+Definition at line 16 of file int\&.h\&.
+.SS "#define memoffset   0x10000000"
+
+.PP
+Definition at line 12 of file int\&.h\&.
+.SS "#define MEMSIZE   (1<<24)"
+
+.PP
+Definition at line 11 of file int\&.h\&.
+.SS "#define sfetch(addr)   (*(short *)(int) (&(\fBmem\fP\-\fBmemoffset\fP)[\fBamark\fP(addr)]))"
+
+.PP
+Definition at line 20 of file int\&.h\&.
+.SS "#define sstore(addr, \fBi\fP)   ((*(short *)(int) (&(\fBmem\fP\-\fBmemoffset\fP)[\fBamark\fP(addr)]) = (\fBi\fP)))"
+
+.PP
+Definition at line 27 of file int\&.h\&.
+.SS "#define store(addr, \fBi\fP)   ((*(int *)(int) (&(\fBmem\fP\-\fBmemoffset\fP)[\fBamark\fP(addr)]) = (\fBi\fP)))"
+
+.PP
+Definition at line 25 of file int\&.h\&.
+.SS "#define ucfetch(addr)   (*(unsigned char *)(int)(&(\fBmem\fP\-\fBmemoffset\fP)[\fBamark\fP(addr)]))"
+
+.PP
+Definition at line 23 of file int\&.h\&.
+.SS "#define usfetch(addr)   (*(unsigned short *)(int)(&(\fBmem\fP\-\fBmemoffset\fP)[\fBamark\fP(addr)]))"
+
+.PP
+Definition at line 21 of file int\&.h\&.
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for OS-Project from the source code\&.

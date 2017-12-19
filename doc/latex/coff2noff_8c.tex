@@ -1,0 +1,141 @@
+\section{code/bin/coff2noff.c File Reference}
+\label{coff2noff_8c}\index{code/bin/coff2noff.\+c@{code/bin/coff2noff.\+c}}
+{\ttfamily \#include \char`\"{}copyright.\+h\char`\"{}}\\*
+{\ttfamily \#include $<$sys/types.\+h$>$}\\*
+{\ttfamily \#include $<$sys/stat.\+h$>$}\\*
+{\ttfamily \#include $<$fcntl.\+h$>$}\\*
+{\ttfamily \#include $<$limits.\+h$>$}\\*
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include \char`\"{}coff.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}noff.\+h\char`\"{}}\\*
+Include dependency graph for coff2noff.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{coff2noff_8c__incl}
+\end{center}
+\end{figure}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define {\bf M\+A\+IN}
+\item 
+\#define {\bf Read\+Struct}(f,  s)~{\bf Read}(f,(char $\ast$)\&s,sizeof(s))
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+unsigned int {\bf Word\+To\+Host} (unsigned int word)
+\item 
+unsigned short {\bf Short\+To\+Host} (unsigned short shortword)
+\item 
+void {\bf Read} (int fd, char $\ast$buf, int n\+Bytes)
+\item 
+void {\bf Write} (int fd, char $\ast$buf, int n\+Bytes)
+\item 
+int {\bf main} (int argc, char $\ast$$\ast$argv)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+char $\ast$ {\bf noff\+File\+Name} = {\bf N\+U\+LL}
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{coff2noff.\+c@{coff2noff.\+c}!M\+A\+IN@{M\+A\+IN}}
+\index{M\+A\+IN@{M\+A\+IN}!coff2noff.\+c@{coff2noff.\+c}}
+\subsubsection[{M\+A\+IN}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+A\+IN}\label{coff2noff_8c_a34b04bd23b07b485921a728ad0805ac4}
+
+
+Definition at line 23 of file coff2noff.\+c.
+
+\index{coff2noff.\+c@{coff2noff.\+c}!Read\+Struct@{Read\+Struct}}
+\index{Read\+Struct@{Read\+Struct}!coff2noff.\+c@{coff2noff.\+c}}
+\subsubsection[{Read\+Struct}]{\setlength{\rightskip}{0pt plus 5cm}\#define Read\+Struct(
+\begin{DoxyParamCaption}
+\item[{}]{f, }
+\item[{}]{s}
+\end{DoxyParamCaption}
+)~{\bf Read}(f,(char $\ast$)\&s,sizeof(s))}\label{coff2noff_8c_a003ca25447f0d405ea816a5f62650c2f}
+
+
+Definition at line 70 of file coff2noff.\+c.
+
+
+
+\subsection{Function Documentation}
+\index{coff2noff.\+c@{coff2noff.\+c}!main@{main}}
+\index{main@{main}!coff2noff.\+c@{coff2noff.\+c}}
+\subsubsection[{main(int argc, char $\ast$$\ast$argv)}]{\setlength{\rightskip}{0pt plus 5cm}int main (
+\begin{DoxyParamCaption}
+\item[{int}]{argc, }
+\item[{char $\ast$$\ast$}]{argv}
+\end{DoxyParamCaption}
+)}\label{coff2noff_8c_a3c04138a5bfe5d72780bb7e82a18e627}
+
+
+Definition at line 94 of file coff2noff.\+c.
+
+\index{coff2noff.\+c@{coff2noff.\+c}!Read@{Read}}
+\index{Read@{Read}!coff2noff.\+c@{coff2noff.\+c}}
+\subsubsection[{Read(int fd, char $\ast$buf, int n\+Bytes)}]{\setlength{\rightskip}{0pt plus 5cm}void Read (
+\begin{DoxyParamCaption}
+\item[{int}]{fd, }
+\item[{char $\ast$}]{buf, }
+\item[{int}]{n\+Bytes}
+\end{DoxyParamCaption}
+)}\label{coff2noff_8c_a4e34b2b2ebbc65ce6cb7d2892921f906}
+
+
+Definition at line 75 of file coff2noff.\+c.
+
+\index{coff2noff.\+c@{coff2noff.\+c}!Short\+To\+Host@{Short\+To\+Host}}
+\index{Short\+To\+Host@{Short\+To\+Host}!coff2noff.\+c@{coff2noff.\+c}}
+\subsubsection[{Short\+To\+Host(unsigned short shortword)}]{\setlength{\rightskip}{0pt plus 5cm}unsigned short Short\+To\+Host (
+\begin{DoxyParamCaption}
+\item[{unsigned short}]{shortword}
+\end{DoxyParamCaption}
+)}\label{coff2noff_8c_a7add372ad7bd2247052cf523c58a7c85}
+
+
+Definition at line 59 of file coff2noff.\+c.
+
+\index{coff2noff.\+c@{coff2noff.\+c}!Word\+To\+Host@{Word\+To\+Host}}
+\index{Word\+To\+Host@{Word\+To\+Host}!coff2noff.\+c@{coff2noff.\+c}}
+\subsubsection[{Word\+To\+Host(unsigned int word)}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int Word\+To\+Host (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{word}
+\end{DoxyParamCaption}
+)}\label{coff2noff_8c_a56dec7a0503b1fdfa1cc4e7ac3280b58}
+
+
+Definition at line 45 of file coff2noff.\+c.
+
+\index{coff2noff.\+c@{coff2noff.\+c}!Write@{Write}}
+\index{Write@{Write}!coff2noff.\+c@{coff2noff.\+c}}
+\subsubsection[{Write(int fd, char $\ast$buf, int n\+Bytes)}]{\setlength{\rightskip}{0pt plus 5cm}void Write (
+\begin{DoxyParamCaption}
+\item[{int}]{fd, }
+\item[{char $\ast$}]{buf, }
+\item[{int}]{n\+Bytes}
+\end{DoxyParamCaption}
+)}\label{coff2noff_8c_af0382ab6b86b90d6275e6109bb64edc1}
+
+
+Definition at line 85 of file coff2noff.\+c.
+
+
+
+\subsection{Variable Documentation}
+\index{coff2noff.\+c@{coff2noff.\+c}!noff\+File\+Name@{noff\+File\+Name}}
+\index{noff\+File\+Name@{noff\+File\+Name}!coff2noff.\+c@{coff2noff.\+c}}
+\subsubsection[{noff\+File\+Name}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ noff\+File\+Name = {\bf N\+U\+LL}}\label{coff2noff_8c_a2119ad8125636791f5ef8ee86bf94f0a}
+
+
+Definition at line 72 of file coff2noff.\+c.
+

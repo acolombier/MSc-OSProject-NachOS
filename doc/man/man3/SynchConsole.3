@@ -1,0 +1,52 @@
+.TH "SynchConsole" 3 "Tue Dec 19 2017" "Version nachos-teamd" "OS-Project" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+SynchConsole \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherits \fBConsole\fP\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBSynchConsole\fP (char *readFile, char *writeFile)"
+.br
+.ti -1c
+.RI "void \fBPutChar\fP (const char ch)"
+.br
+.ti -1c
+.RI "int \fBGetChar\fP ()"
+.br
+.ti -1c
+.RI "void \fBPutString\fP (const char *s)"
+.br
+.ti -1c
+.RI "void \fBGetString\fP (char *s, int n)"
+.br
+.ti -1c
+.RI "void \fBhandlerReadAvail\fP ()"
+.br
+.ti -1c
+.RI "void \fBhandlerWriteDone\fP ()"
+.br
+.in -1c
+.SS "Static Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static void \fBhandlerReadAvail\fP (int)"
+.br
+.ti -1c
+.RI "static void \fBhandlerWriteDone\fP (int)"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 10 of file synchconsole\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for OS-Project from the source code\&.

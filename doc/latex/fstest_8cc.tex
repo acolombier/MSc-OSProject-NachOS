@@ -1,0 +1,114 @@
+\section{code/filesys/fstest.cc File Reference}
+\label{fstest_8cc}\index{code/filesys/fstest.\+cc@{code/filesys/fstest.\+cc}}
+{\ttfamily \#include \char`\"{}copyright.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}utility.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}filesys.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}system.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}thread.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}disk.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}stats.\+h\char`\"{}}\\*
+Include dependency graph for fstest.\+cc\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{fstest_8cc__incl}
+\end{center}
+\end{figure}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define {\bf Transfer\+Size}~10
+\item 
+\#define {\bf File\+Name}~\char`\"{}Test\+File\char`\"{}
+\item 
+\#define {\bf Contents}~\char`\"{}1234567890\char`\"{}
+\item 
+\#define {\bf Content\+Size}~strlen({\bf Contents})
+\item 
+\#define {\bf File\+Size}~((int)({\bf Content\+Size} $\ast$ 5000))
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void {\bf Copy} (const char $\ast$from, const char $\ast$to)
+\item 
+void {\bf Print} (char $\ast$name)
+\item 
+void {\bf Performance\+Test} ()
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{fstest.\+cc@{fstest.\+cc}!Contents@{Contents}}
+\index{Contents@{Contents}!fstest.\+cc@{fstest.\+cc}}
+\subsubsection[{Contents}]{\setlength{\rightskip}{0pt plus 5cm}\#define Contents~\char`\"{}1234567890\char`\"{}}\label{fstest_8cc_aad48d06029e55a3cffa0128a50bd7613}
+
+
+Definition at line 112 of file fstest.\+cc.
+
+\index{fstest.\+cc@{fstest.\+cc}!Content\+Size@{Content\+Size}}
+\index{Content\+Size@{Content\+Size}!fstest.\+cc@{fstest.\+cc}}
+\subsubsection[{Content\+Size}]{\setlength{\rightskip}{0pt plus 5cm}\#define Content\+Size~strlen({\bf Contents})}\label{fstest_8cc_a31e2b6a44bcefe764899ae75811105b3}
+
+
+Definition at line 113 of file fstest.\+cc.
+
+\index{fstest.\+cc@{fstest.\+cc}!File\+Name@{File\+Name}}
+\index{File\+Name@{File\+Name}!fstest.\+cc@{fstest.\+cc}}
+\subsubsection[{File\+Name}]{\setlength{\rightskip}{0pt plus 5cm}\#define File\+Name~\char`\"{}Test\+File\char`\"{}}\label{fstest_8cc_aefc33f4967243b3bd860b293ef93a385}
+
+
+Definition at line 111 of file fstest.\+cc.
+
+\index{fstest.\+cc@{fstest.\+cc}!File\+Size@{File\+Size}}
+\index{File\+Size@{File\+Size}!fstest.\+cc@{fstest.\+cc}}
+\subsubsection[{File\+Size}]{\setlength{\rightskip}{0pt plus 5cm}\#define File\+Size~((int)({\bf Content\+Size} $\ast$ 5000))}\label{fstest_8cc_a6b7e73278f70d4a3f83284f1f5cd289c}
+
+
+Definition at line 114 of file fstest.\+cc.
+
+\index{fstest.\+cc@{fstest.\+cc}!Transfer\+Size@{Transfer\+Size}}
+\index{Transfer\+Size@{Transfer\+Size}!fstest.\+cc@{fstest.\+cc}}
+\subsubsection[{Transfer\+Size}]{\setlength{\rightskip}{0pt plus 5cm}\#define Transfer\+Size~10}\label{fstest_8cc_ac3cee6ebb239937eb035756a88627e3e}
+
+
+Definition at line 24 of file fstest.\+cc.
+
+
+
+\subsection{Function Documentation}
+\index{fstest.\+cc@{fstest.\+cc}!Copy@{Copy}}
+\index{Copy@{Copy}!fstest.\+cc@{fstest.\+cc}}
+\subsubsection[{Copy(const char $\ast$from, const char $\ast$to)}]{\setlength{\rightskip}{0pt plus 5cm}void Copy (
+\begin{DoxyParamCaption}
+\item[{const char $\ast$}]{from, }
+\item[{const char $\ast$}]{to}
+\end{DoxyParamCaption}
+)}\label{fstest_8cc_a15806b63965696c6ee37e93c524d8736}
+
+
+Definition at line 32 of file fstest.\+cc.
+
+\index{fstest.\+cc@{fstest.\+cc}!Performance\+Test@{Performance\+Test}}
+\index{Performance\+Test@{Performance\+Test}!fstest.\+cc@{fstest.\+cc}}
+\subsubsection[{Performance\+Test()}]{\setlength{\rightskip}{0pt plus 5cm}void Performance\+Test (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}\label{fstest_8cc_ac64ba66ded0e52d670cbc36291705ce6}
+
+
+Definition at line 173 of file fstest.\+cc.
+
+\index{fstest.\+cc@{fstest.\+cc}!Print@{Print}}
+\index{Print@{Print}!fstest.\+cc@{fstest.\+cc}}
+\subsubsection[{Print(char $\ast$name)}]{\setlength{\rightskip}{0pt plus 5cm}void Print (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{name}
+\end{DoxyParamCaption}
+)}\label{fstest_8cc_a0e2bc9ad3ccd567d49a9a1ffd75ed42f}
+
+
+Definition at line 78 of file fstest.\+cc.
+

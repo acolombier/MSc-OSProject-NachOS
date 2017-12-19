@@ -1,0 +1,300 @@
+\section{code/machine/machine.h File Reference}
+\label{machine_8h}\index{code/machine/machine.\+h@{code/machine/machine.\+h}}
+{\ttfamily \#include \char`\"{}copyright.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}utility.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}translate.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}disk.\+h\char`\"{}}\\*
+Include dependency graph for machine.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{machine_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{machine_8h__dep__incl}
+\end{center}
+\end{figure}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class {\bf Instruction}
+\item 
+class {\bf Machine}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define {\bf Page\+Size}~{\bf Sector\+Size}
+\item 
+\#define {\bf Num\+Phys\+Pages}~32
+\item 
+\#define {\bf Memory\+Size}~({\bf Num\+Phys\+Pages} $\ast$ {\bf Page\+Size})
+\item 
+\#define {\bf T\+L\+B\+Size}~4
+\item 
+\#define {\bf Stack\+Reg}~29
+\item 
+\#define {\bf Ret\+Addr\+Reg}~31
+\item 
+\#define {\bf Num\+G\+P\+Regs}~32
+\item 
+\#define {\bf Hi\+Reg}~32
+\item 
+\#define {\bf Lo\+Reg}~33
+\item 
+\#define {\bf P\+C\+Reg}~34
+\item 
+\#define {\bf Next\+P\+C\+Reg}~35
+\item 
+\#define {\bf Prev\+P\+C\+Reg}~36
+\item 
+\#define {\bf Load\+Reg}~37
+\item 
+\#define {\bf Load\+Value\+Reg}~38
+\item 
+\#define {\bf Bad\+V\+Addr\+Reg}~39
+\item 
+\#define {\bf Num\+Total\+Regs}~40
+\end{DoxyCompactItemize}
+\subsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum {\bf Exception\+Type} \{ \\*
+{\bf No\+Exception}, 
+{\bf Syscall\+Exception}, 
+{\bf Page\+Fault\+Exception}, 
+{\bf Read\+Only\+Exception}, 
+\\*
+{\bf Bus\+Error\+Exception}, 
+{\bf Address\+Error\+Exception}, 
+{\bf Overflow\+Exception}, 
+{\bf Illegal\+Instr\+Exception}, 
+\\*
+{\bf Num\+Exception\+Types}
+ \}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void {\bf Exception\+Handler} ({\bf Exception\+Type} which)
+\item 
+unsigned int {\bf Word\+To\+Host} (unsigned int word)
+\item 
+unsigned short {\bf Short\+To\+Host} (unsigned short shortword)
+\item 
+unsigned int {\bf Word\+To\+Machine} (unsigned int word)
+\item 
+unsigned short {\bf Short\+To\+Machine} (unsigned short shortword)
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{machine.\+h@{machine.\+h}!Bad\+V\+Addr\+Reg@{Bad\+V\+Addr\+Reg}}
+\index{Bad\+V\+Addr\+Reg@{Bad\+V\+Addr\+Reg}!machine.\+h@{machine.\+h}}
+\subsubsection[{Bad\+V\+Addr\+Reg}]{\setlength{\rightskip}{0pt plus 5cm}\#define Bad\+V\+Addr\+Reg~39}\label{machine_8h_aceca7cc1b20f6970f96688c4f21efef2}
+
+
+Definition at line 70 of file machine.\+h.
+
+\index{machine.\+h@{machine.\+h}!Hi\+Reg@{Hi\+Reg}}
+\index{Hi\+Reg@{Hi\+Reg}!machine.\+h@{machine.\+h}}
+\subsubsection[{Hi\+Reg}]{\setlength{\rightskip}{0pt plus 5cm}\#define Hi\+Reg~32}\label{machine_8h_a1ac19b064328f966d7cca64f3282ae91}
+
+
+Definition at line 63 of file machine.\+h.
+
+\index{machine.\+h@{machine.\+h}!Load\+Reg@{Load\+Reg}}
+\index{Load\+Reg@{Load\+Reg}!machine.\+h@{machine.\+h}}
+\subsubsection[{Load\+Reg}]{\setlength{\rightskip}{0pt plus 5cm}\#define Load\+Reg~37}\label{machine_8h_a7ca86ddc51a5c44e599365ebce68b967}
+
+
+Definition at line 68 of file machine.\+h.
+
+\index{machine.\+h@{machine.\+h}!Load\+Value\+Reg@{Load\+Value\+Reg}}
+\index{Load\+Value\+Reg@{Load\+Value\+Reg}!machine.\+h@{machine.\+h}}
+\subsubsection[{Load\+Value\+Reg}]{\setlength{\rightskip}{0pt plus 5cm}\#define Load\+Value\+Reg~38}\label{machine_8h_a56dbce970aafbc98848593b4d4aa5eb7}
+
+
+Definition at line 69 of file machine.\+h.
+
+\index{machine.\+h@{machine.\+h}!Lo\+Reg@{Lo\+Reg}}
+\index{Lo\+Reg@{Lo\+Reg}!machine.\+h@{machine.\+h}}
+\subsubsection[{Lo\+Reg}]{\setlength{\rightskip}{0pt plus 5cm}\#define Lo\+Reg~33}\label{machine_8h_afef46928a742121ce69b65dad1fb625a}
+
+
+Definition at line 64 of file machine.\+h.
+
+\index{machine.\+h@{machine.\+h}!Memory\+Size@{Memory\+Size}}
+\index{Memory\+Size@{Memory\+Size}!machine.\+h@{machine.\+h}}
+\subsubsection[{Memory\+Size}]{\setlength{\rightskip}{0pt plus 5cm}\#define Memory\+Size~({\bf Num\+Phys\+Pages} $\ast$ {\bf Page\+Size})}\label{machine_8h_ab1eabbc583c21d48596127b19d4ce754}
+
+
+Definition at line 36 of file machine.\+h.
+
+\index{machine.\+h@{machine.\+h}!Next\+P\+C\+Reg@{Next\+P\+C\+Reg}}
+\index{Next\+P\+C\+Reg@{Next\+P\+C\+Reg}!machine.\+h@{machine.\+h}}
+\subsubsection[{Next\+P\+C\+Reg}]{\setlength{\rightskip}{0pt plus 5cm}\#define Next\+P\+C\+Reg~35}\label{machine_8h_af95022bd1d0769baabadf6f1b771501a}
+
+
+Definition at line 66 of file machine.\+h.
+
+\index{machine.\+h@{machine.\+h}!Num\+G\+P\+Regs@{Num\+G\+P\+Regs}}
+\index{Num\+G\+P\+Regs@{Num\+G\+P\+Regs}!machine.\+h@{machine.\+h}}
+\subsubsection[{Num\+G\+P\+Regs}]{\setlength{\rightskip}{0pt plus 5cm}\#define Num\+G\+P\+Regs~32}\label{machine_8h_a89f6b3d90852476c519744e6c0fdc5ff}
+
+
+Definition at line 62 of file machine.\+h.
+
+\index{machine.\+h@{machine.\+h}!Num\+Phys\+Pages@{Num\+Phys\+Pages}}
+\index{Num\+Phys\+Pages@{Num\+Phys\+Pages}!machine.\+h@{machine.\+h}}
+\subsubsection[{Num\+Phys\+Pages}]{\setlength{\rightskip}{0pt plus 5cm}\#define Num\+Phys\+Pages~32}\label{machine_8h_a0b9f33667767389c6dbb4a83017ce7ed}
+
+
+Definition at line 35 of file machine.\+h.
+
+\index{machine.\+h@{machine.\+h}!Num\+Total\+Regs@{Num\+Total\+Regs}}
+\index{Num\+Total\+Regs@{Num\+Total\+Regs}!machine.\+h@{machine.\+h}}
+\subsubsection[{Num\+Total\+Regs}]{\setlength{\rightskip}{0pt plus 5cm}\#define Num\+Total\+Regs~40}\label{machine_8h_a3d05ab2fa1bfa8eb176488fe4119a464}
+
+
+Definition at line 72 of file machine.\+h.
+
+\index{machine.\+h@{machine.\+h}!Page\+Size@{Page\+Size}}
+\index{Page\+Size@{Page\+Size}!machine.\+h@{machine.\+h}}
+\subsubsection[{Page\+Size}]{\setlength{\rightskip}{0pt plus 5cm}\#define Page\+Size~{\bf Sector\+Size}}\label{machine_8h_a25fe6c9816d1f84cecd50a0503825bf2}
+
+
+Definition at line 31 of file machine.\+h.
+
+\index{machine.\+h@{machine.\+h}!P\+C\+Reg@{P\+C\+Reg}}
+\index{P\+C\+Reg@{P\+C\+Reg}!machine.\+h@{machine.\+h}}
+\subsubsection[{P\+C\+Reg}]{\setlength{\rightskip}{0pt plus 5cm}\#define P\+C\+Reg~34}\label{machine_8h_a7152c26c857a03695afc8c8b05f1197b}
+
+
+Definition at line 65 of file machine.\+h.
+
+\index{machine.\+h@{machine.\+h}!Prev\+P\+C\+Reg@{Prev\+P\+C\+Reg}}
+\index{Prev\+P\+C\+Reg@{Prev\+P\+C\+Reg}!machine.\+h@{machine.\+h}}
+\subsubsection[{Prev\+P\+C\+Reg}]{\setlength{\rightskip}{0pt plus 5cm}\#define Prev\+P\+C\+Reg~36}\label{machine_8h_aa24552328a05615e6067ce5a0ad0bbf3}
+
+
+Definition at line 67 of file machine.\+h.
+
+\index{machine.\+h@{machine.\+h}!Ret\+Addr\+Reg@{Ret\+Addr\+Reg}}
+\index{Ret\+Addr\+Reg@{Ret\+Addr\+Reg}!machine.\+h@{machine.\+h}}
+\subsubsection[{Ret\+Addr\+Reg}]{\setlength{\rightskip}{0pt plus 5cm}\#define Ret\+Addr\+Reg~31}\label{machine_8h_afd61f2aedbb34ee6301a795667234d56}
+
+
+Definition at line 61 of file machine.\+h.
+
+\index{machine.\+h@{machine.\+h}!Stack\+Reg@{Stack\+Reg}}
+\index{Stack\+Reg@{Stack\+Reg}!machine.\+h@{machine.\+h}}
+\subsubsection[{Stack\+Reg}]{\setlength{\rightskip}{0pt plus 5cm}\#define Stack\+Reg~29}\label{machine_8h_a6702d1d5ad2fe3c3e40d9eedaaa2630f}
+
+
+Definition at line 60 of file machine.\+h.
+
+\index{machine.\+h@{machine.\+h}!T\+L\+B\+Size@{T\+L\+B\+Size}}
+\index{T\+L\+B\+Size@{T\+L\+B\+Size}!machine.\+h@{machine.\+h}}
+\subsubsection[{T\+L\+B\+Size}]{\setlength{\rightskip}{0pt plus 5cm}\#define T\+L\+B\+Size~4}\label{machine_8h_af372ca9ab0550891f1b5fd24ecffbbf6}
+
+
+Definition at line 37 of file machine.\+h.
+
+
+
+\subsection{Enumeration Type Documentation}
+\index{machine.\+h@{machine.\+h}!Exception\+Type@{Exception\+Type}}
+\index{Exception\+Type@{Exception\+Type}!machine.\+h@{machine.\+h}}
+\subsubsection[{Exception\+Type}]{\setlength{\rightskip}{0pt plus 5cm}enum {\bf Exception\+Type}}\label{machine_8h_a0e0f0f1661d7aeb71ed9698bff6c6383}
+\begin{Desc}
+\item[Enumerator]\par
+\begin{description}
+\index{No\+Exception@{No\+Exception}!machine.\+h@{machine.\+h}}\index{machine.\+h@{machine.\+h}!No\+Exception@{No\+Exception}}\item[{\em 
+No\+Exception\label{machine_8h_a0e0f0f1661d7aeb71ed9698bff6c6383aa9f0b3e8ed7edd84c99ad67fe7e2840b}
+}]\index{Syscall\+Exception@{Syscall\+Exception}!machine.\+h@{machine.\+h}}\index{machine.\+h@{machine.\+h}!Syscall\+Exception@{Syscall\+Exception}}\item[{\em 
+Syscall\+Exception\label{machine_8h_a0e0f0f1661d7aeb71ed9698bff6c6383a50672e73dfc4b771d795f0b1e19c9f2e}
+}]\index{Page\+Fault\+Exception@{Page\+Fault\+Exception}!machine.\+h@{machine.\+h}}\index{machine.\+h@{machine.\+h}!Page\+Fault\+Exception@{Page\+Fault\+Exception}}\item[{\em 
+Page\+Fault\+Exception\label{machine_8h_a0e0f0f1661d7aeb71ed9698bff6c6383a7feb20114e4343254c7975ede81779d9}
+}]\index{Read\+Only\+Exception@{Read\+Only\+Exception}!machine.\+h@{machine.\+h}}\index{machine.\+h@{machine.\+h}!Read\+Only\+Exception@{Read\+Only\+Exception}}\item[{\em 
+Read\+Only\+Exception\label{machine_8h_a0e0f0f1661d7aeb71ed9698bff6c6383a144db938002c99342eaca1600d273bed}
+}]\index{Bus\+Error\+Exception@{Bus\+Error\+Exception}!machine.\+h@{machine.\+h}}\index{machine.\+h@{machine.\+h}!Bus\+Error\+Exception@{Bus\+Error\+Exception}}\item[{\em 
+Bus\+Error\+Exception\label{machine_8h_a0e0f0f1661d7aeb71ed9698bff6c6383ae77fa678434b7d7bf2b07ab76b1fb8c1}
+}]\index{Address\+Error\+Exception@{Address\+Error\+Exception}!machine.\+h@{machine.\+h}}\index{machine.\+h@{machine.\+h}!Address\+Error\+Exception@{Address\+Error\+Exception}}\item[{\em 
+Address\+Error\+Exception\label{machine_8h_a0e0f0f1661d7aeb71ed9698bff6c6383a638f01c8abf4b8aebf394d9e2cfc6008}
+}]\index{Overflow\+Exception@{Overflow\+Exception}!machine.\+h@{machine.\+h}}\index{machine.\+h@{machine.\+h}!Overflow\+Exception@{Overflow\+Exception}}\item[{\em 
+Overflow\+Exception\label{machine_8h_a0e0f0f1661d7aeb71ed9698bff6c6383a1677a0da1c8126432430d0251d1f5152}
+}]\index{Illegal\+Instr\+Exception@{Illegal\+Instr\+Exception}!machine.\+h@{machine.\+h}}\index{machine.\+h@{machine.\+h}!Illegal\+Instr\+Exception@{Illegal\+Instr\+Exception}}\item[{\em 
+Illegal\+Instr\+Exception\label{machine_8h_a0e0f0f1661d7aeb71ed9698bff6c6383a7ac9ecf8ea8b50e2f3c90c3b3dc94787}
+}]\index{Num\+Exception\+Types@{Num\+Exception\+Types}!machine.\+h@{machine.\+h}}\index{machine.\+h@{machine.\+h}!Num\+Exception\+Types@{Num\+Exception\+Types}}\item[{\em 
+Num\+Exception\+Types\label{machine_8h_a0e0f0f1661d7aeb71ed9698bff6c6383a14c29fb18daabb3942ef3df2d657c6a6}
+}]\end{description}
+\end{Desc}
+
+
+Definition at line 39 of file machine.\+h.
+
+
+
+\subsection{Function Documentation}
+\index{machine.\+h@{machine.\+h}!Exception\+Handler@{Exception\+Handler}}
+\index{Exception\+Handler@{Exception\+Handler}!machine.\+h@{machine.\+h}}
+\subsubsection[{Exception\+Handler(\+Exception\+Type which)}]{\setlength{\rightskip}{0pt plus 5cm}void Exception\+Handler (
+\begin{DoxyParamCaption}
+\item[{{\bf Exception\+Type}}]{which}
+\end{DoxyParamCaption}
+)}\label{machine_8h_a69c8c3bb4a492eeea6b21600a76cada7}
+
+
+Definition at line 69 of file exception.\+cc.
+
+\index{machine.\+h@{machine.\+h}!Short\+To\+Host@{Short\+To\+Host}}
+\index{Short\+To\+Host@{Short\+To\+Host}!machine.\+h@{machine.\+h}}
+\subsubsection[{Short\+To\+Host(unsigned short shortword)}]{\setlength{\rightskip}{0pt plus 5cm}unsigned short Short\+To\+Host (
+\begin{DoxyParamCaption}
+\item[{unsigned short}]{shortword}
+\end{DoxyParamCaption}
+)}\label{machine_8h_a7add372ad7bd2247052cf523c58a7c85}
+
+
+Definition at line 59 of file coff2noff.\+c.
+
+\index{machine.\+h@{machine.\+h}!Short\+To\+Machine@{Short\+To\+Machine}}
+\index{Short\+To\+Machine@{Short\+To\+Machine}!machine.\+h@{machine.\+h}}
+\subsubsection[{Short\+To\+Machine(unsigned short shortword)}]{\setlength{\rightskip}{0pt plus 5cm}unsigned short Short\+To\+Machine (
+\begin{DoxyParamCaption}
+\item[{unsigned short}]{shortword}
+\end{DoxyParamCaption}
+)}\label{machine_8h_aa3beb444ee6888212649bc77de594510}
+
+
+Definition at line 71 of file translate.\+cc.
+
+\index{machine.\+h@{machine.\+h}!Word\+To\+Host@{Word\+To\+Host}}
+\index{Word\+To\+Host@{Word\+To\+Host}!machine.\+h@{machine.\+h}}
+\subsubsection[{Word\+To\+Host(unsigned int word)}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int Word\+To\+Host (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{word}
+\end{DoxyParamCaption}
+)}\label{machine_8h_a56dec7a0503b1fdfa1cc4e7ac3280b58}
+
+
+Definition at line 45 of file coff2noff.\+c.
+
+\index{machine.\+h@{machine.\+h}!Word\+To\+Machine@{Word\+To\+Machine}}
+\index{Word\+To\+Machine@{Word\+To\+Machine}!machine.\+h@{machine.\+h}}
+\subsubsection[{Word\+To\+Machine(unsigned int word)}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int Word\+To\+Machine (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{word}
+\end{DoxyParamCaption}
+)}\label{machine_8h_a2a5c3b2db60b0034c1601f45967d5d01}
+
+
+Definition at line 68 of file translate.\+cc.
+

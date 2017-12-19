@@ -1,0 +1,52 @@
+.TH "Interrupt" 3 "Tue Dec 19 2017" "Version nachos-teamd" "OS-Project" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+Interrupt \- 
+.SH SYNOPSIS
+.br
+.PP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "IntStatus \fBSetLevel\fP (IntStatus level)"
+.br
+.ti -1c
+.RI "void \fBEnable\fP ()"
+.br
+.ti -1c
+.RI "IntStatus \fBgetLevel\fP ()"
+.br
+.ti -1c
+.RI "void \fBIdle\fP ()"
+.br
+.ti -1c
+.RI "void \fBHalt\fP ()"
+.br
+.ti -1c
+.RI "void \fBYieldOnReturn\fP ()"
+.br
+.ti -1c
+.RI "MachineStatus \fBgetStatus\fP ()"
+.br
+.ti -1c
+.RI "void \fBsetStatus\fP (MachineStatus st)"
+.br
+.ti -1c
+.RI "void \fBDumpState\fP ()"
+.br
+.ti -1c
+.RI "void \fBSchedule\fP (VoidFunctionPtr handler, int arg, long long when, IntType type)"
+.br
+.ti -1c
+.RI "void \fBOneTick\fP ()"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 78 of file interrupt\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for OS-Project from the source code\&.

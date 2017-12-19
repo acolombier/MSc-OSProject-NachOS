@@ -1,0 +1,4 @@
+<map id="Mail" name="Mail">
+<area shape="rect" id="node2" href="$class_packet_header.html" title="PacketHeader" alt="" coords="5,5,111,32"/>
+<area shape="rect" id="node3" href="$class_mail_header.html" title="MailHeader" alt="" coords="135,5,223,32"/>
+</map>

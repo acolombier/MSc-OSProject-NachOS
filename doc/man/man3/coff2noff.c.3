@@ -1,0 +1,108 @@
+.TH "code/bin/coff2noff.c" 3 "Tue Dec 19 2017" "Version nachos-teamd" "OS-Project" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+code/bin/coff2noff.c \- 
+.SH SYNOPSIS
+.br
+.PP
+\fC#include 'copyright\&.h'\fP
+.br
+\fC#include <sys/types\&.h>\fP
+.br
+\fC#include <sys/stat\&.h>\fP
+.br
+\fC#include <fcntl\&.h>\fP
+.br
+\fC#include <limits\&.h>\fP
+.br
+\fC#include <stdio\&.h>\fP
+.br
+\fC#include <stdlib\&.h>\fP
+.br
+\fC#include <unistd\&.h>\fP
+.br
+\fC#include <string\&.h>\fP
+.br
+\fC#include 'coff\&.h'\fP
+.br
+\fC#include 'noff\&.h'\fP
+.br
+
+.SS "Macros"
+
+.in +1c
+.ti -1c
+.RI "#define \fBMAIN\fP"
+.br
+.ti -1c
+.RI "#define \fBReadStruct\fP(f,  s)   \fBRead\fP(f,(char *)&s,sizeof(s))"
+.br
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "unsigned int \fBWordToHost\fP (unsigned int word)"
+.br
+.ti -1c
+.RI "unsigned short \fBShortToHost\fP (unsigned short shortword)"
+.br
+.ti -1c
+.RI "void \fBRead\fP (int fd, char *buf, int nBytes)"
+.br
+.ti -1c
+.RI "void \fBWrite\fP (int fd, char *buf, int nBytes)"
+.br
+.ti -1c
+.RI "int \fBmain\fP (int argc, char **argv)"
+.br
+.in -1c
+.SS "Variables"
+
+.in +1c
+.ti -1c
+.RI "char * \fBnoffFileName\fP = \fBNULL\fP"
+.br
+.in -1c
+.SH "Macro Definition Documentation"
+.PP 
+.SS "#define MAIN"
+
+.PP
+Definition at line 23 of file coff2noff\&.c\&.
+.SS "#define ReadStruct(f, s)   \fBRead\fP(f,(char *)&s,sizeof(s))"
+
+.PP
+Definition at line 70 of file coff2noff\&.c\&.
+.SH "Function Documentation"
+.PP 
+.SS "int main (int argc, char ** argv)"
+
+.PP
+Definition at line 94 of file coff2noff\&.c\&.
+.SS "void Read (int fd, char * buf, int nBytes)"
+
+.PP
+Definition at line 75 of file coff2noff\&.c\&.
+.SS "unsigned short ShortToHost (unsigned short shortword)"
+
+.PP
+Definition at line 59 of file coff2noff\&.c\&.
+.SS "unsigned int WordToHost (unsigned int word)"
+
+.PP
+Definition at line 45 of file coff2noff\&.c\&.
+.SS "void Write (int fd, char * buf, int nBytes)"
+
+.PP
+Definition at line 85 of file coff2noff\&.c\&.
+.SH "Variable Documentation"
+.PP 
+.SS "char* noffFileName = \fBNULL\fP"
+
+.PP
+Definition at line 72 of file coff2noff\&.c\&.
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for OS-Project from the source code\&.

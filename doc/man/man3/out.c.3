@@ -1,0 +1,258 @@
+.TH "code/bin/out.c" 3 "Tue Dec 19 2017" "Version nachos-teamd" "OS-Project" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+code/bin/out.c \- 
+.SH SYNOPSIS
+.br
+.PP
+\fC#include 'copyright\&.h'\fP
+.br
+\fC#include <filehdr\&.h>\fP
+.br
+\fC#include <aouthdr\&.h>\fP
+.br
+\fC#include <scnhdr\&.h>\fP
+.br
+\fC#include <reloc\&.h>\fP
+.br
+\fC#include <syms\&.h>\fP
+.br
+\fC#include <stdio\&.h>\fP
+.br
+\fC#include <varargs\&.h>\fP
+.br
+\fC#include 'd\&.c'\fP
+.br
+
+.SS "Classes"
+
+.in +1c
+.ti -1c
+.RI "struct \fBdata\fP"
+.br
+.in -1c
+.SS "Macros"
+
+.in +1c
+.ti -1c
+.RI "#define \fBMAIN\fP"
+.br
+.ti -1c
+.RI "#define \fBread_struct\fP(f,  s)   (fread(&s,sizeof(s),1,f)==1)"
+.br
+.ti -1c
+.RI "#define \fBMAXRELOCS\fP   1000"
+.br
+.ti -1c
+.RI "#define \fBMAXDATA\fP   10000"
+.br
+.ti -1c
+.RI "#define \fBMAXSCNS\fP   10"
+.br
+.ti -1c
+.RI "#define \fBMAXSYMS\fP   300"
+.br
+.ti -1c
+.RI "#define \fBMAXSSPACE\fP   20000"
+.br
+.ti -1c
+.RI "#define \fBprintf\fP   \fBmyprintf\fP"
+.br
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBmain\fP (int argc, argv)"
+.br
+.ti -1c
+.RI "\fBmyprintf\fP (va_alist)"
+.br
+.ti -1c
+.RI "\fBmytab\fP (int n)"
+.br
+.ti -1c
+.RI "\fBmysetfile\fP (FILE *f)"
+.br
+.ti -1c
+.RI "\fBprint_section\fP (int \fBi\fP)"
+.br
+.ti -1c
+.RI "\fBprint_reloc\fP (vaddr, int \fBi\fP, int j)"
+.br
+.in -1c
+.SS "Variables"
+
+.in +1c
+.ti -1c
+.RI "struct \fBfilehdr\fP \fBfilehdr\fP"
+.br
+.ti -1c
+.RI "struct \fBaouthdr\fP \fBaouthdr\fP"
+.br
+.ti -1c
+.RI "struct \fBscnhdr\fP \fBscnhdr\fP [\fBMAXSCNS\fP]"
+.br
+.ti -1c
+.RI "struct \fBdata\fP \fBsection\fP [\fBMAXSCNS\fP]"
+.br
+.ti -1c
+.RI "HDRR \fBsymhdr\fP"
+.br
+.ti -1c
+.RI "EXTR \fBsymbols\fP [\fBMAXSYMS\fP]"
+.br
+.ti -1c
+.RI "char \fBsspace\fP [20000]"
+.br
+.ti -1c
+.RI "char * \fBsymbol_type\fP []"
+.br
+.ti -1c
+.RI "char * \fBstorage_class\fP []"
+.br
+.ti -1c
+.RI "char * \fBsection_name\fP []"
+.br
+.ti -1c
+.RI "char * \fBreloc_type\fP []"
+.br
+.in -1c
+.SH "Macro Definition Documentation"
+.PP 
+.SS "#define MAIN"
+
+.PP
+Definition at line 7 of file out\&.c\&.
+.SS "#define MAXDATA   10000"
+
+.PP
+Definition at line 34 of file out\&.c\&.
+.SS "#define MAXRELOCS   1000"
+
+.PP
+Definition at line 31 of file out\&.c\&.
+.SS "#define MAXSCNS   10"
+
+.PP
+Definition at line 43 of file out\&.c\&.
+.SS "#define MAXSSPACE   20000"
+
+.PP
+Definition at line 45 of file out\&.c\&.
+.SS "#define MAXSYMS   300"
+
+.PP
+Definition at line 44 of file out\&.c\&.
+.SS "#define printf   \fBmyprintf\fP"
+
+.PP
+Definition at line 190 of file out\&.c\&.
+.SS "#define read_struct(f, s)   (fread(&s,sizeof(s),1,f)==1)"
+
+.PP
+Definition at line 29 of file out\&.c\&.
+.SH "Function Documentation"
+.PP 
+.SS "main (int argc, argv)"
+
+.PP
+Definition at line 66 of file out\&.c\&.
+.SS "myprintf (va_alist)"
+
+.PP
+Definition at line 153 of file out\&.c\&.
+.SS "mysetfile (FILE * f)"
+
+.PP
+Definition at line 184 of file out\&.c\&.
+.SS "mytab (int n)"
+
+.PP
+Definition at line 174 of file out\&.c\&.
+.SS "print_reloc (vaddr, int i, int j)"
+
+.PP
+Definition at line 233 of file out\&.c\&.
+.SS "print_section (int i)"
+
+.PP
+Definition at line 193 of file out\&.c\&.
+.SH "Variable Documentation"
+.PP 
+.SS "struct \fBaouthdr\fP \fBaouthdr\fP"
+
+.PP
+Definition at line 48 of file out\&.c\&.
+.SS "struct \fBfilehdr\fP \fBfilehdr\fP"
+
+.PP
+Definition at line 47 of file out\&.c\&.
+.SS "char* reloc_type[]"
+\fBInitial value:\fP
+.PP
+.nf
+= {
+  "abs", "16", "32", "26", "hi16", "lo16", "gpdata", "gplit"
+}
+.fi
+.PP
+Definition at line 229 of file out\&.c\&.
+.SS "struct \fBscnhdr\fP \fBscnhdr\fP[\fBMAXSCNS\fP]"
+
+.PP
+Definition at line 49 of file out\&.c\&.
+.SS "struct \fBdata\fP section[\fBMAXSCNS\fP]"
+
+.PP
+Definition at line 50 of file out\&.c\&.
+.SS "char* section_name[]"
+\fBInitial value:\fP
+.PP
+.nf
+= {
+  "(null)", "\&.text", "\&.rdata", "\&.data", "\&.sdata", "\&.sbss", "\&.bss",
+  "\&.init", "\&.lit8", "\&.lit4"
+}
+.fi
+.PP
+Definition at line 224 of file out\&.c\&.
+.SS "char sspace[20000]"
+
+.PP
+Definition at line 53 of file out\&.c\&.
+.SS "char* storage_class[]"
+\fBInitial value:\fP
+.PP
+.nf
+= {
+  "Nil", "Text", "Data", "Bss", "Register", "Abs", "Undefined", "CdbLocal",
+  "Bits", "CdbSystem", "RegImage", "Info", "UserStruct", "SData", "SBss",
+  "RData", "Var", "Common", "SCommon", "VarRegister", "Variant", "SUndefined",
+  "Init" }
+.fi
+.PP
+Definition at line 60 of file out\&.c\&.
+.SS "char* symbol_type[]"
+\fBInitial value:\fP
+.PP
+.nf
+= {
+  "Nil", "Global", "Static", "Param", "Local", "Label", "Proc", "Block",
+  "End", "Member", "Type", "File", "Register", "Forward", "StaticProc",
+  "Constant" }
+.fi
+.PP
+Definition at line 55 of file out\&.c\&.
+.SS "EXTR symbols[\fBMAXSYMS\fP]"
+
+.PP
+Definition at line 52 of file out\&.c\&.
+.SS "HDRR symhdr"
+
+.PP
+Definition at line 51 of file out\&.c\&.
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for OS-Project from the source code\&.

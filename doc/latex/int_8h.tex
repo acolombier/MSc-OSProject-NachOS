@@ -1,0 +1,189 @@
+\section{code/bin/int.h File Reference}
+\label{int_8h}\index{code/bin/int.\+h@{code/bin/int.\+h}}
+{\ttfamily \#include \char`\"{}copyright.\+h\char`\"{}}\\*
+Include dependency graph for int.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=155pt]{int_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{int_8h__dep__incl}
+\end{center}
+\end{figure}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define {\bf M\+E\+M\+S\+I\+ZE}~(1$<$$<$24)
+\item 
+\#define {\bf memoffset}~0x10000000
+\item 
+\#define {\bf amark}(x)~x
+\item 
+\#define {\bf imark}(x)~x
+\item 
+\#define {\bf ifetch}(addr)~($\ast$(int $\ast$)(int) (\&({\bf mem}-\/{\bf memoffset})[{\bf imark}(addr)]))
+\item 
+\#define {\bf fetch}(addr)~($\ast$(int $\ast$)(int) (\&({\bf mem}-\/{\bf memoffset})[{\bf amark}(addr)]))
+\item 
+\#define {\bf sfetch}(addr)~($\ast$(short $\ast$)(int) (\&({\bf mem}-\/{\bf memoffset})[{\bf amark}(addr)]))
+\item 
+\#define {\bf usfetch}(addr)~($\ast$(unsigned short $\ast$)(int)(\&({\bf mem}-\/{\bf memoffset})[{\bf amark}(addr)]))
+\item 
+\#define {\bf cfetch}(addr)~($\ast$(char $\ast$)(int) (\&({\bf mem}-\/{\bf memoffset})[{\bf amark}(addr)]))
+\item 
+\#define {\bf ucfetch}(addr)~($\ast$(unsigned char $\ast$)(int)(\&({\bf mem}-\/{\bf memoffset})[{\bf amark}(addr)]))
+\item 
+\#define {\bf store}(addr,  {\bf i})~(($\ast$(int $\ast$)(int) (\&({\bf mem}-\/{\bf memoffset})[{\bf amark}(addr)]) = ({\bf i})))
+\item 
+\#define {\bf sstore}(addr,  {\bf i})~(($\ast$(short $\ast$)(int) (\&({\bf mem}-\/{\bf memoffset})[{\bf amark}(addr)]) = ({\bf i})))
+\item 
+\#define {\bf cstore}(addr,  {\bf i})~((({\bf mem}-\/{\bf memoffset})[{\bf amark}(addr)] = ({\bf i})))
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{int.\+h@{int.\+h}!amark@{amark}}
+\index{amark@{amark}!int.\+h@{int.\+h}}
+\subsubsection[{amark}]{\setlength{\rightskip}{0pt plus 5cm}\#define amark(
+\begin{DoxyParamCaption}
+\item[{}]{x}
+\end{DoxyParamCaption}
+)~x}\label{int_8h_ab8832df2de9f8f1b7154f45ae0396fe1}
+
+
+Definition at line 15 of file int.\+h.
+
+\index{int.\+h@{int.\+h}!cfetch@{cfetch}}
+\index{cfetch@{cfetch}!int.\+h@{int.\+h}}
+\subsubsection[{cfetch}]{\setlength{\rightskip}{0pt plus 5cm}\#define cfetch(
+\begin{DoxyParamCaption}
+\item[{}]{addr}
+\end{DoxyParamCaption}
+)~($\ast$(char $\ast$)(int) (\&({\bf mem}-\/{\bf memoffset})[{\bf amark}(addr)]))}\label{int_8h_a8b66a0fd9471a96aa10207bb49b5fa81}
+
+
+Definition at line 22 of file int.\+h.
+
+\index{int.\+h@{int.\+h}!cstore@{cstore}}
+\index{cstore@{cstore}!int.\+h@{int.\+h}}
+\subsubsection[{cstore}]{\setlength{\rightskip}{0pt plus 5cm}\#define cstore(
+\begin{DoxyParamCaption}
+\item[{}]{addr, }
+\item[{}]{{\bf i}}
+\end{DoxyParamCaption}
+)~((({\bf mem}-\/{\bf memoffset})[{\bf amark}(addr)] = ({\bf i})))}\label{int_8h_ac2cd40ec9e53544706ff8c3a0e23d0ff}
+
+
+Definition at line 29 of file int.\+h.
+
+\index{int.\+h@{int.\+h}!fetch@{fetch}}
+\index{fetch@{fetch}!int.\+h@{int.\+h}}
+\subsubsection[{fetch}]{\setlength{\rightskip}{0pt plus 5cm}\#define fetch(
+\begin{DoxyParamCaption}
+\item[{}]{addr}
+\end{DoxyParamCaption}
+)~($\ast$(int $\ast$)(int) (\&({\bf mem}-\/{\bf memoffset})[{\bf amark}(addr)]))}\label{int_8h_acc497e599867365a94bb740719692f06}
+
+
+Definition at line 19 of file int.\+h.
+
+\index{int.\+h@{int.\+h}!ifetch@{ifetch}}
+\index{ifetch@{ifetch}!int.\+h@{int.\+h}}
+\subsubsection[{ifetch}]{\setlength{\rightskip}{0pt plus 5cm}\#define ifetch(
+\begin{DoxyParamCaption}
+\item[{}]{addr}
+\end{DoxyParamCaption}
+)~($\ast$(int $\ast$)(int) (\&({\bf mem}-\/{\bf memoffset})[{\bf imark}(addr)]))}\label{int_8h_a61f0907907e57844cd8ee90352753a42}
+
+
+Definition at line 18 of file int.\+h.
+
+\index{int.\+h@{int.\+h}!imark@{imark}}
+\index{imark@{imark}!int.\+h@{int.\+h}}
+\subsubsection[{imark}]{\setlength{\rightskip}{0pt plus 5cm}\#define imark(
+\begin{DoxyParamCaption}
+\item[{}]{x}
+\end{DoxyParamCaption}
+)~x}\label{int_8h_a4cfde4dac8ab5270e15e6274f879847a}
+
+
+Definition at line 16 of file int.\+h.
+
+\index{int.\+h@{int.\+h}!memoffset@{memoffset}}
+\index{memoffset@{memoffset}!int.\+h@{int.\+h}}
+\subsubsection[{memoffset}]{\setlength{\rightskip}{0pt plus 5cm}\#define memoffset~0x10000000}\label{int_8h_a8f4de5fda9f5482cb0182c97d76bc944}
+
+
+Definition at line 12 of file int.\+h.
+
+\index{int.\+h@{int.\+h}!M\+E\+M\+S\+I\+ZE@{M\+E\+M\+S\+I\+ZE}}
+\index{M\+E\+M\+S\+I\+ZE@{M\+E\+M\+S\+I\+ZE}!int.\+h@{int.\+h}}
+\subsubsection[{M\+E\+M\+S\+I\+ZE}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+E\+M\+S\+I\+ZE~(1$<$$<$24)}\label{int_8h_ad4661974a66daba2cf78a74dfbe67ebf}
+
+
+Definition at line 11 of file int.\+h.
+
+\index{int.\+h@{int.\+h}!sfetch@{sfetch}}
+\index{sfetch@{sfetch}!int.\+h@{int.\+h}}
+\subsubsection[{sfetch}]{\setlength{\rightskip}{0pt plus 5cm}\#define sfetch(
+\begin{DoxyParamCaption}
+\item[{}]{addr}
+\end{DoxyParamCaption}
+)~($\ast$(short $\ast$)(int) (\&({\bf mem}-\/{\bf memoffset})[{\bf amark}(addr)]))}\label{int_8h_aa50af1bc14bb11d825829b4cecd1c509}
+
+
+Definition at line 20 of file int.\+h.
+
+\index{int.\+h@{int.\+h}!sstore@{sstore}}
+\index{sstore@{sstore}!int.\+h@{int.\+h}}
+\subsubsection[{sstore}]{\setlength{\rightskip}{0pt plus 5cm}\#define sstore(
+\begin{DoxyParamCaption}
+\item[{}]{addr, }
+\item[{}]{{\bf i}}
+\end{DoxyParamCaption}
+)~(($\ast$(short $\ast$)(int) (\&({\bf mem}-\/{\bf memoffset})[{\bf amark}(addr)]) = ({\bf i})))}\label{int_8h_a1087e1badebe84ab14e967db82ee836f}
+
+
+Definition at line 27 of file int.\+h.
+
+\index{int.\+h@{int.\+h}!store@{store}}
+\index{store@{store}!int.\+h@{int.\+h}}
+\subsubsection[{store}]{\setlength{\rightskip}{0pt plus 5cm}\#define store(
+\begin{DoxyParamCaption}
+\item[{}]{addr, }
+\item[{}]{{\bf i}}
+\end{DoxyParamCaption}
+)~(($\ast$(int $\ast$)(int) (\&({\bf mem}-\/{\bf memoffset})[{\bf amark}(addr)]) = ({\bf i})))}\label{int_8h_a9884d11e1f5db5355a1a8c3970e99680}
+
+
+Definition at line 25 of file int.\+h.
+
+\index{int.\+h@{int.\+h}!ucfetch@{ucfetch}}
+\index{ucfetch@{ucfetch}!int.\+h@{int.\+h}}
+\subsubsection[{ucfetch}]{\setlength{\rightskip}{0pt plus 5cm}\#define ucfetch(
+\begin{DoxyParamCaption}
+\item[{}]{addr}
+\end{DoxyParamCaption}
+)~($\ast$(unsigned char $\ast$)(int)(\&({\bf mem}-\/{\bf memoffset})[{\bf amark}(addr)]))}\label{int_8h_ac68076cff1ebc89477f1144b8b9a7c63}
+
+
+Definition at line 23 of file int.\+h.
+
+\index{int.\+h@{int.\+h}!usfetch@{usfetch}}
+\index{usfetch@{usfetch}!int.\+h@{int.\+h}}
+\subsubsection[{usfetch}]{\setlength{\rightskip}{0pt plus 5cm}\#define usfetch(
+\begin{DoxyParamCaption}
+\item[{}]{addr}
+\end{DoxyParamCaption}
+)~($\ast$(unsigned short $\ast$)(int)(\&({\bf mem}-\/{\bf memoffset})[{\bf amark}(addr)]))}\label{int_8h_aff7197cf6dd18e0f948ebd633fa79384}
+
+
+Definition at line 21 of file int.\+h.
+

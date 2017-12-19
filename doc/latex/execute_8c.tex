@@ -1,0 +1,508 @@
+\section{code/bin/execute.c File Reference}
+\label{execute_8c}\index{code/bin/execute.\+c@{code/bin/execute.\+c}}
+{\ttfamily \#include \char`\"{}copyright.\+h\char`\"{}}\\*
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include \char`\"{}instr.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}encode.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}int.\+h\char`\"{}}\\*
+Include dependency graph for execute.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=329pt]{execute_8c__incl}
+\end{center}
+\end{figure}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define {\bf F\+A\+ST}~0
+\item 
+\#define {\bf true}~1
+\item 
+\#define {\bf false}~0
+\item 
+\#define {\bf b31}(z)~(((z) $>$$>$31 )\&0x1)	/$\ast$ extract bit 31 $\ast$/
+\item 
+\#define {\bf cc\+\_\+add}(rr,  op1,  op2)
+\item 
+\#define {\bf cc\+\_\+sub}(rr,  op1,  op2)
+\item 
+\#define {\bf cc\+\_\+logic}(rr)
+\item 
+\#define {\bf cc\+\_\+mulscc}(rr,  op1,  op2)
+\item 
+\#define {\bf NH}~32
+\item 
+\#define {\bf N\+NN}~33
+\item 
+\#define {\bf N\+N\+NN}~(64)
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bf runprogram} (int startpc, int argc, argv)
+\item 
+{\bf u} ()
+\item 
+{\bf ny} ()
+\item 
+{\bf dump\+\_\+reg} ()
+\item 
+{\bf ilog2} (int {\bf i})
+\item 
+void {\bf henters} (int n, int hist)
+\item 
+{\bf hprint} ()
+\item 
+{\bf patable} (tab)
+\item 
+{\bf printstatistics} ()
+\item 
+{\bf henter} (int n)
+\item 
+{\bf printhist} ()
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+char {\bf mem} [$\,$]
+\item 
+int {\bf T\+R\+A\+CE}
+\item 
+int {\bf Regtrace}
+\item 
+int {\bf Reg} [32]
+\item 
+int {\bf HI}
+\item 
+int {\bf LO}
+\item 
+int {\bf numjmpls}
+\item 
+int {\bf arch1cycles}
+\item 
+int {\bf i}
+\item 
+int {\bf hoflo} [{\bf NH}]
+\item 
+int {\bf htotal} [{\bf NH}]
+\item 
+int {\bf numadds} =1
+\item 
+int {\bf numsubs} =1
+\item 
+int {\bf numsuccesses}
+\item 
+int {\bf numcarries}
+\item 
+int {\bf addtable} [33][33]
+\item 
+int {\bf subtable} [33][33]
+\item 
+char {\bf fmt} [$\,$] = \char`\"{}\%6d\char`\"{}
+\item 
+char {\bf fmt2} [$\,$] = \char`\"{}-\/-\/-\/-\/-\/-\/\char`\"{}
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{execute.\+c@{execute.\+c}!b31@{b31}}
+\index{b31@{b31}!execute.\+c@{execute.\+c}}
+\subsubsection[{b31}]{\setlength{\rightskip}{0pt plus 5cm}\#define b31(
+\begin{DoxyParamCaption}
+\item[{}]{z}
+\end{DoxyParamCaption}
+)~(((z) $>$$>$31 )\&0x1)	/$\ast$ extract bit 31 $\ast$/}\label{execute_8c_ab1bf2067f76720b32f4e37a7a3eb1507}
+
+
+Definition at line 31 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!cc\+\_\+add@{cc\+\_\+add}}
+\index{cc\+\_\+add@{cc\+\_\+add}!execute.\+c@{execute.\+c}}
+\subsubsection[{cc\+\_\+add}]{\setlength{\rightskip}{0pt plus 5cm}\#define cc\+\_\+add(
+\begin{DoxyParamCaption}
+\item[{}]{rr, }
+\item[{}]{op1, }
+\item[{}]{op2}
+\end{DoxyParamCaption}
+)}\label{execute_8c_abe7c0606c8c3a46c0fd0041b1dc1e41a}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+N = (rr < 0);   \(\backslash\)
+    Z = (rr == 0);  \
+	C = ((unsigned) rr < (\textcolor{keywordtype}{unsigned}) op2);  \(\backslash\)
+    V = ((op1^op2) >= 0  &&  (op1^rr) < 0);
+\end{DoxyCode}
+
+
+Definition at line 34 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!cc\+\_\+logic@{cc\+\_\+logic}}
+\index{cc\+\_\+logic@{cc\+\_\+logic}!execute.\+c@{execute.\+c}}
+\subsubsection[{cc\+\_\+logic}]{\setlength{\rightskip}{0pt plus 5cm}\#define cc\+\_\+logic(
+\begin{DoxyParamCaption}
+\item[{}]{rr}
+\end{DoxyParamCaption}
+)}\label{execute_8c_aca5e292df88e999d756d028375cc35ab}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+N = (rr < 0);   \(\backslash\)
+    Z = (rr == 0);  \(\backslash\)
+    V = 0;  \
+	C = 0;
+\end{DoxyCode}
+
+
+Definition at line 48 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!cc\+\_\+mulscc@{cc\+\_\+mulscc}}
+\index{cc\+\_\+mulscc@{cc\+\_\+mulscc}!execute.\+c@{execute.\+c}}
+\subsubsection[{cc\+\_\+mulscc}]{\setlength{\rightskip}{0pt plus 5cm}\#define cc\+\_\+mulscc(
+\begin{DoxyParamCaption}
+\item[{}]{rr, }
+\item[{}]{op1, }
+\item[{}]{op2}
+\end{DoxyParamCaption}
+)}\label{execute_8c_af985d73675946d96ddfe2e9c7084e8a1}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+N = (rr < 0);   \(\backslash\)
+    Z = (rr == 0);  \(\backslash\)
+    V = b31((op1 & op2 & ~rr) | (~op1 & ~op2 & rr));    \
+	C = b31((op1 & op2) | (~rr & (op1 | op2)));
+\end{DoxyCode}
+
+
+Definition at line 54 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!cc\+\_\+sub@{cc\+\_\+sub}}
+\index{cc\+\_\+sub@{cc\+\_\+sub}!execute.\+c@{execute.\+c}}
+\subsubsection[{cc\+\_\+sub}]{\setlength{\rightskip}{0pt plus 5cm}\#define cc\+\_\+sub(
+\begin{DoxyParamCaption}
+\item[{}]{rr, }
+\item[{}]{op1, }
+\item[{}]{op2}
+\end{DoxyParamCaption}
+)}\label{execute_8c_a9bca03373bbcee2ebbc4f6577811d6d4}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+N = (rr < 0);   \(\backslash\)
+    Z = (rr == 0);  \(\backslash\)
+    V = b31((op1 & ~op2 & ~rr) | (~op1 & op2 & rr));    \
+	C = ((unsigned) op1 < (\textcolor{keywordtype}{unsigned}) op2);
+\end{DoxyCode}
+
+
+Definition at line 40 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!false@{false}}
+\index{false@{false}!execute.\+c@{execute.\+c}}
+\subsubsection[{false}]{\setlength{\rightskip}{0pt plus 5cm}\#define false~0}\label{execute_8c_a65e9886d74aaee76545e83dd09011727}
+
+
+Definition at line 16 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!F\+A\+ST@{F\+A\+ST}}
+\index{F\+A\+ST@{F\+A\+ST}!execute.\+c@{execute.\+c}}
+\subsubsection[{F\+A\+ST}]{\setlength{\rightskip}{0pt plus 5cm}\#define F\+A\+ST~0}\label{execute_8c_a8091c2bcff55cbe0a4a145fd5fb7c22d}
+
+
+Definition at line 14 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!NH@{NH}}
+\index{NH@{NH}!execute.\+c@{execute.\+c}}
+\subsubsection[{NH}]{\setlength{\rightskip}{0pt plus 5cm}\#define NH~32}\label{execute_8c_abc3b05033963c7a33d28a9fc29835b6c}
+
+
+Definition at line 465 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!N\+NN@{N\+NN}}
+\index{N\+NN@{N\+NN}!execute.\+c@{execute.\+c}}
+\subsubsection[{N\+NN}]{\setlength{\rightskip}{0pt plus 5cm}\#define N\+NN~33}\label{execute_8c_ae4d7ec6f9f31fae66711f63fa5c26805}
+
+
+Definition at line 466 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!N\+N\+NN@{N\+N\+NN}}
+\index{N\+N\+NN@{N\+N\+NN}!execute.\+c@{execute.\+c}}
+\subsubsection[{N\+N\+NN}]{\setlength{\rightskip}{0pt plus 5cm}\#define N\+N\+NN~(64)}\label{execute_8c_afdad8e3654b5f02ff4c50fcb88f6eed9}
+
+
+Definition at line 555 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!true@{true}}
+\index{true@{true}!execute.\+c@{execute.\+c}}
+\subsubsection[{true}]{\setlength{\rightskip}{0pt plus 5cm}\#define true~1}\label{execute_8c_a41f9c5fb8b08eb5dc3edce4dcb37fee7}
+
+
+Definition at line 15 of file execute.\+c.
+
+
+
+\subsection{Function Documentation}
+\index{execute.\+c@{execute.\+c}!dump\+\_\+reg@{dump\+\_\+reg}}
+\index{dump\+\_\+reg@{dump\+\_\+reg}!execute.\+c@{execute.\+c}}
+\subsubsection[{dump\+\_\+reg()}]{\setlength{\rightskip}{0pt plus 5cm}dump\+\_\+reg (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{execute_8c_a8b1ed18916550587c2341995fd5b5aef}
+
+
+Definition at line 417 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!henter@{henter}}
+\index{henter@{henter}!execute.\+c@{execute.\+c}}
+\subsubsection[{henter(int n)}]{\setlength{\rightskip}{0pt plus 5cm}henter (
+\begin{DoxyParamCaption}
+\item[{int}]{n}
+\end{DoxyParamCaption}
+)}\label{execute_8c_aa866fdccc46dc8004ad572709c3309e3}
+
+
+Definition at line 559 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!henters@{henters}}
+\index{henters@{henters}!execute.\+c@{execute.\+c}}
+\subsubsection[{henters(int n, int hist)}]{\setlength{\rightskip}{0pt plus 5cm}void henters (
+\begin{DoxyParamCaption}
+\item[{int}]{n, }
+\item[{int}]{hist}
+\end{DoxyParamCaption}
+)}\label{execute_8c_ac8b8879c7b48399cd315a599398ba9ca}
+
+
+Definition at line 471 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!hprint@{hprint}}
+\index{hprint@{hprint}!execute.\+c@{execute.\+c}}
+\subsubsection[{hprint()}]{\setlength{\rightskip}{0pt plus 5cm}hprint (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{execute_8c_af21350ec19d8ec4afb1b5ad1834dd15e}
+
+
+Definition at line 478 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!ilog2@{ilog2}}
+\index{ilog2@{ilog2}!execute.\+c@{execute.\+c}}
+\subsubsection[{ilog2(int i)}]{\setlength{\rightskip}{0pt plus 5cm}ilog2 (
+\begin{DoxyParamCaption}
+\item[{int}]{i}
+\end{DoxyParamCaption}
+)}\label{execute_8c_aa2daceffda5d0c755d4c43d76f215d10}
+
+
+Definition at line 447 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!ny@{ny}}
+\index{ny@{ny}!execute.\+c@{execute.\+c}}
+\subsubsection[{ny()}]{\setlength{\rightskip}{0pt plus 5cm}ny (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{execute_8c_a99d5bb9a191e23635b7393fed377d9a2}
+
+
+Definition at line 383 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!patable@{patable}}
+\index{patable@{patable}!execute.\+c@{execute.\+c}}
+\subsubsection[{patable(tab)}]{\setlength{\rightskip}{0pt plus 5cm}patable (
+\begin{DoxyParamCaption}
+\item[{tab}]{}
+\end{DoxyParamCaption}
+)}\label{execute_8c_a56e4be69db7a059f15b71d6df0875ab0}
+
+
+Definition at line 508 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!printhist@{printhist}}
+\index{printhist@{printhist}!execute.\+c@{execute.\+c}}
+\subsubsection[{printhist()}]{\setlength{\rightskip}{0pt plus 5cm}printhist (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{execute_8c_a94b6be4394d2f5f4620fda9910fde7d5}
+
+
+Definition at line 566 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!printstatistics@{printstatistics}}
+\index{printstatistics@{printstatistics}!execute.\+c@{execute.\+c}}
+\subsubsection[{printstatistics()}]{\setlength{\rightskip}{0pt plus 5cm}printstatistics (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{execute_8c_aa5b77410cbcbd9f574582419a424236f}
+
+
+Definition at line 533 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!runprogram@{runprogram}}
+\index{runprogram@{runprogram}!execute.\+c@{execute.\+c}}
+\subsubsection[{runprogram(int startpc, int argc, argv)}]{\setlength{\rightskip}{0pt plus 5cm}runprogram (
+\begin{DoxyParamCaption}
+\item[{int}]{startpc, }
+\item[{int}]{argc, }
+\item[{argv}]{}
+\end{DoxyParamCaption}
+)}\label{execute_8c_ad4bc7c98e4052e7b0df8d116cff75958}
+
+
+Definition at line 61 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!u@{u}}
+\index{u@{u}!execute.\+c@{execute.\+c}}
+\subsubsection[{u()}]{\setlength{\rightskip}{0pt plus 5cm}u (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{execute_8c_ab34a9ec8345e1a46659cab3deafd1a01}
+
+
+Definition at line 378 of file execute.\+c.
+
+
+
+\subsection{Variable Documentation}
+\index{execute.\+c@{execute.\+c}!addtable@{addtable}}
+\index{addtable@{addtable}!execute.\+c@{execute.\+c}}
+\subsubsection[{addtable}]{\setlength{\rightskip}{0pt plus 5cm}int addtable[33][33]}\label{execute_8c_a7f80cc52aa264733a59f1421360a3d7f}
+
+
+Definition at line 502 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!arch1cycles@{arch1cycles}}
+\index{arch1cycles@{arch1cycles}!execute.\+c@{execute.\+c}}
+\subsubsection[{arch1cycles}]{\setlength{\rightskip}{0pt plus 5cm}int arch1cycles}\label{execute_8c_a23f86f71a5c66c42cd4b624e3b9f3c94}
+
+
+Definition at line 28 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!fmt@{fmt}}
+\index{fmt@{fmt}!execute.\+c@{execute.\+c}}
+\subsubsection[{fmt}]{\setlength{\rightskip}{0pt plus 5cm}char fmt[$\,$] = \char`\"{}\%6d\char`\"{}}\label{execute_8c_a37908304d58bcfde34d7dc6f498591f5}
+
+
+Definition at line 505 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!fmt2@{fmt2}}
+\index{fmt2@{fmt2}!execute.\+c@{execute.\+c}}
+\subsubsection[{fmt2}]{\setlength{\rightskip}{0pt plus 5cm}char fmt2[$\,$] = \char`\"{}-\/-\/-\/-\/-\/-\/\char`\"{}}\label{execute_8c_a61e44204967f2d32f52c318d7ae484ec}
+
+
+Definition at line 506 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!HI@{HI}}
+\index{HI@{HI}!execute.\+c@{execute.\+c}}
+\subsubsection[{HI}]{\setlength{\rightskip}{0pt plus 5cm}int HI}\label{execute_8c_a4692891afb0af53a0c9488c0f8cfc708}
+
+
+Definition at line 24 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!hoflo@{hoflo}}
+\index{hoflo@{hoflo}!execute.\+c@{execute.\+c}}
+\subsubsection[{hoflo}]{\setlength{\rightskip}{0pt plus 5cm}int hoflo[{\bf NH}]}\label{execute_8c_ab117349ce637e2d9b53591266b11eba0}
+
+
+Definition at line 469 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!htotal@{htotal}}
+\index{htotal@{htotal}!execute.\+c@{execute.\+c}}
+\subsubsection[{htotal}]{\setlength{\rightskip}{0pt plus 5cm}int htotal[{\bf NH}]}\label{execute_8c_abfe283d900b27cca46987953c9eb9749}
+
+
+Definition at line 469 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!i@{i}}
+\index{i@{i}!execute.\+c@{execute.\+c}}
+\subsubsection[{i}]{\setlength{\rightskip}{0pt plus 5cm}int i}\label{execute_8c_acb559820d9ca11295b4500f179ef6392}
+{\bfseries Initial value\+:}
+\begin{DoxyCode}
+\{
+    \textcolor{keywordflow}{return} rs(i)
+\end{DoxyCode}
+
+
+Definition at line 392 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!LO@{LO}}
+\index{LO@{LO}!execute.\+c@{execute.\+c}}
+\subsubsection[{LO}]{\setlength{\rightskip}{0pt plus 5cm}int LO}\label{execute_8c_a9192c37abac524f0f61876f8b33f6999}
+
+
+Definition at line 24 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!mem@{mem}}
+\index{mem@{mem}!execute.\+c@{execute.\+c}}
+\subsubsection[{mem}]{\setlength{\rightskip}{0pt plus 5cm}char mem[$\,$]}\label{execute_8c_abba2b58d12066c22a7000e0882e8c5bb}
+
+
+Definition at line 25 of file disasm.\+c.
+
+\index{execute.\+c@{execute.\+c}!numadds@{numadds}}
+\index{numadds@{numadds}!execute.\+c@{execute.\+c}}
+\subsubsection[{numadds}]{\setlength{\rightskip}{0pt plus 5cm}int numadds =1}\label{execute_8c_a59f5e448d2606c40dcb5eef13b1621bc}
+
+
+Definition at line 501 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!numcarries@{numcarries}}
+\index{numcarries@{numcarries}!execute.\+c@{execute.\+c}}
+\subsubsection[{numcarries}]{\setlength{\rightskip}{0pt plus 5cm}int numcarries}\label{execute_8c_afd9905d8426741c9d3685b3f16b4a4dc}
+
+
+Definition at line 501 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!numjmpls@{numjmpls}}
+\index{numjmpls@{numjmpls}!execute.\+c@{execute.\+c}}
+\subsubsection[{numjmpls}]{\setlength{\rightskip}{0pt plus 5cm}int numjmpls}\label{execute_8c_a5c795c9d324e98209929e75c3605ebaf}
+
+
+Definition at line 27 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!numsubs@{numsubs}}
+\index{numsubs@{numsubs}!execute.\+c@{execute.\+c}}
+\subsubsection[{numsubs}]{\setlength{\rightskip}{0pt plus 5cm}int numsubs =1}\label{execute_8c_acd5c8ec5a9d632d17afeacba7bc97366}
+
+
+Definition at line 501 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!numsuccesses@{numsuccesses}}
+\index{numsuccesses@{numsuccesses}!execute.\+c@{execute.\+c}}
+\subsubsection[{numsuccesses}]{\setlength{\rightskip}{0pt plus 5cm}int numsuccesses}\label{execute_8c_a2f3f5dcba488f065d38fedba82a2a674}
+
+
+Definition at line 501 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!Reg@{Reg}}
+\index{Reg@{Reg}!execute.\+c@{execute.\+c}}
+\subsubsection[{Reg}]{\setlength{\rightskip}{0pt plus 5cm}int Reg[32]}\label{execute_8c_a6f68e5248211a0505dc97d8ac59a0ae5}
+
+
+Definition at line 23 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!Regtrace@{Regtrace}}
+\index{Regtrace@{Regtrace}!execute.\+c@{execute.\+c}}
+\subsubsection[{Regtrace}]{\setlength{\rightskip}{0pt plus 5cm}int Regtrace}\label{execute_8c_a38daff3d696277a81716a8200f659a21}
+
+
+Definition at line 26 of file disasm.\+c.
+
+\index{execute.\+c@{execute.\+c}!subtable@{subtable}}
+\index{subtable@{subtable}!execute.\+c@{execute.\+c}}
+\subsubsection[{subtable}]{\setlength{\rightskip}{0pt plus 5cm}int subtable[33][33]}\label{execute_8c_a32c5902d8d4ace553cf3bcc75e8e6a78}
+
+
+Definition at line 503 of file execute.\+c.
+
+\index{execute.\+c@{execute.\+c}!T\+R\+A\+CE@{T\+R\+A\+CE}}
+\index{T\+R\+A\+CE@{T\+R\+A\+CE}!execute.\+c@{execute.\+c}}
+\subsubsection[{T\+R\+A\+CE}]{\setlength{\rightskip}{0pt plus 5cm}int T\+R\+A\+CE}\label{execute_8c_a231cbc535bda364aa70c8d0617211a65}
+
+
+Definition at line 26 of file disasm.\+c.
+

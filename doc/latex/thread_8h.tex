@@ -1,0 +1,119 @@
+\section{code/threads/thread.h File Reference}
+\label{thread_8h}\index{code/threads/thread.\+h@{code/threads/thread.\+h}}
+{\ttfamily \#include \char`\"{}copyright.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}utility.\+h\char`\"{}}\\*
+Include dependency graph for thread.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{thread_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{thread_8h__dep__incl}
+\end{center}
+\end{figure}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class {\bf Thread}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define {\bf Machine\+State\+Size}~18
+\item 
+\#define {\bf Stack\+Size}~(4 $\ast$ 1024)
+\end{DoxyCompactItemize}
+\subsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum {\bf Thread\+Status} \{ {\bf J\+U\+S\+T\+\_\+\+C\+R\+E\+A\+T\+ED}, 
+{\bf R\+U\+N\+N\+I\+NG}, 
+{\bf R\+E\+A\+DY}, 
+{\bf B\+L\+O\+C\+K\+ED}
+ \}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void {\bf Thread\+Print} (int arg)
+\item 
+void {\bf Thread\+Root} ()
+\item 
+void {\bf S\+W\+I\+T\+CH} ({\bf Thread} $\ast$old\+Thread, {\bf Thread} $\ast$new\+Thread)
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{thread.\+h@{thread.\+h}!Machine\+State\+Size@{Machine\+State\+Size}}
+\index{Machine\+State\+Size@{Machine\+State\+Size}!thread.\+h@{thread.\+h}}
+\subsubsection[{Machine\+State\+Size}]{\setlength{\rightskip}{0pt plus 5cm}\#define Machine\+State\+Size~18}\label{thread_8h_ac4750389bd2f44f1d404c25f8910e92b}
+
+
+Definition at line 51 of file thread.\+h.
+
+\index{thread.\+h@{thread.\+h}!Stack\+Size@{Stack\+Size}}
+\index{Stack\+Size@{Stack\+Size}!thread.\+h@{thread.\+h}}
+\subsubsection[{Stack\+Size}]{\setlength{\rightskip}{0pt plus 5cm}\#define Stack\+Size~(4 $\ast$ 1024)}\label{thread_8h_aa63b5617d3ddf26abb70f9b8d2b334f5}
+
+
+Definition at line 56 of file thread.\+h.
+
+
+
+\subsection{Enumeration Type Documentation}
+\index{thread.\+h@{thread.\+h}!Thread\+Status@{Thread\+Status}}
+\index{Thread\+Status@{Thread\+Status}!thread.\+h@{thread.\+h}}
+\subsubsection[{Thread\+Status}]{\setlength{\rightskip}{0pt plus 5cm}enum {\bf Thread\+Status}}\label{thread_8h_ae2739961013a00cede621d4d72f2173c}
+\begin{Desc}
+\item[Enumerator]\par
+\begin{description}
+\index{J\+U\+S\+T\+\_\+\+C\+R\+E\+A\+T\+ED@{J\+U\+S\+T\+\_\+\+C\+R\+E\+A\+T\+ED}!thread.\+h@{thread.\+h}}\index{thread.\+h@{thread.\+h}!J\+U\+S\+T\+\_\+\+C\+R\+E\+A\+T\+ED@{J\+U\+S\+T\+\_\+\+C\+R\+E\+A\+T\+ED}}\item[{\em 
+J\+U\+S\+T\+\_\+\+C\+R\+E\+A\+T\+ED\label{thread_8h_ae2739961013a00cede621d4d72f2173ca84c9ee12cf6afc9e6782a2443084e864}
+}]\index{R\+U\+N\+N\+I\+NG@{R\+U\+N\+N\+I\+NG}!thread.\+h@{thread.\+h}}\index{thread.\+h@{thread.\+h}!R\+U\+N\+N\+I\+NG@{R\+U\+N\+N\+I\+NG}}\item[{\em 
+R\+U\+N\+N\+I\+NG\label{thread_8h_ae2739961013a00cede621d4d72f2173ca1061be6c3fb88d32829cba6f6b2be304}
+}]\index{R\+E\+A\+DY@{R\+E\+A\+DY}!thread.\+h@{thread.\+h}}\index{thread.\+h@{thread.\+h}!R\+E\+A\+DY@{R\+E\+A\+DY}}\item[{\em 
+R\+E\+A\+DY\label{thread_8h_ae2739961013a00cede621d4d72f2173ca6564f2f3e15be06b670547bbcaaf0798}
+}]\index{B\+L\+O\+C\+K\+ED@{B\+L\+O\+C\+K\+ED}!thread.\+h@{thread.\+h}}\index{thread.\+h@{thread.\+h}!B\+L\+O\+C\+K\+ED@{B\+L\+O\+C\+K\+ED}}\item[{\em 
+B\+L\+O\+C\+K\+ED\label{thread_8h_ae2739961013a00cede621d4d72f2173ca376c1b6a3f75d283a2efacf737438d61}
+}]\end{description}
+\end{Desc}
+
+
+Definition at line 60 of file thread.\+h.
+
+
+
+\subsection{Function Documentation}
+\index{thread.\+h@{thread.\+h}!S\+W\+I\+T\+CH@{S\+W\+I\+T\+CH}}
+\index{S\+W\+I\+T\+CH@{S\+W\+I\+T\+CH}!thread.\+h@{thread.\+h}}
+\subsubsection[{S\+W\+I\+T\+C\+H(\+Thread $\ast$old\+Thread, Thread $\ast$new\+Thread)}]{\setlength{\rightskip}{0pt plus 5cm}void S\+W\+I\+T\+CH (
+\begin{DoxyParamCaption}
+\item[{{\bf Thread} $\ast$}]{old\+Thread, }
+\item[{{\bf Thread} $\ast$}]{new\+Thread}
+\end{DoxyParamCaption}
+)}\label{thread_8h_a10e80b5f1da660f5390f448c8fee2ae7}
+\index{thread.\+h@{thread.\+h}!Thread\+Print@{Thread\+Print}}
+\index{Thread\+Print@{Thread\+Print}!thread.\+h@{thread.\+h}}
+\subsubsection[{Thread\+Print(int arg)}]{\setlength{\rightskip}{0pt plus 5cm}void Thread\+Print (
+\begin{DoxyParamCaption}
+\item[{int}]{arg}
+\end{DoxyParamCaption}
+)}\label{thread_8h_ab8e783c955e46c7b38197910c485b7a7}
+
+
+Definition at line 319 of file thread.\+cc.
+
+\index{thread.\+h@{thread.\+h}!Thread\+Root@{Thread\+Root}}
+\index{Thread\+Root@{Thread\+Root}!thread.\+h@{thread.\+h}}
+\subsubsection[{Thread\+Root()}]{\setlength{\rightskip}{0pt plus 5cm}void Thread\+Root (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{thread_8h_ac34fec5b8ba05e6039703ab68f5e9118}

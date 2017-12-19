@@ -1,0 +1,682 @@
+\section{code/bin/encode.h File Reference}
+\label{encode_8h}\index{code/bin/encode.\+h@{code/bin/encode.\+h}}
+{\ttfamily \#include \char`\"{}copyright.\+h\char`\"{}}\\*
+Include dependency graph for encode.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=176pt]{encode_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=272pt]{encode_8h__dep__incl}
+\end{center}
+\end{figure}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define {\bf I\+\_\+\+S\+P\+E\+C\+I\+AL}~000
+\item 
+\#define {\bf I\+\_\+\+B\+C\+O\+ND}~001
+\item 
+\#define {\bf I\+\_\+J}~002
+\item 
+\#define {\bf I\+\_\+\+J\+AL}~003
+\item 
+\#define {\bf I\+\_\+\+B\+EQ}~004
+\item 
+\#define {\bf I\+\_\+\+B\+NE}~005
+\item 
+\#define {\bf I\+\_\+\+B\+L\+EZ}~006
+\item 
+\#define {\bf I\+\_\+\+B\+G\+TZ}~007
+\item 
+\#define {\bf I\+\_\+\+A\+D\+DI}~010
+\item 
+\#define {\bf I\+\_\+\+A\+D\+D\+IU}~011
+\item 
+\#define {\bf I\+\_\+\+S\+L\+TI}~012
+\item 
+\#define {\bf I\+\_\+\+S\+L\+T\+IU}~013
+\item 
+\#define {\bf I\+\_\+\+A\+N\+DI}~014
+\item 
+\#define {\bf I\+\_\+\+O\+RI}~015
+\item 
+\#define {\bf I\+\_\+\+X\+O\+RI}~016
+\item 
+\#define {\bf I\+\_\+\+L\+UI}~017
+\item 
+\#define {\bf I\+\_\+\+C\+O\+P0}~020
+\item 
+\#define {\bf I\+\_\+\+C\+O\+P1}~021
+\item 
+\#define {\bf I\+\_\+\+C\+O\+P2}~022
+\item 
+\#define {\bf I\+\_\+\+C\+O\+P3}~023
+\item 
+\#define {\bf I\+\_\+\+LB}~040
+\item 
+\#define {\bf I\+\_\+\+LH}~041
+\item 
+\#define {\bf I\+\_\+\+L\+WL}~042
+\item 
+\#define {\bf I\+\_\+\+LW}~043
+\item 
+\#define {\bf I\+\_\+\+L\+BU}~044
+\item 
+\#define {\bf I\+\_\+\+L\+HU}~045
+\item 
+\#define {\bf I\+\_\+\+L\+WR}~046
+\item 
+\#define {\bf I\+\_\+\+SB}~050
+\item 
+\#define {\bf I\+\_\+\+SH}~051
+\item 
+\#define {\bf I\+\_\+\+S\+WL}~052
+\item 
+\#define {\bf I\+\_\+\+SW}~053
+\item 
+\#define {\bf I\+\_\+\+S\+WR}~056
+\item 
+\#define {\bf I\+\_\+\+L\+W\+C0}~060
+\item 
+\#define {\bf I\+\_\+\+L\+W\+C1}~061
+\item 
+\#define {\bf I\+\_\+\+L\+W\+C2}~062
+\item 
+\#define {\bf I\+\_\+\+L\+W\+C3}~063
+\item 
+\#define {\bf I\+\_\+\+S\+W\+C0}~070
+\item 
+\#define {\bf I\+\_\+\+S\+W\+C1}~071
+\item 
+\#define {\bf I\+\_\+\+S\+W\+C2}~072
+\item 
+\#define {\bf I\+\_\+\+S\+W\+C3}~073
+\item 
+\#define {\bf I\+\_\+\+S\+LL}~000
+\item 
+\#define {\bf I\+\_\+\+S\+RL}~002
+\item 
+\#define {\bf I\+\_\+\+S\+RA}~003
+\item 
+\#define {\bf I\+\_\+\+S\+L\+LV}~004
+\item 
+\#define {\bf I\+\_\+\+S\+R\+LV}~006
+\item 
+\#define {\bf I\+\_\+\+S\+R\+AV}~007
+\item 
+\#define {\bf I\+\_\+\+JR}~010
+\item 
+\#define {\bf I\+\_\+\+J\+A\+LR}~011
+\item 
+\#define {\bf I\+\_\+\+S\+Y\+S\+C\+A\+LL}~014
+\item 
+\#define {\bf I\+\_\+\+B\+R\+E\+AK}~015
+\item 
+\#define {\bf I\+\_\+\+M\+F\+HI}~020
+\item 
+\#define {\bf I\+\_\+\+M\+T\+HI}~021
+\item 
+\#define {\bf I\+\_\+\+M\+F\+LO}~022
+\item 
+\#define {\bf I\+\_\+\+M\+T\+LO}~023
+\item 
+\#define {\bf I\+\_\+\+M\+U\+LT}~030
+\item 
+\#define {\bf I\+\_\+\+M\+U\+L\+TU}~031
+\item 
+\#define {\bf I\+\_\+\+D\+IV}~032
+\item 
+\#define {\bf I\+\_\+\+D\+I\+VU}~033
+\item 
+\#define {\bf I\+\_\+\+A\+DD}~040
+\item 
+\#define {\bf I\+\_\+\+A\+D\+DU}~041
+\item 
+\#define {\bf I\+\_\+\+S\+UB}~042
+\item 
+\#define {\bf I\+\_\+\+S\+U\+BU}~043
+\item 
+\#define {\bf I\+\_\+\+A\+ND}~044
+\item 
+\#define {\bf I\+\_\+\+OR}~045
+\item 
+\#define {\bf I\+\_\+\+X\+OR}~046
+\item 
+\#define {\bf I\+\_\+\+N\+OR}~047
+\item 
+\#define {\bf I\+\_\+\+S\+LT}~052
+\item 
+\#define {\bf I\+\_\+\+S\+L\+TU}~053
+\item 
+\#define {\bf I\+\_\+\+B\+L\+TZ}~000
+\item 
+\#define {\bf I\+\_\+\+B\+G\+EZ}~001
+\item 
+\#define {\bf I\+\_\+\+B\+L\+T\+Z\+AL}~020
+\item 
+\#define {\bf I\+\_\+\+B\+G\+E\+Z\+AL}~021
+\item 
+\#define {\bf I\+\_\+\+N\+OP}~000
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+A\+DD@{I\+\_\+\+A\+DD}}
+\index{I\+\_\+\+A\+DD@{I\+\_\+\+A\+DD}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+A\+DD}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+A\+DD~040}\label{encode_8h_a7b8300ad043f380d0f303f5d87be1ce5}
+
+
+Definition at line 84 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+A\+D\+DI@{I\+\_\+\+A\+D\+DI}}
+\index{I\+\_\+\+A\+D\+DI@{I\+\_\+\+A\+D\+DI}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+A\+D\+DI}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+A\+D\+DI~010}\label{encode_8h_a7d9ead3e85bcad0088ea7a6fe7b6bd9b}
+
+
+Definition at line 20 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+A\+D\+D\+IU@{I\+\_\+\+A\+D\+D\+IU}}
+\index{I\+\_\+\+A\+D\+D\+IU@{I\+\_\+\+A\+D\+D\+IU}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+A\+D\+D\+IU}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+A\+D\+D\+IU~011}\label{encode_8h_a4a89c405a72969ad1e241261621c86d7}
+
+
+Definition at line 21 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+A\+D\+DU@{I\+\_\+\+A\+D\+DU}}
+\index{I\+\_\+\+A\+D\+DU@{I\+\_\+\+A\+D\+DU}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+A\+D\+DU}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+A\+D\+DU~041}\label{encode_8h_a199c36ffd5d142d1c816f864bde94530}
+
+
+Definition at line 85 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+A\+ND@{I\+\_\+\+A\+ND}}
+\index{I\+\_\+\+A\+ND@{I\+\_\+\+A\+ND}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+A\+ND}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+A\+ND~044}\label{encode_8h_ae99737aebeb535a111509cd9f579a8d1}
+
+
+Definition at line 88 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+A\+N\+DI@{I\+\_\+\+A\+N\+DI}}
+\index{I\+\_\+\+A\+N\+DI@{I\+\_\+\+A\+N\+DI}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+A\+N\+DI}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+A\+N\+DI~014}\label{encode_8h_aa450c06459edfb6cc847e23d5efabe9b}
+
+
+Definition at line 24 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+B\+C\+O\+ND@{I\+\_\+\+B\+C\+O\+ND}}
+\index{I\+\_\+\+B\+C\+O\+ND@{I\+\_\+\+B\+C\+O\+ND}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+B\+C\+O\+ND}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+B\+C\+O\+ND~001}\label{encode_8h_a45112d693e2a276f7d35a1820dc41ecf}
+
+
+Definition at line 13 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+B\+EQ@{I\+\_\+\+B\+EQ}}
+\index{I\+\_\+\+B\+EQ@{I\+\_\+\+B\+EQ}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+B\+EQ}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+B\+EQ~004}\label{encode_8h_a0876f345c90774882138424ca2e3d6f2}
+
+
+Definition at line 16 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+B\+G\+EZ@{I\+\_\+\+B\+G\+EZ}}
+\index{I\+\_\+\+B\+G\+EZ@{I\+\_\+\+B\+G\+EZ}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+B\+G\+EZ}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+B\+G\+EZ~001}\label{encode_8h_adedc09f1527311187049f35fd567f347}
+
+
+Definition at line 100 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+B\+G\+E\+Z\+AL@{I\+\_\+\+B\+G\+E\+Z\+AL}}
+\index{I\+\_\+\+B\+G\+E\+Z\+AL@{I\+\_\+\+B\+G\+E\+Z\+AL}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+B\+G\+E\+Z\+AL}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+B\+G\+E\+Z\+AL~021}\label{encode_8h_ac2776a9baa4c07982a27a14d31341675}
+
+
+Definition at line 103 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+B\+G\+TZ@{I\+\_\+\+B\+G\+TZ}}
+\index{I\+\_\+\+B\+G\+TZ@{I\+\_\+\+B\+G\+TZ}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+B\+G\+TZ}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+B\+G\+TZ~007}\label{encode_8h_af26289e4b48fe00bd88f16d650451d0a}
+
+
+Definition at line 19 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+B\+L\+EZ@{I\+\_\+\+B\+L\+EZ}}
+\index{I\+\_\+\+B\+L\+EZ@{I\+\_\+\+B\+L\+EZ}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+B\+L\+EZ}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+B\+L\+EZ~006}\label{encode_8h_aca573b20d63b16d4ac92447cabe7ce60}
+
+
+Definition at line 18 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+B\+L\+TZ@{I\+\_\+\+B\+L\+TZ}}
+\index{I\+\_\+\+B\+L\+TZ@{I\+\_\+\+B\+L\+TZ}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+B\+L\+TZ}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+B\+L\+TZ~000}\label{encode_8h_a2986246271e453acd25e3e0ad7ad40d2}
+
+
+Definition at line 99 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+B\+L\+T\+Z\+AL@{I\+\_\+\+B\+L\+T\+Z\+AL}}
+\index{I\+\_\+\+B\+L\+T\+Z\+AL@{I\+\_\+\+B\+L\+T\+Z\+AL}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+B\+L\+T\+Z\+AL}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+B\+L\+T\+Z\+AL~020}\label{encode_8h_a126be1d611dc2fadb6cc553126f76f44}
+
+
+Definition at line 102 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+B\+NE@{I\+\_\+\+B\+NE}}
+\index{I\+\_\+\+B\+NE@{I\+\_\+\+B\+NE}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+B\+NE}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+B\+NE~005}\label{encode_8h_a53441e8d902674b775460c9ad56cd1f5}
+
+
+Definition at line 17 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+B\+R\+E\+AK@{I\+\_\+\+B\+R\+E\+AK}}
+\index{I\+\_\+\+B\+R\+E\+AK@{I\+\_\+\+B\+R\+E\+AK}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+B\+R\+E\+AK}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+B\+R\+E\+AK~015}\label{encode_8h_adbd5495a5a7584ce408afc77053a1a6e}
+
+
+Definition at line 72 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+C\+O\+P0@{I\+\_\+\+C\+O\+P0}}
+\index{I\+\_\+\+C\+O\+P0@{I\+\_\+\+C\+O\+P0}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+C\+O\+P0}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+C\+O\+P0~020}\label{encode_8h_a2d6a8de45717404000e3046d50595a06}
+
+
+Definition at line 28 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+C\+O\+P1@{I\+\_\+\+C\+O\+P1}}
+\index{I\+\_\+\+C\+O\+P1@{I\+\_\+\+C\+O\+P1}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+C\+O\+P1}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+C\+O\+P1~021}\label{encode_8h_aa7c809658dea9d2d47ab45af2fe294e0}
+
+
+Definition at line 29 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+C\+O\+P2@{I\+\_\+\+C\+O\+P2}}
+\index{I\+\_\+\+C\+O\+P2@{I\+\_\+\+C\+O\+P2}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+C\+O\+P2}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+C\+O\+P2~022}\label{encode_8h_a3196a8b1f7eb7731b29db9dfdf45b2f1}
+
+
+Definition at line 30 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+C\+O\+P3@{I\+\_\+\+C\+O\+P3}}
+\index{I\+\_\+\+C\+O\+P3@{I\+\_\+\+C\+O\+P3}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+C\+O\+P3}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+C\+O\+P3~023}\label{encode_8h_ada94bd687fa10848ecd1333cbe4b8da1}
+
+
+Definition at line 31 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+D\+IV@{I\+\_\+\+D\+IV}}
+\index{I\+\_\+\+D\+IV@{I\+\_\+\+D\+IV}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+D\+IV}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+D\+IV~032}\label{encode_8h_a999482e7b3c581ab0dd10c343742dd1b}
+
+
+Definition at line 81 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+D\+I\+VU@{I\+\_\+\+D\+I\+VU}}
+\index{I\+\_\+\+D\+I\+VU@{I\+\_\+\+D\+I\+VU}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+D\+I\+VU}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+D\+I\+VU~033}\label{encode_8h_a568cc688c5d76a9fa8044c21070a5b36}
+
+
+Definition at line 82 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+J@{I\+\_\+J}}
+\index{I\+\_\+J@{I\+\_\+J}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+J}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+J~002}\label{encode_8h_aa23a69db29128c463348448d76ee89af}
+
+
+Definition at line 14 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+J\+AL@{I\+\_\+\+J\+AL}}
+\index{I\+\_\+\+J\+AL@{I\+\_\+\+J\+AL}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+J\+AL}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+J\+AL~003}\label{encode_8h_afd17b34675532098e7f7a665d00f8fd3}
+
+
+Definition at line 15 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+J\+A\+LR@{I\+\_\+\+J\+A\+LR}}
+\index{I\+\_\+\+J\+A\+LR@{I\+\_\+\+J\+A\+LR}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+J\+A\+LR}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+J\+A\+LR~011}\label{encode_8h_a687a7eff53b1c70b2a99af3de8e364aa}
+
+
+Definition at line 69 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+JR@{I\+\_\+\+JR}}
+\index{I\+\_\+\+JR@{I\+\_\+\+JR}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+JR}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+JR~010}\label{encode_8h_acb006c5603c39dfc5a172b6829e0a3fa}
+
+
+Definition at line 68 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+LB@{I\+\_\+\+LB}}
+\index{I\+\_\+\+LB@{I\+\_\+\+LB}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+LB}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+LB~040}\label{encode_8h_af758268e391d0842d646495995f0cee5}
+
+
+Definition at line 33 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+L\+BU@{I\+\_\+\+L\+BU}}
+\index{I\+\_\+\+L\+BU@{I\+\_\+\+L\+BU}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+L\+BU}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+L\+BU~044}\label{encode_8h_a7b1826b6ca85e2c0b7105e7d7e72e39e}
+
+
+Definition at line 37 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+LH@{I\+\_\+\+LH}}
+\index{I\+\_\+\+LH@{I\+\_\+\+LH}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+LH}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+LH~041}\label{encode_8h_aca97494fdb7425d20fb671ceea20c2a3}
+
+
+Definition at line 34 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+L\+HU@{I\+\_\+\+L\+HU}}
+\index{I\+\_\+\+L\+HU@{I\+\_\+\+L\+HU}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+L\+HU}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+L\+HU~045}\label{encode_8h_ad77a2f143ddcbd9a892c1775e1c8c759}
+
+
+Definition at line 38 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+L\+UI@{I\+\_\+\+L\+UI}}
+\index{I\+\_\+\+L\+UI@{I\+\_\+\+L\+UI}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+L\+UI}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+L\+UI~017}\label{encode_8h_ae863492ac09208c49a4e8aeab1bfb409}
+
+
+Definition at line 27 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+LW@{I\+\_\+\+LW}}
+\index{I\+\_\+\+LW@{I\+\_\+\+LW}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+LW}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+LW~043}\label{encode_8h_ace53b94a6d86cbc431688c667d96c235}
+
+
+Definition at line 36 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+L\+W\+C0@{I\+\_\+\+L\+W\+C0}}
+\index{I\+\_\+\+L\+W\+C0@{I\+\_\+\+L\+W\+C0}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+L\+W\+C0}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+L\+W\+C0~060}\label{encode_8h_a997fa4b5bc72f0a8acc60eb37f80cbce}
+
+
+Definition at line 48 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+L\+W\+C1@{I\+\_\+\+L\+W\+C1}}
+\index{I\+\_\+\+L\+W\+C1@{I\+\_\+\+L\+W\+C1}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+L\+W\+C1}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+L\+W\+C1~061}\label{encode_8h_aac27ccc41df3f6a1bcec72a6a0f8cd2d}
+
+
+Definition at line 49 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+L\+W\+C2@{I\+\_\+\+L\+W\+C2}}
+\index{I\+\_\+\+L\+W\+C2@{I\+\_\+\+L\+W\+C2}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+L\+W\+C2}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+L\+W\+C2~062}\label{encode_8h_aee5facb491b15a84257dd661d03b2d7a}
+
+
+Definition at line 50 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+L\+W\+C3@{I\+\_\+\+L\+W\+C3}}
+\index{I\+\_\+\+L\+W\+C3@{I\+\_\+\+L\+W\+C3}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+L\+W\+C3}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+L\+W\+C3~063}\label{encode_8h_a65b58cfeba6593426d1498e6a595b6e1}
+
+
+Definition at line 51 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+L\+WL@{I\+\_\+\+L\+WL}}
+\index{I\+\_\+\+L\+WL@{I\+\_\+\+L\+WL}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+L\+WL}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+L\+WL~042}\label{encode_8h_a4cc81f83eae509717e3c0266208e562f}
+
+
+Definition at line 35 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+L\+WR@{I\+\_\+\+L\+WR}}
+\index{I\+\_\+\+L\+WR@{I\+\_\+\+L\+WR}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+L\+WR}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+L\+WR~046}\label{encode_8h_a8ccdd9e9898a1235501b2e25ff09bdd1}
+
+
+Definition at line 39 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+M\+F\+HI@{I\+\_\+\+M\+F\+HI}}
+\index{I\+\_\+\+M\+F\+HI@{I\+\_\+\+M\+F\+HI}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+M\+F\+HI}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+M\+F\+HI~020}\label{encode_8h_aeaa1758d463a9f8bf8d25aee98ff2f93}
+
+
+Definition at line 74 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+M\+F\+LO@{I\+\_\+\+M\+F\+LO}}
+\index{I\+\_\+\+M\+F\+LO@{I\+\_\+\+M\+F\+LO}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+M\+F\+LO}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+M\+F\+LO~022}\label{encode_8h_a156274bcb3b045751af3bbb6bd309740}
+
+
+Definition at line 76 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+M\+T\+HI@{I\+\_\+\+M\+T\+HI}}
+\index{I\+\_\+\+M\+T\+HI@{I\+\_\+\+M\+T\+HI}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+M\+T\+HI}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+M\+T\+HI~021}\label{encode_8h_a88fc617b28502bc3f277f2893b30fab6}
+
+
+Definition at line 75 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+M\+T\+LO@{I\+\_\+\+M\+T\+LO}}
+\index{I\+\_\+\+M\+T\+LO@{I\+\_\+\+M\+T\+LO}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+M\+T\+LO}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+M\+T\+LO~023}\label{encode_8h_a227ca45fe82a73174da18951a311fc59}
+
+
+Definition at line 77 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+M\+U\+LT@{I\+\_\+\+M\+U\+LT}}
+\index{I\+\_\+\+M\+U\+LT@{I\+\_\+\+M\+U\+LT}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+M\+U\+LT}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+M\+U\+LT~030}\label{encode_8h_a2dfc383288854adb91b7ef06a49f684a}
+
+
+Definition at line 79 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+M\+U\+L\+TU@{I\+\_\+\+M\+U\+L\+TU}}
+\index{I\+\_\+\+M\+U\+L\+TU@{I\+\_\+\+M\+U\+L\+TU}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+M\+U\+L\+TU}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+M\+U\+L\+TU~031}\label{encode_8h_af255fb4d9b3ce439eee06b81aee97570}
+
+
+Definition at line 80 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+N\+OP@{I\+\_\+\+N\+OP}}
+\index{I\+\_\+\+N\+OP@{I\+\_\+\+N\+OP}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+N\+OP}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+N\+OP~000}\label{encode_8h_ad2008e7158abb6a2db9605568052a61e}
+
+
+Definition at line 107 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+N\+OR@{I\+\_\+\+N\+OR}}
+\index{I\+\_\+\+N\+OR@{I\+\_\+\+N\+OR}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+N\+OR}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+N\+OR~047}\label{encode_8h_aea2b0ee6eb4204f87f91446bca061f90}
+
+
+Definition at line 91 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+OR@{I\+\_\+\+OR}}
+\index{I\+\_\+\+OR@{I\+\_\+\+OR}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+OR}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+OR~045}\label{encode_8h_adf4334b20b3da95fbe7ef3cb255c146c}
+
+
+Definition at line 89 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+O\+RI@{I\+\_\+\+O\+RI}}
+\index{I\+\_\+\+O\+RI@{I\+\_\+\+O\+RI}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+O\+RI}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+O\+RI~015}\label{encode_8h_a417d4abf3452c8c3a9399e1ce4c4bf1e}
+
+
+Definition at line 25 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+SB@{I\+\_\+\+SB}}
+\index{I\+\_\+\+SB@{I\+\_\+\+SB}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+SB}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+SB~050}\label{encode_8h_acbf3ba5e40636844d27fa2f1201bc2a7}
+
+
+Definition at line 41 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+SH@{I\+\_\+\+SH}}
+\index{I\+\_\+\+SH@{I\+\_\+\+SH}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+SH}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+SH~051}\label{encode_8h_a7434ab3ddf6c278d30dd38350514f650}
+
+
+Definition at line 42 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+S\+LL@{I\+\_\+\+S\+LL}}
+\index{I\+\_\+\+S\+LL@{I\+\_\+\+S\+LL}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+S\+LL}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+S\+LL~000}\label{encode_8h_af6d8dd2b80537b616c1a349969f88380}
+
+
+Definition at line 60 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+S\+L\+LV@{I\+\_\+\+S\+L\+LV}}
+\index{I\+\_\+\+S\+L\+LV@{I\+\_\+\+S\+L\+LV}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+S\+L\+LV}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+S\+L\+LV~004}\label{encode_8h_a8d8c06d82256c78ead8c1ba75ebff3fb}
+
+
+Definition at line 64 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+S\+LT@{I\+\_\+\+S\+LT}}
+\index{I\+\_\+\+S\+LT@{I\+\_\+\+S\+LT}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+S\+LT}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+S\+LT~052}\label{encode_8h_a1981cafe761353d3f8c18651b10c5202}
+
+
+Definition at line 93 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+S\+L\+TI@{I\+\_\+\+S\+L\+TI}}
+\index{I\+\_\+\+S\+L\+TI@{I\+\_\+\+S\+L\+TI}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+S\+L\+TI}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+S\+L\+TI~012}\label{encode_8h_ac66adfca1729c36040260d1315f05add}
+
+
+Definition at line 22 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+S\+L\+T\+IU@{I\+\_\+\+S\+L\+T\+IU}}
+\index{I\+\_\+\+S\+L\+T\+IU@{I\+\_\+\+S\+L\+T\+IU}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+S\+L\+T\+IU}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+S\+L\+T\+IU~013}\label{encode_8h_a42b33bb895a6acf783ec78d9fa346456}
+
+
+Definition at line 23 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+S\+L\+TU@{I\+\_\+\+S\+L\+TU}}
+\index{I\+\_\+\+S\+L\+TU@{I\+\_\+\+S\+L\+TU}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+S\+L\+TU}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+S\+L\+TU~053}\label{encode_8h_acfcf8b5dbbc44eb2e688d1ef0f2e630c}
+
+
+Definition at line 94 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+S\+P\+E\+C\+I\+AL@{I\+\_\+\+S\+P\+E\+C\+I\+AL}}
+\index{I\+\_\+\+S\+P\+E\+C\+I\+AL@{I\+\_\+\+S\+P\+E\+C\+I\+AL}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+S\+P\+E\+C\+I\+AL}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+S\+P\+E\+C\+I\+AL~000}\label{encode_8h_aff6bdb685dfe46c115d9b2f133394c34}
+
+
+Definition at line 12 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+S\+RA@{I\+\_\+\+S\+RA}}
+\index{I\+\_\+\+S\+RA@{I\+\_\+\+S\+RA}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+S\+RA}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+S\+RA~003}\label{encode_8h_a9aae760b6b6f94420b63da7924412235}
+
+
+Definition at line 63 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+S\+R\+AV@{I\+\_\+\+S\+R\+AV}}
+\index{I\+\_\+\+S\+R\+AV@{I\+\_\+\+S\+R\+AV}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+S\+R\+AV}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+S\+R\+AV~007}\label{encode_8h_a05bf4baf3f62cfd6fdca42acfb09e99f}
+
+
+Definition at line 67 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+S\+RL@{I\+\_\+\+S\+RL}}
+\index{I\+\_\+\+S\+RL@{I\+\_\+\+S\+RL}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+S\+RL}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+S\+RL~002}\label{encode_8h_ae7bf2aadcea08d1b03d341755111ab72}
+
+
+Definition at line 62 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+S\+R\+LV@{I\+\_\+\+S\+R\+LV}}
+\index{I\+\_\+\+S\+R\+LV@{I\+\_\+\+S\+R\+LV}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+S\+R\+LV}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+S\+R\+LV~006}\label{encode_8h_aa4c892b659632e4017674236ddbd045c}
+
+
+Definition at line 66 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+S\+UB@{I\+\_\+\+S\+UB}}
+\index{I\+\_\+\+S\+UB@{I\+\_\+\+S\+UB}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+S\+UB}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+S\+UB~042}\label{encode_8h_a62d6257ade845a52f546440e40e1041d}
+
+
+Definition at line 86 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+S\+U\+BU@{I\+\_\+\+S\+U\+BU}}
+\index{I\+\_\+\+S\+U\+BU@{I\+\_\+\+S\+U\+BU}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+S\+U\+BU}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+S\+U\+BU~043}\label{encode_8h_ad43620e75a35844c3fd3e6b411b9077f}
+
+
+Definition at line 87 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+SW@{I\+\_\+\+SW}}
+\index{I\+\_\+\+SW@{I\+\_\+\+SW}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+SW}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+SW~053}\label{encode_8h_a0ac94d0f0d4b081a37242d46d72de4c6}
+
+
+Definition at line 44 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+S\+W\+C0@{I\+\_\+\+S\+W\+C0}}
+\index{I\+\_\+\+S\+W\+C0@{I\+\_\+\+S\+W\+C0}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+S\+W\+C0}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+S\+W\+C0~070}\label{encode_8h_a7b02533c243ac327afd8d12aea86d90e}
+
+
+Definition at line 53 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+S\+W\+C1@{I\+\_\+\+S\+W\+C1}}
+\index{I\+\_\+\+S\+W\+C1@{I\+\_\+\+S\+W\+C1}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+S\+W\+C1}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+S\+W\+C1~071}\label{encode_8h_a89cc7cb3d5335a5fef72d313c20d3014}
+
+
+Definition at line 54 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+S\+W\+C2@{I\+\_\+\+S\+W\+C2}}
+\index{I\+\_\+\+S\+W\+C2@{I\+\_\+\+S\+W\+C2}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+S\+W\+C2}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+S\+W\+C2~072}\label{encode_8h_af68c2ca4a58dab2c6a56dc5736c94a1a}
+
+
+Definition at line 55 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+S\+W\+C3@{I\+\_\+\+S\+W\+C3}}
+\index{I\+\_\+\+S\+W\+C3@{I\+\_\+\+S\+W\+C3}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+S\+W\+C3}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+S\+W\+C3~073}\label{encode_8h_a23e883863b3d277d422c92aec2f0f746}
+
+
+Definition at line 56 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+S\+WL@{I\+\_\+\+S\+WL}}
+\index{I\+\_\+\+S\+WL@{I\+\_\+\+S\+WL}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+S\+WL}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+S\+WL~052}\label{encode_8h_ac5b7a24fbeba15d8b371837f9be77e58}
+
+
+Definition at line 43 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+S\+WR@{I\+\_\+\+S\+WR}}
+\index{I\+\_\+\+S\+WR@{I\+\_\+\+S\+WR}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+S\+WR}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+S\+WR~056}\label{encode_8h_a855d85cca3cf198c64a2abaf3193b0fc}
+
+
+Definition at line 46 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+S\+Y\+S\+C\+A\+LL@{I\+\_\+\+S\+Y\+S\+C\+A\+LL}}
+\index{I\+\_\+\+S\+Y\+S\+C\+A\+LL@{I\+\_\+\+S\+Y\+S\+C\+A\+LL}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+S\+Y\+S\+C\+A\+LL}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+S\+Y\+S\+C\+A\+LL~014}\label{encode_8h_a7302ddf098a6f76a0abf0d6ea953b870}
+
+
+Definition at line 71 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+X\+OR@{I\+\_\+\+X\+OR}}
+\index{I\+\_\+\+X\+OR@{I\+\_\+\+X\+OR}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+X\+OR}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+X\+OR~046}\label{encode_8h_a7b83fb13a9a89754d6c00a3a04de9d4c}
+
+
+Definition at line 90 of file encode.\+h.
+
+\index{encode.\+h@{encode.\+h}!I\+\_\+\+X\+O\+RI@{I\+\_\+\+X\+O\+RI}}
+\index{I\+\_\+\+X\+O\+RI@{I\+\_\+\+X\+O\+RI}!encode.\+h@{encode.\+h}}
+\subsubsection[{I\+\_\+\+X\+O\+RI}]{\setlength{\rightskip}{0pt plus 5cm}\#define I\+\_\+\+X\+O\+RI~016}\label{encode_8h_aa4d9838510b6c133834b45ddf2ef7c5c}
+
+
+Definition at line 26 of file encode.\+h.
+

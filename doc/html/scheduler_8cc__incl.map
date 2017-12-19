@@ -1,0 +1,13 @@
+<map id="code/threads/scheduler.cc" name="code/threads/scheduler.cc">
+<area shape="rect" id="node2" href="$copyright_8h.html" title="copyright.h" alt="" coords="415,453,502,480"/>
+<area shape="rect" id="node3" href="$scheduler_8h.html" title="scheduler.h" alt="" coords="354,155,443,181"/>
+<area shape="rect" id="node12" href="$system_8h.html" title="system.h" alt="" coords="361,80,437,107"/>
+<area shape="rect" id="node4" href="$list_8h.html" title="list.h" alt="" coords="396,229,447,256"/>
+<area shape="rect" id="node11" href="$thread_8h.html" title="thread.h" alt="" coords="303,229,372,256"/>
+<area shape="rect" id="node5" href="$utility_8h.html" title="utility.h" alt="" coords="236,304,300,331"/>
+<area shape="rect" id="node6" href="$bool_8h.html" title="bool.h" alt="" coords="287,379,345,405"/>
+<area shape="rect" id="node7" href="$sysdep_8h.html" title="sysdep.h" alt="" coords="87,379,161,405"/>
+<area shape="rect" id="node13" href="$interrupt_8h.html" title="interrupt.h" alt="" coords="468,155,548,181"/>
+<area shape="rect" id="node14" href="$stats_8h.html" title="stats.h" alt="" coords="623,304,686,331"/>
+<area shape="rect" id="node15" href="$timer_8h.html" title="timer.h" alt="" coords="165,229,227,256"/>
+</map>
