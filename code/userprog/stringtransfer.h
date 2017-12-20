@@ -1,3 +1,5 @@
+/*! \file stringtransfer.h */
+
 /*! Function that copy a string from user memory to kernel memory. */
 /*!
  * \param from Pointer to the begining of the string in the user memory.

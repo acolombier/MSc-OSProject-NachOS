@@ -1,3 +1,5 @@
+/*! \file userthread.h */
+
 /*! Kernel part of the UserThreadCreate syscall */
 /*!
  * \param f User pointer to the user function to be execute.
