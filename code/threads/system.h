@@ -1,9 +1,15 @@
-// system.h 
-//      All global variables used in Nachos are defined here.
-//
+/*! \file system.h
+*   \brief All global variables used in Nachos are defined here.
+*/
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
+
+/*! \def MAX_STRING_SIZE
+
+    The maximun string size that the kernel can handle. By default 512, including the \0 char.
+*/
+#define MAX_STRING_SIZE 512
 
 #ifndef SYSTEM_H
 #define SYSTEM_H

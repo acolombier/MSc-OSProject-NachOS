@@ -1,18 +1,18 @@
-// synch.h 
+// synch.h
 //      Data structures for synchronizing threads.
 //
 //      Three kinds of synchronization are defined here: semaphores,
 //      locks, and condition variables.  The implementation for
 //      semaphores is given; for the latter two, only the procedure
-//      interface is given -- they are to be implemented as part of 
+//      interface is given -- they are to be implemented as part of
 //      the first assignment.
 //
 //      Note that all the synchronization objects take a "name" as
 //      part of the initialization.  This is solely for debugging purposes.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
-// synch.h -- synchronization primitives.  
+// All rights reserved.  See copyright.h for copyright notice and limitation
+// synch.h -- synchronization primitives.
 
 #ifndef SYNCH_H
 #define SYNCH_H
@@ -27,8 +27,8 @@
 //      P() -- waits until value > 0, then decrement
 //
 //      V() -- increment, waking up a thread waiting in P() if necessary
-// 
-// Note that the interface does *not* allow a thread to read the value of 
+//
+// Note that the interface does *not* allow a thread to read the value of
 // the semaphore directly -- even if you did read the value, the
 // only thing you would know is what the value used to be.  You don't
 // know what the value is now, because by the time you get the value
@@ -49,6 +49,13 @@ class Semaphore
     void P ();			// these are the only operations on a semaphore
     void V ();			// they are both *atomic*
 
+	//----------------------------------------------------------------------
+	// Semaphore::E
+	//      Return the internal value of the samphore
+	//----------------------------------------------------------------------
+
+    inline int E () const {return value;}			// they are both *atomic*
+
   private:
     const char *name;		// useful for debugging
     int value;			// semaphore value, always >= 0
@@ -56,7 +63,7 @@ class Semaphore
 };
 
 // The following class defines a "lock".  A lock can be BUSY or FREE.
-// There are only two operations allowed on a lock: 
+// There are only two operations allowed on a lock:
 //
 //      Acquire -- wait until the lock is FREE, then set it to BUSY
 //
@@ -65,39 +72,48 @@ class Semaphore
 //
 // In addition, by convention, only the thread that acquired the lock
 // may release it.  As with semaphores, you can't read the lock value
-// (because the value might change immediately after you read it).  
+// (because the value might change immediately after you read it).
 
+//!  A lock mechanism made on top of the semaphore mechanism provided
+/*!
+ * This Lock class is used to create a exclusion mechnaism in order to 
+ * ensure MUTual EXclusion (the so called mutex on Linux system)
+ * \todo Missing documentation
+*/
 class Lock
 {
   public:
+	//! The constructor of a Lock object
+	/*!
+	 * \param debugName the name displayed when debug trace is enabled
+	 */
     Lock (const char *debugName);	// initialize lock to be FREE
      ~Lock ();			// deallocate lock
-    const char *getName ()
-    {
-	return name;
-    }				// debugging assist
+    inline const char *getName () const { return mName;}				// debugging assist
 
     void Acquire ();		// these are the only operations on a lock
     void Release ();		// they are both *atomic*
 
-    bool isHeldByCurrentThread ();	// true if the current thread
+    bool isHeldByCurrentThread() const;
     // holds this lock.  Useful for
     // checking in Release, and in
     // Condition variable ops below.
 
   private:
-    const char *name;		// for debugging
+    const char *mName;		// for debugging
     // plus some other stuff you'll need to define
+    Thread* mThreadHolder;
+    Semaphore* mMutexLock;
 };
 
 // The following class defines a "condition variable".  A condition
 // variable does not have a value, but threads may be queued, waiting
-// on the variable.  These are only operations on a condition variable: 
+// on the variable.  These are only operations on a condition variable:
 //
-//      Wait() -- release the lock, relinquish the CPU until signaled, 
+//      Wait() -- release the lock, relinquish the CPU until signaled,
 //              then re-acquire the lock
 //
-//      Signal() -- wake up a thread, if there are any waiting on 
+//      Signal() -- wake up a thread, if there are any waiting on
 //              the condition
 //
 //      Broadcast() -- wake up all threads waiting on the condition
@@ -115,34 +131,39 @@ class Lock
 // taken care of within Wait()).  By contrast, some define condition
 // variables according to *Hoare*-style semantics -- where the signalling
 // thread gives up control over the lock and the CPU to the woken thread,
-// which runs immediately and gives back control over the lock to the 
+// which runs immediately and gives back control over the lock to the
 // signaller when the woken thread leaves the critical section.
 //
 // The consequence of using Mesa-style semantics is that some other thread
 // can acquire the lock, and change data structures, before the woken
 // thread gets a chance to run.
 
+//!  A variable condition mechanism made on top of the lock mechanism
+/*!
+ * This Condition class is used to create syncronisation between threads 
+ * such as the 'cond' mechanism in Linux
+ * \todo Missing documentation
+ * \todo Made out of semaphore, patch to use lock
+*/
 class Condition
 {
   public:
-    Condition (const char *debugName);	// initialize condition to 
+    Condition (const char *debugName);	// initialize condition to
     // "no one waiting"
      ~Condition ();		// deallocate the condition
-    const char *getName ()
-    {
-	return (name);
-    }
+    inline const char *getName() const { return mName;}
 
-    void Wait (Lock * conditionLock);	// these are the 3 operations on 
-    // condition variables; releasing the 
-    // lock and going to sleep are 
+    void Wait (Lock * conditionLock);	// these are the 3 operations on
+    // condition variables; releasing the
+    // lock and going to sleep are
     // *atomic* in Wait()
     void Signal (Lock * conditionLock);	// conditionLock must be held by
-    void Broadcast (Lock * conditionLock);	// the currentThread for all of 
+    void Broadcast (Lock * conditionLock);	// the currentThread for all of
     // these operations
 
   private:
-    const char *name;
+    const char *mName;
+    List* mThreadsQueue;
     // plus some other stuff you'll need to define
 };
 #endif // SYNCH_H

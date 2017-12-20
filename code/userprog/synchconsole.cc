@@ -37,19 +37,19 @@ int SynchConsole::GetChar(){
 	mReadAvail->P();
 	int c = Console::GetChar();
 	mReadingMode->V();
-	return c;	
+	return c;
 }
 
-void SynchConsole::PutString(const char s[]){ 
+void SynchConsole::PutString(const char s[]){
 	int i = 0;
 	while (i < MAX_STRING_SIZE - 1 && s[i])
 		PutChar(s[i++]);
-	PutChar(0);	
+	PutChar(0);
 }
 
 void SynchConsole::GetString(char *s, int n){
 	mReadingMode->P();
-	
+
 	int i = 0;
 	while (i < MIN(MAX_STRING_SIZE, n) - 1){
 		mReadAvail->P();
@@ -57,7 +57,6 @@ void SynchConsole::GetString(char *s, int n){
 		if (!(c = Console::GetChar()) || c == EOF || c == '\n') break;
 		s[i++] = c;
 	}
-	s[i] = 0;	
+	s[i] = 0;
 	mReadingMode->V();
 }
-

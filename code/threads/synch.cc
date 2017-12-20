@@ -1,6 +1,6 @@
-// synch.cc 
+// synch.cc
 //      Routines for synchronizing threads.  Three kinds of
-//      synchronization routines are defined here: semaphores, locks 
+//      synchronization routines are defined here: semaphores, locks
 //      and condition variables (the implementation of the last two
 //      are left to the reader).
 //
@@ -18,7 +18,7 @@
 // that be disabled or enabled).
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
@@ -71,7 +71,7 @@ Semaphore::P ()
 	  queue->Append ((void *) currentThread);	// so go to sleep
 	  currentThread->Sleep ();
       }
-    value--;			// semaphore available, 
+    value--;			// semaphore available,
     // consume its value
 
     (void) interrupt->SetLevel (oldLevel);	// re-enable interrupts
@@ -98,43 +98,66 @@ Semaphore::V ()
     (void) interrupt->SetLevel (oldLevel);
 }
 
-// Dummy functions -- so we can compile our later assignments 
-// Note -- without a correct implementation of Condition::Wait(), 
+// Dummy functions -- so we can compile our later assignments
+// Note -- without a correct implementation of Condition::Wait(),
 // the test case in the network assignment won't work!
-Lock::Lock (const char *debugName)
+Lock::Lock (const char *debugName):
+	mName(debugName),
+	mThreadHolder(nullptr),
+	mMutexLock(new Semaphore("mutexLock",1))
 {
 }
 
-Lock::~Lock ()
-{
+Lock::~Lock (){
+  delete mMutexLock; //mutexLock and ThreadHold defined in synch.h
 }
-void
-Lock::Acquire ()
-{
+
+void Lock::Acquire (){
+	mMutexLock->P();
+	mThreadHolder=currentThread;
 }
-void
-Lock::Release ()
+
+void Lock::Release (){
+	ASSERT(isHeldByCurrentThread());
+	mThreadHolder = nullptr;
+	mMutexLock->V();
+}
+
+bool Lock::isHeldByCurrentThread() const {
+	return currentThread == mThreadHolder;
+}
+
+Condition::Condition (const char *debugName):
+	mName(debugName), mThreadsQueue(new List())
 {
 }
 
-Condition::Condition (const char *debugName)
-{
+Condition::~Condition (){
+  delete mThreadsQueue;
 }
 
-Condition::~Condition ()
-{
-}
-void
-Condition::Wait (Lock * conditionLock)
-{
-    ASSERT (FALSE);
+void Condition::Wait (Lock * conditionLock){
+	ASSERT(conditionLock->isHeldByCurrentThread());
+	Semaphore* csem = new Semaphore("condition lock", 0);
+	mThreadsQueue->Append((void*)csem);
+	conditionLock->Release();
+	csem->P();
+	conditionLock->Acquire();
 }
 
-void
-Condition::Signal (Lock * conditionLock)
-{
+void Condition::Signal (Lock * conditionLock){
+	ASSERT(conditionLock->isHeldByCurrentThread());
+    if(!mThreadsQueue->IsEmpty()){
+        Semaphore* sigsem = (Semaphore*) mThreadsQueue->Remove();
+		sigsem->V();
+	}
 }
-void
-Condition::Broadcast (Lock * conditionLock)
-{
+
+void Condition::Broadcast (Lock * conditionLock){
+	ASSERT(conditionLock->isHeldByCurrentThread());
+    Semaphore* brdcast;
+    while(!mThreadsQueue->IsEmpty()){
+        brdcast = (Semaphore*) mThreadsQueue->Remove();
+		brdcast->V();
+	}
 }

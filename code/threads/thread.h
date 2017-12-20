@@ -1,35 +1,28 @@
-// thread.h 
-//      Data structures for managing threads.  A thread represents
-//      sequential execution of code within a program.
-//      So the state of a thread includes the program counter,
-//      the processor registers, and the execution stack.
-//      
-//      Note that because we allocate a fixed size stack for each
-//      thread, it is possible to overflow the stack -- for instance,
-//      by recursing to too deep a level.  The most common reason
-//      for this occuring is allocating large data structures
-//      on the stack.  For instance, this will cause problems:
-//
-//              void foo() { int buf[1000]; ...}
-//
-//      Instead, you should allocate all data structures dynamically:
-//
-//              void foo() { int *buf = new int[1000]; ...}
-//
-//
-//      Bad things happen if you overflow the stack, and in the worst 
-//      case, the problem may not be caught explicitly.  Instead,
-//      the only symptom may be bizarre segmentation faults.  (Of course,
-//      other problems can cause seg faults, so that isn't a sure sign
-//      that your thread stacks are too small.)
-//      
-//      One thing to try if you find yourself with seg faults is to
-//      increase the size of thread stack -- ThreadStackSize.
-//
-//      In this interface, forking a thread takes two steps.
-//      We must first allocate a data structure for it: "t = new Thread".
-//      Only then can we do the fork: "t->fork(f, arg)".
-//
+/*! \file thread.h 
+	Data structures for managing threads.  A thread represents
+	sequential execution of code within a program.
+	So the state of a thread includes the program counter,
+	the processor registers, and the execution stack.
+	Note that because we allocate a fixed size stack for each
+	thread, it is possible to overflow the stack -- for instance,
+	by recursing to too deep a level.  The most common reason
+	for this occuring is allocating large data structures
+	on the stack.  For instance, this will cause problems:
+	void foo() { int buf[1000]; ...}
+	Instead, you should allocate all data structures dynamically:
+	void foo() { int *buf = new int[1000]; ...}
+	Bad things happen if you overflow the stack, and in the worst 
+	case, the problem may not be caught explicitly.  Instead,
+	the only symptom may be bizarre segmentation faults.  (Of course,
+	other problems can cause seg faults, so that isn't a sure sign
+	that your thread stacks are too small.)
+	One thing to try if you find yourself with seg faults is to
+	increase the size of thread stack -- ThreadStackSize.
+	In this interface, forking a thread takes two steps.
+	We must first allocate a data structure for it: "t = new Thread".
+	Only then can we do the fork: "t->fork(f, arg)".
+*/
+
 // Copyright (c) 1992-1993 The Regents of the University of California.
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.

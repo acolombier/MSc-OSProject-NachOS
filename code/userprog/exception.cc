@@ -1,22 +1,17 @@
-// exception.cc
-//      Entry point into the Nachos kernel from user programs.
-//      There are two kinds of things that can cause control to
-//      transfer back to here from user code:
-//
-//      syscall -- The user code explicitly requests to call a procedure
-//      in the Nachos kernel.  Right now, the only function we support is
-//      "Halt".
-//
-//      exceptions -- The user code does something that the CPU can't handle.
-//      For instance, accessing memory that doesn't exist, arithmetic errors,
-//      etc.
-//
-//      Interrupts (which can also cause control to transfer from user
-//      code into the Nachos kernel) are handled elsewhere.
-//
-// For now, this only handles the Halt() system call.
-// Everything else core dumps.
-//
+/*! \file exception.cc
+	Entry point into the Nachos kernel from user programs.
+	There are two kinds of things that can cause control to
+	transfer back to here from user code:
+	syscall -- The user code explicitly requests to call a procedure
+	in the Nachos kernel.  Right now, the only function we support is
+	"Halt".
+	exceptions -- The user code does something that the CPU can't handle.
+	For instance, accessing memory that doesn't exist, arithmetic errors,
+	etc.
+	Interrupts (which can also cause control to transfer from user
+	code into the Nachos kernel) are handled elsewhere.
+ */
+
 // Copyright (c) 1992-1993 The Regents of the University of California.
 // All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
@@ -74,7 +69,7 @@ ExceptionHandler (ExceptionType which)
     int reg4, reg5, returnvalue; // , reg6, reg7;
 
 
-	//TODO: Opti?
+	/*! \todo Optimisation by reading only useful register for a given trap */
     reg4 = machine->ReadRegister(4);
     reg5 = machine->ReadRegister(5);
     //reg6 = machine->ReadRegister(6);
@@ -97,7 +92,7 @@ ExceptionHandler (ExceptionType which)
 
 			case SC_Exit: {
 				DEBUG('i', "Exit syscall, initiated by user program.\n");
-				// TODO in later steps.
+				/*! \todo Handle correct process exit  */
 				//currentThread->Finish();
 				//For now just call Halt()
 				interrupt->Halt();
@@ -113,6 +108,7 @@ ExceptionHandler (ExceptionType which)
 			case SC_GetChar: {
 				DEBUG('i', "GetChar syscall, initiated by user program.\n");
 				returnvalue = synchconsole->GetChar();
+				DEBUG('i', "GetChar syscall, returned.\n");
 				machine->WriteRegister(2, returnvalue);
 				break;
 			}
@@ -120,7 +116,7 @@ ExceptionHandler (ExceptionType which)
 			case SC_PutString: {
 				DEBUG('i', "PutString syscall, initiated by user program.\n");
 
-				char* buffer = copyStringFromMachine(reg4, MAX_STRING_SIZE);
+				char* buffer = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
 				synchconsole->PutString(buffer);
 				free(buffer);
 				break;
@@ -138,7 +134,7 @@ ExceptionHandler (ExceptionType which)
 				DEBUG('i', "PutInt syscall, initiated by user program.\n");
 				char *buffer = (char *) malloc(sizeof(char) * 11);
 
-				snprintf(buffer, 11, "%d", reg4); //TODO: NON -> make a real function if time is here
+				snprintf(buffer, 11, "%d", reg4); /*! \todo make a real function if time availbale */
 				synchconsole->PutString(buffer);
 
 				free(buffer);
@@ -150,7 +146,7 @@ ExceptionHandler (ExceptionType which)
 				char *buffer = (char *) malloc(sizeof(char) * 11);
 
 				synchconsole->GetString(buffer, 11);
-				sscanf(buffer, "%d", &returnvalue); //TODO: NON -> make a real function if time is here
+				sscanf(buffer, "%d", &returnvalue); /*! \todo make a real function if time availbale */
 				machine->WriteMem(reg4, 11, returnvalue);
 
 				free(buffer);
