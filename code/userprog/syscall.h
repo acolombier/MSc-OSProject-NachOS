@@ -37,11 +37,12 @@
 #define SC_PutInt	15
 #define SC_GetInt	16
 #define SC_CreateUserThread 17
-#define SC_ExitUserThread   18
+#define SC_ExitUserThread	18
 
 #define ConsoleInput	0
 #define ConsoleOutput	1
 
+#undef EOF
 /*! \def EOF
     The EOF reprensation on 4 bytes.
 */
