@@ -51,21 +51,33 @@ class List
     void Append (void *item);	// Put item at the end of the list
     void *Remove ();		// Take item off the front of the list
 
+	/*!
+	 * Remove the n-th element
+	 * \param n the index in the list
+	 * \return the n-th element
+	 */
+    void *Remove (unsigned int n);
+	/*!
+	 * Remove the n-th element
+	 * \param Return true if found and deleted
+	 */
+    char Remove (void* e);
+
     void Mapcar (VoidFunctionPtr func);	// Apply "func" to every element 
     // on the list
     bool IsEmpty ();		// is the list empty? 
     
     inline ListElement* getFirst () { return first; }
-    inline int size () const { return mSize; }
+    inline unsigned int size () const { return mSize; }
 
     // Routines to put/get items on/off list in order (sorted by key)
     void SortedInsert (void *item, long long sortKey);	// Put item into list
     void *SortedRemove (long long *keyPtr);	// Remove first item from list
 
   private:
-      ListElement * first;	// Head of the list, NULL if list is empty
-    ListElement *last;		// Last element of list
-    unsigned int mSize;
+	ListElement * first;	// Head of the list, NULL if list is empty
+	ListElement *last;		// Last element of list
+	unsigned int mSize;
 };
 
 #endif // LIST_H

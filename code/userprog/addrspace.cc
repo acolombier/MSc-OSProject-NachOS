@@ -61,7 +61,7 @@ SwapHeader (NoffHeader * noffH)
 //----------------------------------------------------------------------
 
 AddrSpace::AddrSpace (OpenFile * executable):
-	lastTID(0), mThreadList(new List)
+	lastTID(0), mThreadList(new List), mIOLock(new Lock("IO AddrSpace"))
 {
     NoffHeader noffH;
     unsigned int i, size;
@@ -162,12 +162,13 @@ AddrSpace::InitRegisters ()
     // of branch delay possibility
     machine->WriteRegister (NextPCReg, 4);
 
+    ASSERT(numPages > countThread());
     // Set the stack register to the end of the address space, where we
     // allocated the stack; but subtract off a bit, to make sure we don't
     // accidentally reference off the end!
-    machine->WriteRegister (StackReg, numPages * PageSize - 16);
-    DEBUG ('a', "Initializing stack register to %d\n",
-	   numPages * PageSize - 16);
+    machine->WriteRegister (StackReg, (numPages - countThread() + 1) * PageSize - 16);
+    DEBUG ('a', "Initializing stack register to %d for thread #%d\n",
+	   (numPages - countThread() + 1) * PageSize - 16, currentThread->tid());
 }
 
 //----------------------------------------------------------------------
@@ -188,9 +189,13 @@ void AddrSpace::SaveState (){
  * 
  */
 void AddrSpace::appendThread (Thread* t){	
-    t->space = this;
-    t->setTID(lastTID++);
-    mThreadList->Append(t);
+	if (countThread() < MAX_THREADS){
+		t->space = this;
+		t->setTID(lastTID++);
+		mThreadList->Append(t);
+		DEBUG ('a', "New thread mapped in the space as ID #%d\n", t->tid());
+	} else
+		DEBUG ('a', "Maximun threads number reached\n");
 }
 /*!
  * Remove a Thread to the address space, and notify the waiting Threads
@@ -199,18 +204,14 @@ void AddrSpace::appendThread (Thread* t){
  * 
  * */
 void AddrSpace::removeThread(Thread* t){
-	Thread*e;
-	while ((e = (Thread*)mThreadList->Remove()) && t != e)
-		mThreadList->Append(e);
-		
-	DEBUG('t', "Thread #%d has %sbeen found\n", t->tid(), (e ? "": "NOT "));
+	char found = mThreadList->Remove(t);
+	DEBUG('t', "Thread #%d has %sbeen found\n", t->tid(), (found ? "": "NOT "));
 }
 
 
 Thread* AddrSpace::getThread(unsigned int tid) {
 	ListElement* e = mThreadList->getFirst();
-	while (e && ((Thread*)e->item)->tid() != tid)
-		e = e->next;
+	while ((e = e->next) && tid != ((Thread*)e->item)->tid()) {}
 	return (e ? (Thread*)e->item : nullptr);
 }
 

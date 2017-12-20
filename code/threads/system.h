@@ -11,6 +11,12 @@
 */
 #define MAX_STRING_SIZE 512
 
+/*! \def MAX_THREADS
+
+    The maximun number of userthread that can be associated to an address space (= process) .
+*/
+#define MAX_THREADS 16
+
 #ifndef SYSTEM_H
 #define SYSTEM_H
 

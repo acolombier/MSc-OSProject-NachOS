@@ -27,6 +27,18 @@
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
 
+/*!
+ * \def STACK_FENCEPOST stack canari to detect overflow
+ */
+#define STACK_FENCEPOST 0xdeadbeef	// this is put at the top of the
+					// execution stack, for detecting 
+					// stack overflows
+
+/*!
+ * \def NULL_TID TID of a none initialised thread
+ */
+#define NULL_TID 0xFFFFFFFF	
+
 #ifndef THREAD_H
 #define THREAD_H
 
@@ -107,9 +119,9 @@ class Thread
     {
 		printf ("%s, ", name);
     }
-    void setTID (unsigned int tid) {
-		if (!mTid)
-			mTid = tid;
+    void setTID (tid_t tid) {
+		ASSERT(mTid == NULL_TID);
+		mTid = tid;
     }
     
     /*!

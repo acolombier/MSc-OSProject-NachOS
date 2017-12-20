@@ -181,8 +181,9 @@ GetInt:
     .ent    UserThreadCreate
 UserThreadCreate:
     addiu $2,$0,SC_CreateUserThread
+    addiu $6,$0,UserThreadExit
     syscall
-    j   $31
+	j	$31
     .end UserThreadCreate
 
     .globl UserThreadExit
@@ -192,6 +193,14 @@ UserThreadExit:
     syscall
     j   $31
     .end UserThreadExit
+
+    .globl UserThreadJoin
+    .ent    UserThreadJoin
+UserThreadJoin:
+    addiu $2,$0,SC_JoinUserThread
+    syscall
+    j   $31
+    .end UserThreadJoin
 
 /* dummy function to keep gcc happy */
         .globl  __main

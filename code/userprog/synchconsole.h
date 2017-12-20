@@ -47,7 +47,7 @@ class SynchConsole : public Console {
 		//! Class method to get an array of char synchronously.
 		/*!
 		  \param s Pointer the array of char where the read string will be stored.
-		  \param n Maximun number of char that can be read including \0. If this value is greater that \ref MAX_STRING_SIZE, the constant will be used instead. The function will also stop reading if it encounts a \0 char.
+		  \param n Maximun number of char that can be read including \0. If this value is greater that \ref MAX_STRING_SIZE, the constant will be used instead and the rest of the string will get truncated. The function will also stop reading if it encounts a \0 char.
 		*/
 		void GetString(char *s, int n);       // Unix fgets(3S)
 

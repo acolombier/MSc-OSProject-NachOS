@@ -25,19 +25,6 @@
 #include "addrspace.h"
 #endif
 
-/*!
- * \def STACK_FENCEPOST stack canari to detect overflow
- */
-#define STACK_FENCEPOST 0xdeadbeef	// this is put at the top of the
-					// execution stack, for detecting 
-					// stack overflows
-
-/*!
- * \def NULL_TID TID of a none initialised thread
- */
-#define NULL_TID 0xFFFFFFFF	// this is put at the top of the
-					// execution stack, for detecting 
-					// stack overflows
 
 //----------------------------------------------------------------------
 // Thread::Thread
@@ -121,7 +108,7 @@ Thread::Fork (VoidFunctionPtr func, int arg)
     // an already running program, as in the "fork" Unix system call. 
     
     // LB: Observe that currentThread->space may be NULL at that time.
-    this->space = currentThread->space;
+    //this->space = currentThread->space;
 
 #endif // USER_PROGRAM
 
@@ -164,7 +151,10 @@ int Thread::join(tid_t t){
 		return -1; // It does not exit (or not anymore)
 		
 	thread_to_join->appendToJoin(this); // Will be elected when the thread will finish
-	currentThread->Sleep ();
+	
+    IntStatus oldLevel = interrupt->SetLevel (IntOff);	// disable interrupts
+	Sleep ();
+    (void) interrupt->SetLevel (oldLevel);	// re-enable interrupts
 #endif
 	return NULL_TID;
 	
@@ -195,7 +185,7 @@ Thread::Finish ()
     (void) interrupt->SetLevel (IntOff);
     ASSERT (this == currentThread);
 
-    DEBUG ('t', "Finishing thread \"%s\"\n", getName ());
+    DEBUG ('t', "Finishing thread #%d:\"%s\"\n", tid(), getName ());
 
     // LB: Be careful to guarantee that no thread to be destroyed 
     // is ever lost 
@@ -208,7 +198,8 @@ Thread::Finish ()
 
 
 #ifdef USER_PROGRAM		
-    space->removeThread(this);
+	if (space)
+		space->removeThread(this);
 #endif
 
     threadToBeDestroyed = currentThread;

@@ -138,6 +138,53 @@ List::Remove ()
     return SortedRemove (NULL);	// Same as SortedRemove, but ignore the key
 }
 
+void * List::Remove (unsigned int n)
+{
+	if (n >= mSize)
+		return nullptr;
+		
+    ListElement *element = first;
+    ListElement **pnt = &first;
+    
+    for (unsigned int i = 0; i < n && element; i++){
+		pnt = &element->next;
+		element = *pnt;
+	}
+		
+    if (element){
+		*pnt = element->next;
+		void* thing = element->item;
+		delete element;
+		
+		mSize = mSize ? mSize - 1 : 0;
+		return thing;	// Same as SortedRemove, but ignore the key
+	}
+	return nullptr;
+}
+
+char List::Remove (void* e)
+{
+	if (!e)
+		return 0;
+		
+    ListElement *element = first;
+    ListElement **pnt = &first;
+    
+    for (unsigned int i = 0; element && element->item != e; i++){
+		pnt = &element->next;
+		element = *pnt;
+	}
+		
+    if (element){
+		*pnt = element->next;
+		delete element;
+		
+		mSize = mSize ? mSize - 1 : 0;
+		return 1;	// Same as SortedRemove, but ignore the key
+	}
+	return 0;
+}
+
 //----------------------------------------------------------------------
 // List::Mapcar
 //      Apply a function to each item on the list, by walking through  

@@ -38,6 +38,7 @@
 #define SC_GetInt	16
 #define SC_CreateUserThread 17
 #define SC_ExitUserThread	18
+#define SC_JoinUserThread	19
 
 #define ConsoleInput	0
 #define ConsoleOutput	1
@@ -170,9 +171,11 @@ void GetInt(int *n);
  */
 int UserThreadCreate(void f(void *arg), void *arg);
 
-/*! \brief Exit a user thread
- */
-void UserThreadExit();
+/*! \brief Exit a user thread */
+void UserThreadExit() __attribute__((noreturn));
+
+/*! \brief Wait for the specified thread to finish */
+int UserThreadJoin(int tid);
 
 #endif // IN_USER_MODE
 

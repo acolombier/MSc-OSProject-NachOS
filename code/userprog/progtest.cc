@@ -27,13 +27,14 @@ StartProcess (char *filename)
     OpenFile *executable = fileSystem->Open (filename);
     AddrSpace *space;
 
-    if (executable == NULL)
-      {
-	  printf ("Unable to open file %s\n", filename);
-	  return;
-      }
+    if (executable == NULL){
+		printf ("Unable to open file %s\n", filename);
+		return;
+	}
     space = new AddrSpace (executable);
     space->appendThread(currentThread);
+    
+    DEBUG('t', "The main thread is #%d\n", currentThread->tid());
 
     delete executable;		// close file
 
