@@ -32,10 +32,12 @@
 
 #include "copyright.h"
 #include "utility.h"
+#include "system.h"
+#include "list.h"
 
 #ifdef USER_PROGRAM
 #include "machine.h"
-#include "addrspace.h"
+class AddrSpace;
 #endif
 
 // CPU register state to be saved on context switch.  
@@ -105,7 +107,31 @@ class Thread
     {
 		printf ("%s, ", name);
     }
-
+    void setTID (unsigned int tid) {
+		if (!mTid)
+			mTid = tid;
+    }
+    
+    /*!
+     * Get the thread ID of the current process
+     * \return the thread ID
+     */
+    inline tid_t tid() const { return mTid; }
+    
+    /*!
+     * Append a Thread waiting for this Thread to finish
+     * \param t The Thread which is sleeping, waiting to this one to finish
+     */
+    void appendToJoin(Thread*t);
+	
+    /*!
+     * Join to an other Thread identified by an identifier 
+     * \param t The Thread to join
+     * \return Did the join failed? 
+     * 
+     */
+	int join(tid_t t);
+	
   private:
     // some of the private data for this class is listed above
 
@@ -114,6 +140,9 @@ class Thread
     // (If NULL, don't deallocate stack)
     ThreadStatus status;	// ready, running or blocked
     const char *name;
+    tid_t mTid;
+    List* mThreadsWaiting;
+	
 
     void StackAllocate (VoidFunctionPtr func, int arg);
     // Allocate a stack for thread.

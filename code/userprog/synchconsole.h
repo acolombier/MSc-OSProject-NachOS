@@ -4,7 +4,9 @@
 #include "copyright.h"
 #include "utility.h"
 #include "console.h"
-#include "synch.h"
+
+class Semaphore;
+class Lock;
 
 //!  A console kernel device adding an other layer over the main console
 /*!
@@ -12,8 +14,6 @@
  * interrupt themselves in order not to have to handle inside the user
  * code the availability of the I/O text device. This class is visible by the kernel only.
 */
-
-
 class SynchConsole : public Console {
 	public:
 		//! The class device constructor.
@@ -51,8 +51,8 @@ class SynchConsole : public Console {
 		*/
 		void GetString(char *s, int n);       // Unix fgets(3S)
 
-		void handlerReadAvail() { mReadAvail->V(); }
-		void handlerWriteDone() { mWriteDone->V(); }
+		void handlerReadAvail();
+		void handlerWriteDone();
 
 		static void handlerReadAvail(int);
 		static void handlerWriteDone(int);

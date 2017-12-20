@@ -40,7 +40,8 @@ ListElement::ListElement (void *itemPtr, long long sortKey)
 //      Elements can now be added to the list.
 //----------------------------------------------------------------------
 
-List::List ()
+List::List ():
+	mSize(0)
 {
     first = last = NULL;
 }
@@ -88,6 +89,8 @@ List::Append (void *item)
 	  last->next = element;
 	  last = element;
       }
+     
+    mSize++;
 }
 
 //----------------------------------------------------------------------
@@ -117,6 +120,7 @@ List::Prepend (void *item)
 	  element->next = first;
 	  first = element;
       }
+    mSize++;
 }
 
 //----------------------------------------------------------------------
@@ -130,6 +134,7 @@ List::Prepend (void *item)
 void *
 List::Remove ()
 {
+    mSize = mSize ? mSize - 1 : 0;
     return SortedRemove (NULL);	// Same as SortedRemove, but ignore the key
 }
 

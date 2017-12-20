@@ -21,6 +21,11 @@
 #include "copyright.h"
 #include "scheduler.h"
 #include "system.h"
+#include "thread.h"
+
+#ifdef USER_PROGRAM		// ignore until running user programs
+#include "addrspace.h"
+#endif
 
 //----------------------------------------------------------------------
 // Scheduler::Scheduler

@@ -60,7 +60,8 @@ SwapHeader (NoffHeader * noffH)
 //      "executable" is the file containing the object code to load into memory
 //----------------------------------------------------------------------
 
-AddrSpace::AddrSpace (OpenFile * executable)
+AddrSpace::AddrSpace (OpenFile * executable):
+	lastTID(0), mThreadList(new List)
 {
     NoffHeader noffH;
     unsigned int i, size;
@@ -132,6 +133,7 @@ AddrSpace::~AddrSpace ()
   // LB: Missing [] for delete
   // delete pageTable;
   delete [] pageTable;
+  delete mThreadList;
   // End of modification
 }
 
@@ -176,9 +178,40 @@ AddrSpace::InitRegisters ()
 //      For now, nothing!
 //----------------------------------------------------------------------
 
-void
-AddrSpace::SaveState ()
-{
+void AddrSpace::SaveState (){
+}
+	
+/*!
+ * Add a Thread to the address space
+ * 
+ * \param t freshly created thread
+ * 
+ */
+void AddrSpace::appendThread (Thread* t){	
+    t->space = this;
+    t->setTID(lastTID++);
+    mThreadList->Append(t);
+}
+/*!
+ * Remove a Thread to the address space, and notify the waiting Threads
+ * 
+ * \param t freshly created thread
+ * 
+ * */
+void AddrSpace::removeThread(Thread* t){
+	Thread*e;
+	while ((e = (Thread*)mThreadList->Remove()) && t != e)
+		mThreadList->Append(e);
+		
+	DEBUG('t', "Thread #%d has %sbeen found\n", t->tid(), (e ? "": "NOT "));
+}
+
+
+Thread* AddrSpace::getThread(unsigned int tid) {
+	ListElement* e = mThreadList->getFirst();
+	while (e && ((Thread*)e->item)->tid() != tid)
+		e = e->next;
+	return (e ? (Thread*)e->item : nullptr);
 }
 
 //----------------------------------------------------------------------

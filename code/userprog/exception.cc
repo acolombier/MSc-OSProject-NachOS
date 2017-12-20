@@ -21,6 +21,7 @@
 #include "syscall.h"
 #include "stringtransfer.h"
 #include "userthread.h"
+#include "addrspace.h"
 
 //----------------------------------------------------------------------
 // UpdatePC : Increments the Program Counter register in order to resume
@@ -85,8 +86,14 @@ ExceptionHandler (ExceptionType which)
 				// the prog shouldn't exit while the thread is still running
 				// if it has exited before; then nothing happens here
 				// otherwise the halting of the main is made clean
-				do_UserThreadExit();
-				/*! \todo we are not sure */
+				if (currentThread->space->countThread() != 1){
+					Thread*t;
+					while ((t = (Thread*)currentThread->space->threadList()->Remove())){
+						currentThread->space->threadList()->Append(t);
+						if (t != currentThread)
+							currentThread->join(t->tid());
+					}
+				}
 				interrupt->Halt();
 				break;
 			}
