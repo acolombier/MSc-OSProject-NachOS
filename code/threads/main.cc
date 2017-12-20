@@ -58,6 +58,7 @@
 // External functions used by this file
 
 extern void ThreadTest (void), Copy (const char *unixFile, const char *nachosFile);
+extern void LockTest (void);
 extern void Print (char *file), PerformanceTest (void);
 extern void StartProcess (char *file), ConsoleTest (char *in, char *out), SynchConsoleTest (char *in, char *out);
 extern void MailTest (int networkID);
@@ -87,6 +88,7 @@ main (int argc, char **argv)
 
 #ifdef THREADS
     ThreadTest ();
+    LockTest ();
 #endif
 
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount)

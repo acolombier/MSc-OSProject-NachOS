@@ -33,6 +33,8 @@ SimpleThread (int which)
       }
 }
 
+
+
 //----------------------------------------------------------------------
 // ThreadTest
 //      Set up a ping-pong between two threads, by forking a thread 
@@ -48,4 +50,70 @@ ThreadTest ()
 
     t->Fork (SimpleThread, 1);
     SimpleThread (0);
+    
+}
+
+// EXTRA
+
+/* ************************* Testing Locks ************************** */
+#include "synch.h"
+int count = 0;
+Lock *lock = new Lock("mutex");
+
+//----------------------------------------------------------------------
+// SimpleIncrement
+//      Loop 5 times incrementing a shared variable.
+//      The synchronisation is done with the lock class
+//
+//      "which" is simply a number identifying the thread, for debugging
+//      purposes.
+//----------------------------------------------------------------------
+
+void
+SimpleIncrement (int which)
+{
+    int num;
+
+    for (num = 0; num < 5; num++)
+      {
+	  //printf("Thread %d trying to lock\n",which);
+	  lock->Acquire();
+	  //printf("Thread %d has locked\n",which);
+	  
+	  count++;
+	  printf("Thread %d : count = %d\n", which, count);
+
+	  
+	  //currentThread->Yield ();
+	  
+	  //printf("Thread %d trying to unlock\n",which);
+	  lock->Release();
+	  //printf("Thread %d has unlocked\n",which);
+	  
+	  currentThread->Yield ();
+      }
+}
+
+//----------------------------------------------------------------------
+// LockTest
+//      Three threads are trying to incrment a counter 5 times each.
+//      The synchonisation is done with locks.
+//----------------------------------------------------------------------
+
+void
+LockTest ()
+{
+    
+    DEBUG ('t', "Entering LockTest\n");
+
+    printf("\nTesting the locks\n\n");
+    
+    Thread *t1 = new Thread ("forked thread 1");
+    Thread *t2 = new Thread ("forked thread 2");
+    
+    t1->Fork (SimpleIncrement, 1);
+    t2->Fork (SimpleIncrement, 2);
+    SimpleIncrement (0);
+
+    printf("\nFinal value of count : %d\n",count);
 }
