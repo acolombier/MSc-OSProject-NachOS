@@ -1,9 +1,10 @@
-/* syscalls.h
+/*! \file syscall.h 
  * 	Nachos system call interface.  These are Nachos kernel operations
  * 	that can be invoked from user programs, by trapping to the kernel
  *	via the "syscall" instruction.
- *
- *	This file is included by user programs and by the Nachos kernel.
+ */
+ 
+/*	This file is included by user programs and by the Nachos kernel.
  *
  * Copyright (c) 1992-1993 The Regents of the University of California.
  * All rights reserved.  See copyright.h for copyright notice and limitation
@@ -36,7 +37,22 @@
 #define SC_PutInt	15
 #define SC_GetInt	16
 
+#define ConsoleInput	0
+#define ConsoleOutput	1
+
+/*! \def EOF   
+    The EOF reprensation on 4 bytes.
+*/
+#define EOF	0xFFFFFFFF
+
 #ifdef IN_USER_MODE
+
+/* when an address space starts up, it has two open files, representing
+ * keyboard input and display output (in UNIX terms, stdin and stdout).
+ * Read and Write can be used directly on these, without first opening
+ * the console device.
+ */
+
 
 // LB: This part is read only on compiling the test/*.c files.
 // It is *not* read on compiling test/start.S
@@ -87,21 +103,6 @@ int Join (SpaceId id);
 /* A unique identifier for an open Nachos file. */
 typedef int OpenFileId;
 
-/* when an address space starts up, it has two open files, representing
- * keyboard input and display output (in UNIX terms, stdin and stdout).
- * Read and Write can be used directly on these, without first opening
- * the console device.
- */
-
-#define ConsoleInput	0
-#define ConsoleOutput	1
-
-/*! \def EOF
-   
-    The EOF reprensation on 4 bytes.
-*/
-#define EOF	0xFFFFFFFF
-
 /* Create a Nachos file, with "name" */
 void Create (char *name);
 
@@ -113,7 +114,11 @@ OpenFileId Open (char *name);
 /* Write "size" bytes from "buffer" to the open file. */
 void Write (char *buffer, int size, OpenFileId id);
 
-/*! Read "size" bytes from the open file into "buffer".
+/*!
+ * \brief Read "size" bytes from the open file into "buffer".
+ * \param buffer buffer address where data is written
+ * \param size size of data read and write
+ * \param id file descriptor
  * \return Return the number of bytes actually read -- if the open file isn't \
   long enough, or if it is an I/O device, and there aren't enough \
   characters to read, return whatever is available (for I/O devices, \
@@ -146,12 +151,12 @@ char GetChar();
 void PutString(char *s);
 void GetString(char *s, int n);
 
-/*! \fn void PutInt(int n)
+/*!
     \brief Write integer in the STDOUT using ascii representation.
     \param n The integer to put on the NachOS STDOUT.
 */
 void PutInt(int n);
-/*! \fn void PutInt(int *n)
+/*!
     \brief Read integer in the STDOUT using ascii representation.
     \param *n Pointer to an integer where the read int from ascii STDIN will be stored.
 */

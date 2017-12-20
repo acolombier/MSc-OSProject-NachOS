@@ -74,9 +74,19 @@ class Semaphore
 // may release it.  As with semaphores, you can't read the lock value
 // (because the value might change immediately after you read it).
 
+//!  A lock mechanism made on top of the semaphore mechanism provided
+/*!
+ * This Lock class is used to create a exclusion mechnaism in order to 
+ * ensure MUTual EXclusion (the so called mutex on Linux system)
+ * \todo Missing documentation
+*/
 class Lock
 {
   public:
+	//! The constructor of a Lock object
+	/*!
+	 * \param debugName the name displayed when debug trace is enabled
+	 */
     Lock (const char *debugName);	// initialize lock to be FREE
      ~Lock ();			// deallocate lock
     inline const char *getName () const { return mName;}				// debugging assist
@@ -128,6 +138,13 @@ class Lock
 // can acquire the lock, and change data structures, before the woken
 // thread gets a chance to run.
 
+//!  A variable condition mechanism made on top of the lock mechanism
+/*!
+ * This Condition class is used to create syncronisation between threads 
+ * such as the 'cond' mechanism in Linux
+ * \todo Missing documentation
+ * \todo Made out of semaphore, patch to use lock
+*/
 class Condition
 {
   public:

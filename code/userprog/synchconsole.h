@@ -61,7 +61,7 @@ class SynchConsole : public Console {
 	private:
 		Semaphore *mReadAvail;
 		Semaphore *mWriteDone;
-		Semaphore *mReadingMode; //TODO: replace by a Lock when tested
+		Semaphore *mReadingMode; /*! \todo replace by a Lock when tested */
 		
 };
 
