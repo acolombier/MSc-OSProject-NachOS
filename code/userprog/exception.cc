@@ -39,27 +39,27 @@ UpdatePC ()
 
 //! ExceptionHandler
 /*!
-*      Entry point into the Nachos kernel.  Called when a user program
-*      is executing, and either does a syscall, or generates an addressing
-*      or arithmetic exception.
+* Entry point into the Nachos kernel.  Called when a user program
+* is executing, and either does a syscall, or generates an addressing
+* or arithmetic exception.
 *
-*      For system calls, the following is the calling convention:
+* For system calls, the following is the calling convention:
 *
-*      system call code -- r2
-*              arg1 -- r4
-*              arg2 -- r5
-*              arg3 -- r6
-*              arg4 -- r7
+* system call code -- r2
+*             arg1 -- r4
+*             arg2 -- r5
+*             arg3 -- r6
+*             arg4 -- r7
 *
-*      The result of the system call, if any, must be put back into r2.
+* The result of the system call, if any, must be put back into r2.
 *
 * And don't forget to increment the pc before returning. (Or else you'll
 * loop making the same system call forever!
 *
-*      "which" is the kind of exception.  The list of possible exceptions
-*      are in machine.h.
+* "which" is the kind of exception.  The list of possible exceptions
+* are in machine.h.
 * 
-* 	\param which The kind of exception to handle, one of the \ref ExceptionType can be used.
+* \param which The kind of exception to handle, one of the \ref ExceptionType can be used.
 */
 
 void
