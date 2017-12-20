@@ -37,6 +37,7 @@ UpdatePC ()
     machine->WriteRegister (NextPCReg, pc);
 }
 
+
 //! ExceptionHandler
 /*!
 * Entry point into the Nachos kernel.  Called when a user program
@@ -52,15 +53,18 @@ UpdatePC ()
 *             arg4 -- r7
 *
 * The result of the system call, if any, must be put back into r2.
-*
-* And don't forget to increment the pc before returning. (Or else you'll
-* loop making the same system call forever!
-*
-* "which" is the kind of exception.  The list of possible exceptions
-* are in machine.h.
 * 
-* \param which The kind of exception to handle, one of the \ref ExceptionType can be used.
+* \param which The kind of exception to handle. The list of possible exceptions
+* is in machine.h under enum \ref ExceptionType.
 */
+
+//----------------------------------------------------------------------
+// And don't forget to increment the pc before returning. (Or else you'll
+// loop making the same system call forever!
+//
+// which" is the kind of exception.  The list of possible exceptions
+// are in machine.h.
+//----------------------------------------------------------------------
 
 void
 ExceptionHandler (ExceptionType which)
@@ -82,10 +86,11 @@ ExceptionHandler (ExceptionType which)
 
 			case SC_Halt: {
 				DEBUG('a', "Shutdown, initiated by user program.\n");
-				// the prog shouldn't exit while the thread is still running
-				// if it has exited before; then nothing happens here
-				// otherwise the halting of the main is made clean
+				/*! The program shouldn't exit while the thread is still running.
+				 * If it has exited before the call to Halt(), nothing happens here. Otherwise the halting of the main is made clean by calling UserThreadExit() before calling Halt().
+				 */
 				do_UserThreadExit();
+				
 				/*! \todo we are not sure */
 				interrupt->Halt();
 				break;
