@@ -40,6 +40,7 @@
 #define ConsoleInput	0
 #define ConsoleOutput	1
 
+#undef EOF
 /*! \def EOF   
     The EOF reprensation on 4 bytes.
 */
