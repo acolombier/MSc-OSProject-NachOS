@@ -11,6 +11,7 @@ typedef struct bundle {
 /*!
  * \param bundle_p Pointer to a bundle struct that contain the user function and args to be executed.
  */
+/*! \todo technical documentation on technical choices */
 static void StartUserThread(int bundle_p) {
 
     bundle_t *bundle = (bundle_t *) bundle_p;
