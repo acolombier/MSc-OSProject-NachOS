@@ -10,4 +10,5 @@ extern int do_UserThreadCreate(int f, int arg);
 /*! Kernel part of the UserThreadExit syscall */
 extern void do_UserThreadExit();
 
+/*! Kernel part of the UserThreadJoin syscall */
 extern int do_UserThreadJoin(int tid);

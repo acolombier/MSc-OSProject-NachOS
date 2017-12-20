@@ -70,3 +70,8 @@ void do_UserThreadExit() {
     // TODO: disable interrupts (probably)
     currentThread->Finish();
 }
+
+int do_UserThreadJoin(int tid) {
+    // TODO: the function!!!
+    return -1;
+}

@@ -29,12 +29,12 @@
 static void
 UpdatePC ()
 {
-    int pc = machine->ReadRegister (PCReg);
-    machine->WriteRegister (PrevPCReg, pc);
-    pc = machine->ReadRegister (NextPCReg);
-    machine->WriteRegister (PCReg, pc);
-    pc += 4;
-    machine->WriteRegister (NextPCReg, pc);
+	int pc = machine->ReadRegister (PCReg);
+	machine->WriteRegister (PrevPCReg, pc);
+	pc = machine->ReadRegister (NextPCReg);
+	machine->WriteRegister (PCReg, pc);
+	pc += 4;
+	machine->WriteRegister (NextPCReg, pc);
 }
 
 
@@ -53,7 +53,7 @@ UpdatePC ()
 *             arg4 -- r7
 *
 * The result of the system call, if any, must be put back into r2.
-* 
+*
 * \param which The kind of exception to handle. The list of possible exceptions
 * is in machine.h under enum \ref ExceptionType.
 */
@@ -69,19 +69,19 @@ UpdatePC ()
 void
 ExceptionHandler (ExceptionType which)
 {
-    int type = machine->ReadRegister(2);
-    // argument registers used by the syscall functions
-    int reg4, reg5, returnvalue; // , reg6, reg7;
+	int type = machine->ReadRegister(2);
+	// argument registers used by the syscall functions
+	int reg4, reg5, returnvalue; // , reg6, reg7;
 
 
 	/*! \todo Optimisation by reading only useful register for a given trap */
-    reg4 = machine->ReadRegister(4);
-    reg5 = machine->ReadRegister(5);
-    //reg6 = machine->ReadRegister(6);
-    //reg7 = machine->ReadRegister(7);
+	reg4 = machine->ReadRegister(4);
+	reg5 = machine->ReadRegister(5);
+	//reg6 = machine->ReadRegister(6);
+	//reg7 = machine->ReadRegister(7);
 
 
-    if (which == SyscallException) {
+	if (which == SyscallException) {
 		switch (type) {
 
 			case SC_Halt: {
@@ -90,7 +90,7 @@ ExceptionHandler (ExceptionType which)
 				 * If it has exited before the call to Halt(), nothing happens here. Otherwise the halting of the main is made clean by calling UserThreadExit() before calling Halt().
 				 */
 				do_UserThreadExit();
-				
+
 				/*! \todo we are not sure */
 				interrupt->Halt();
 				break;
@@ -163,14 +163,21 @@ ExceptionHandler (ExceptionType which)
 				DEBUG('i', "CreateUserThread syscall, initiated by user program.\n");
 				returnvalue = do_UserThreadCreate(reg4, reg5);
 				machine->WriteRegister(2, returnvalue);
-                break;
-            }
+				break;
+			}
 
-            case SC_ExitUserThread: {
+			case SC_ExitUserThread: {
 				DEBUG('i', "ExitUserThread syscall, initiated by user program.\n");
-                do_UserThreadExit();
-                break;
-            }
+				do_UserThreadExit();
+				break;
+			}
+
+			case SC_JoinUserThread: {
+				DEBUG('i', "UserThreadJoin syscall, initiated by user program.\n");
+				returnvalue = do_UserThreadJoin(reg4);
+				machine->WriteRegister(2, returnvalue);
+				break;
+			}
 
 			default: {
 				printf("Unexpected user mode exception %d %d\n", which, type);
