@@ -1,14 +1,19 @@
 #include "system.h"
 #include "userthread.h"
 
+/*! A struct to pass the user function and args to StartUserThread */
 typedef struct bundle {
-    int function;
-    int arg;
+    int function;  /*!< A user pointer to the function that will be execute by the user thread */
+    int arg;  /*!< A user pointer to the arguments of that function */
 } bundle_t;
 
-static void StartUserThread(int f) {
+/*! Function that starts the user thread */
+/*!
+ * \param bundle_p Pointer to a bundle struct that contain the user function and args to be executed.
+ */
+static void StartUserThread(int bundle_p) {
 
-    bundle_t *bundle = (bundle_t *) f;
+    bundle_t *bundle = (bundle_t *) bundle_p;
     DEBUG('t', "Inside StartUserThread\n");
 
     fprintf(stderr, "userThread to run %p(%p)\n", (void*)bundle->function, (void*)bundle->arg);
@@ -37,6 +42,11 @@ static void StartUserThread(int f) {
     machine->Run();
 }
 
+/*! Kernel part of the UserThreadCreate syscall */
+/*!
+ * \param f User pointer to the user function to be execute.
+ * \param arg User pointer to the args of the function to be execute.
+ */
 int do_UserThreadCreate(int f, int arg) {
     Thread *t = new Thread("new User Thread");
 
@@ -58,6 +68,7 @@ int do_UserThreadCreate(int f, int arg) {
     return 0;
 }
 
+/*! Kernel part of the UserThreadExit syscall */
 void do_UserThreadExit() {
     // we destroy the kernel thread because it was created
     // only to run the user thread
