@@ -1,13 +1,15 @@
 #include "syscall.h"
 
 void func(void *arg) {
-    int i = 0;
-    int n = (int) arg;
+    int i, n = (int) arg;
 
-    while (i < n) {
+    for (i = 0; i < n; i++) {
         PutString("func ");
         PutInt(i);
+        PutChar('\n');
     }
+
+    UserThreadExit();
 }
 
 int main() {

@@ -11,7 +11,7 @@ static void StartUserThread(int f) {
     bundle_t *bundle = (bundle_t *) f;
     DEBUG('t', "Inside StartUserThread\n");
 
-    fprintf(stderr, "userThread to run %d(%d)\n", bundle->function, bundle->arg);
+    fprintf(stderr, "userThread to run %p(%p)\n", (void*)bundle->function, (void*)bundle->arg);
 
     currentThread->space->RestoreState();  // load addspace into the machine
     currentThread->space->InitRegisters();  // init registers, including stack pointer
@@ -53,9 +53,7 @@ int do_UserThreadCreate(int f, int arg) {
         return -1;
     }
 
-    fprintf(stderr, " v v v\n");
-    t->Fork(StartUserThread, (int) &bundle);
-    fprintf(stderr, " ^ ^ ^\n");
+    t->Fork(StartUserThread, (int) bundle);
 
     return 0;
 }
@@ -63,5 +61,6 @@ int do_UserThreadCreate(int f, int arg) {
 void do_UserThreadExit() {
     // we destroy the kernel thread because it was created
     // only to run the user thread
+    // TODO: disable interrupts (probably)
     currentThread->Finish();
 }
