@@ -1,4 +1,8 @@
 #include "syscall.h"
+//#include "synchconsole.h"
+//#include "system.h"
+//#include "bitmap.h"
+//#include "synch.h"
 
 void func(void *arg) {
     int i, n = (int) arg;
