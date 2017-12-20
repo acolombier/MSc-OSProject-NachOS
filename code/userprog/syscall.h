@@ -47,6 +47,7 @@
 */
 #define EOF	0xFFFFFFFF
 
+
 #ifdef IN_USER_MODE
 
 /* when an address space starts up, it has two open files, representing
@@ -131,8 +132,6 @@ int Read (char *buffer, int size, OpenFileId id);
 /* Close the file, we're done reading and writing to it. */
 void Close (OpenFileId id);
 
-
-
 /* User-level thread operations: Fork and Yield.  To allow multiple
  * threads to run within a user program.
  */
@@ -164,9 +163,14 @@ void PutInt(int n);
 */
 void GetInt(int *n);
 
-/* Create and exit a user thread
+/*! \brief Create a user thread
+ *  \param f User pointer to the user function to execute.
+ * 	\param arg User pointer to the args of the function to execute.
  */
 int UserThreadCreate(void f(void *arg), void *arg);
+
+/*! \brief Exit a user thread
+ */
 void UserThreadExit();
 
 #endif // IN_USER_MODE

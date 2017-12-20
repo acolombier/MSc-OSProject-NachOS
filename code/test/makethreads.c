@@ -6,7 +6,7 @@ void func(void *arg) {
     for (i = 0; i < n; i++) {
         PutString("func ");
         PutInt(i);
-        PutChar('\n');
+        PutChar('R');
     }
 
     UserThreadExit();
@@ -15,5 +15,6 @@ void func(void *arg) {
 int main() {
 
     UserThreadCreate(func, (void *) 5);
+    PutChar('K');
     Halt();
 }
