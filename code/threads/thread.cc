@@ -144,7 +144,7 @@ Thread::CheckOverflow ()
 #endif
 }
 
-int Thread::join(tid_t t){
+int Thread::join(tid_t t) {
 #ifdef USER_PROGRAM		
 	ASSERT(t != tid());
 	Thread* thread_to_join = space->getThread(t);

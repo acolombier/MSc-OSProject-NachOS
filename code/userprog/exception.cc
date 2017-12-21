@@ -86,9 +86,11 @@ ExceptionHandler (ExceptionType which)
 
 			case SC_Halt: {
 				DEBUG('a', "Shutdown, initiated by user program.\n");
-				// the prog shouldn't exit while the thread is still running
-				// if it has exited before; then nothing happens here
-				// otherwise the halting of the main is made clean
+				/*! The main program should not exit before all of the threads have finished \
+				 * their execution or called UserThreadExit, because we don't want to cancel threads \
+				 * before they have finished thier tasks. The program must wait for all threads to be \
+				 * joined before calling Halt();
+				 */
 				ListElement*e = currentThread->space->threadList()->getFirst();
 				do {
 					tid_t thread_to_join = ((Thread*)e->item)->tid();	
@@ -104,7 +106,7 @@ ExceptionHandler (ExceptionType which)
 
 			case SC_Exit: {
 				DEBUG('i', "Exit syscall, initiated by user program.\n");
-				/*! \todo Handle correct process exit  */
+				/*! \todo Handle correct process exit. Waiting for teacher's answer.  */
 				//currentThread->Finish();
 				//For now just call Halt()
 				interrupt->Halt();
