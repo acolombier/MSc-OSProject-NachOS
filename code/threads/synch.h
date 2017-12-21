@@ -75,34 +75,43 @@ class Semaphore
 // may release it.  As with semaphores, you can't read the lock value
 // (because the value might change immediately after you read it).
 
-//!  A lock mechanism made on top of the semaphore mechanism provided
+/*! A lock mechanism made on top of the semaphore mechanism provided. */
 /*!
- * This Lock class is used to create a exclusion mechnaism in order to 
- * ensure MUTual EXclusion (the so called mutex on Linux system)
- * \todo Missing documentation
-*/
+ * This Lock class is used to create a exclusion mechnaism in order to ensure
+ * MUTual EXclusion (the so called mutex on Linux system).
+ */
 class Lock
 {
   public:
-	//! The constructor of a Lock object
-	/*!
-	 * \param debugName the name displayed when debug trace is enabled
-	 */
-    Lock (const char *debugName);	// initialize lock to be FREE
-     ~Lock ();			// deallocate lock
-    inline const char *getName () const { return mName;}				// debugging assist
+    /*! The constructor of a Lock object. */
+    /*!
+     * \param debugName The name displayed when debug trace is enabled.
+     */
+    Lock(const char *debugName);  // initialize lock to be FREE
 
-    void Acquire ();		// these are the only operations on a lock
-    void Release ();		// they are both *atomic*
+    /*! The destructor of a Lock object */
+    ~Lock();
 
+    /*! Get the debugName of the Lock object. */
+    /*!
+     * \return Return the debugName of the Lock.
+     */
+    inline const char *getName() const { return mName; }  // debugging assist
+
+    /*! Blocks the calling Thread until the Thread obtains ownership of the mutex (atomic operation). */
+    void Acquire();
+    /*! Releases ownership of the mutex (atomic operation). */
+    void Release();
+
+    /*! Indicate if currentThread is currently blocking this Lock. */
+    /*!
+     * \return Return true if the currentThread is the owner of this Lock.
+     */
     bool isHeldByCurrentThread() const;
-    // holds this lock.  Useful for
-    // checking in Release, and in
-    // Condition variable ops below.
+    // Useful for checking in Release, and in Condition variable ops below.
 
   private:
-    const char *mName;		// for debugging
-    // plus some other stuff you'll need to define
+    const char *mName;  // for debugging plus some other stuff you'll need to define
     Thread* mThreadHolder;
     Semaphore* mMutexLock;
 };
@@ -139,28 +148,47 @@ class Lock
 // can acquire the lock, and change data structures, before the woken
 // thread gets a chance to run.
 
-//!  A variable condition mechanism made on top of the lock mechanism
+/*! A variable condition mechanism made on top of the lock mechanism. */
 /*!
- * This Condition class is used to create syncronisation between threads 
- * such as the 'cond' mechanism in Linux
- * \todo Missing documentation
- * \todo Made out of semaphore, patch to use lock
-*/
+ * This Condition class is used to create syncronisation between threads such as
+ * the 'cond' mechanism in Linux.
+ * \todo Made out of semaphore, patch to use lock.
+ */
 class Condition
 {
   public:
-    Condition (const char *debugName);	// initialize condition to
-    // "no one waiting"
-     ~Condition ();		// deallocate the condition
-    inline const char *getName() const { return mName;}
+    /*! The constructor of a Condition object. */
+    /*!
+     * \param debugName the name displayed when debug trace is enabled.
+     */
+    Condition(const char *debugName);  // initialize condition to "no one waiting"
 
-    void Wait (Lock * conditionLock);	// these are the 3 operations on
-    // condition variables; releasing the
-    // lock and going to sleep are
-    // *atomic* in Wait()
-    void Signal (Lock * conditionLock);	// conditionLock must be held by
-    void Broadcast (Lock * conditionLock);	// the currentThread for all of
-    // these operations
+    /*! The destructor of a Condition object. */
+    ~Condition();  // deallocate the condition
+
+    /*! Get the debugName of the Condition object. */
+    /*!
+     * \return Return the debugName of the Condition.
+     */
+    inline const char *getName() const { return mName; }
+
+    /*! Blocks a thread (atomic operation). */
+    /*!
+     * \param conditionLock The Lock used by the Condition object. The calling Thread *must* own this Lock.
+     */
+    void Wait(Lock *conditionLock);
+
+    /*! Unblocks one of the threads that are waiting for the condition_variable object (atomic operation). */
+    /*!
+     * \param conditionLock The Lock used by the Condition object. The calling Thread *must* own this Lock.
+     */
+    void Signal(Lock *conditionLock);
+
+    /*! Unblocks all threads that are waiting on the specified lock (atomic operation). */
+    /*!
+     * \param conditionLock The Lock used by the Condition object. The calling Thread *must* own this Lock.
+     */
+    void Broadcast(Lock *conditionLock);
 
   private:
     const char *mName;
