@@ -1,15 +1,12 @@
-// synch.h
-//      Data structures for synchronizing threads.
-//
-//      Three kinds of synchronization are defined here: semaphores,
-//      locks, and condition variables.  The implementation for
-//      semaphores is given; for the latter two, only the procedure
-//      interface is given -- they are to be implemented as part of
-//      the first assignment.
-//
-//      Note that all the synchronization objects take a "name" as
-//      part of the initialization.  This is solely for debugging purposes.
-//
+/*! \file synch.h
+*      Data structures for synchronizing threads.
+*
+*      Three kinds of synchronization are defined here: semaphores,
+*      locks, and condition variables.  
+* 
+* 		All the synchronization objects take a "name" as part of the initialization. This is solely for debugging purposes.
+*/
+
 // Copyright (c) 1992-1993 The Regents of the University of California.
 // All rights reserved.  See copyright.h for copyright notice and limitation
 // synch.h -- synchronization primitives.
@@ -77,8 +74,8 @@ class Semaphore
 
 //!  A lock mechanism made on top of the semaphore mechanism provided
 /*!
- * This Lock class is used to create a exclusion mechnaism in order to 
- * ensure MUTual EXclusion (the so called mutex on Linux system)
+ * This Lock class is used to create a exclusion mechanism in order to 
+ * ensure MUTual EXclusion (the so called mutex on Linux system).
  * \todo Missing documentation
 */
 class Lock
@@ -86,7 +83,7 @@ class Lock
   public:
 	//! The constructor of a Lock object
 	/*!
-	 * \param debugName the name displayed when debug trace is enabled
+	 * \param debugName The name displayed when debug trace is enabled
 	 */
     Lock (const char *debugName);	// initialize lock to be FREE
      ~Lock ();			// deallocate lock
@@ -102,7 +99,6 @@ class Lock
 
   private:
     const char *mName;		// for debugging
-    // plus some other stuff you'll need to define
     Thread* mThreadHolder;
     Semaphore* mMutexLock;
 };
@@ -142,13 +138,18 @@ class Lock
 //!  A variable condition mechanism made on top of the lock mechanism
 /*!
  * This Condition class is used to create syncronisation between threads 
- * such as the 'cond' mechanism in Linux
+ * such as the 'cond' mechanism in Linux.
+ * 
  * \todo Missing documentation
  * \todo Made out of semaphore, patch to use lock
 */
 class Condition
 {
   public:
+  	//! The constructor of a Condition object
+	/*!
+	 * \param debugName The name displayed when debug trace is enabled
+	 */
     Condition (const char *debugName);	// initialize condition to
     // "no one waiting"
      ~Condition ();		// deallocate the condition
@@ -165,6 +166,5 @@ class Condition
   private:
     const char *mName;
     List* mThreadsQueue;
-    // plus some other stuff you'll need to define
 };
 #endif // SYNCH_H
