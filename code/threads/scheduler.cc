@@ -21,6 +21,11 @@
 #include "copyright.h"
 #include "scheduler.h"
 #include "system.h"
+#include "thread.h"
+
+#ifdef USER_PROGRAM		// ignore until running user programs
+#include "addrspace.h"
+#endif
 
 //----------------------------------------------------------------------
 // Scheduler::Scheduler
@@ -134,10 +139,12 @@ Scheduler::Run (Thread * nextThread)
 
 #ifdef USER_PROGRAM
     if (currentThread->space != NULL)
-      {				// if there is an address space
-	  currentThread->RestoreUserState ();	// to restore, do it.
-	  currentThread->space->RestoreState ();
-      }
+	{				// if there is an address space
+		currentThread->RestoreUserState ();	// to restore, do it.
+		currentThread->space->RestoreState ();
+	} else
+		DEBUG ('a', "Thread #%d:\"%s\" does not have address space\n", currentThread->tid(), currentThread->getName ());
+		
 #endif
 }
 

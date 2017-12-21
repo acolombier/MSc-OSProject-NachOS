@@ -23,6 +23,7 @@
 
 #include "copyright.h"
 #include "synch.h"
+#include "thread.h"
 #include "system.h"
 
 //----------------------------------------------------------------------

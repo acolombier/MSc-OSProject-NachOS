@@ -60,7 +60,8 @@ SwapHeader (NoffHeader * noffH)
 //      "executable" is the file containing the object code to load into memory
 //----------------------------------------------------------------------
 
-AddrSpace::AddrSpace (OpenFile * executable)
+AddrSpace::AddrSpace (OpenFile * executable):
+	lastTID(0), mThreadList(new List), mIOLock(new Lock("IO AddrSpace"))
 {
     NoffHeader noffH;
     unsigned int i, size;
@@ -132,6 +133,7 @@ AddrSpace::~AddrSpace ()
   // LB: Missing [] for delete
   // delete pageTable;
   delete [] pageTable;
+  delete mThreadList;
   // End of modification
 }
 
@@ -160,12 +162,13 @@ AddrSpace::InitRegisters ()
     // of branch delay possibility
     machine->WriteRegister (NextPCReg, 4);
 
+    ASSERT(numPages > countThread());
     // Set the stack register to the end of the address space, where we
     // allocated the stack; but subtract off a bit, to make sure we don't
     // accidentally reference off the end!
-    machine->WriteRegister (StackReg, numPages * PageSize - 16);
-    DEBUG ('a', "Initializing stack register to %d\n",
-	   numPages * PageSize - 16);
+    machine->WriteRegister (StackReg, (numPages - countThread() + 1) * PageSize - 16);
+    DEBUG ('a', "Initializing stack register to %d for thread #%d\n",
+	   (numPages - countThread() + 1) * PageSize - 16, currentThread->tid());
 }
 
 //----------------------------------------------------------------------
@@ -176,9 +179,40 @@ AddrSpace::InitRegisters ()
 //      For now, nothing!
 //----------------------------------------------------------------------
 
-void
-AddrSpace::SaveState ()
-{
+void AddrSpace::SaveState (){
+}
+	
+/*!
+ * Add a Thread to the address space
+ * 
+ * \param t freshly created thread
+ * 
+ */
+void AddrSpace::appendThread (Thread* t){	
+	if (countThread() < MAX_THREADS){
+		t->space = this;
+		t->setTID(lastTID++);
+		mThreadList->Append(t);
+		DEBUG ('a', "New thread mapped in the space as ID #%d\n", t->tid());
+	} else
+		DEBUG ('a', "Maximun threads number reached\n");
+}
+/*!
+ * Remove a Thread to the address space, and notify the waiting Threads
+ * 
+ * \param t freshly created thread
+ * 
+ * */
+void AddrSpace::removeThread(Thread* t){
+	char found = mThreadList->Remove(t);
+	DEBUG('t', "Thread #%d has %sbeen found\n", t->tid(), (found ? "": "NOT "));
+}
+
+
+Thread* AddrSpace::getThread(unsigned int tid) {
+	ListElement* e = mThreadList->getFirst();
+	while ((e = e->next) && tid != ((Thread*)e->item)->tid()) {}
+	return (e ? (Thread*)e->item : nullptr);
 }
 
 //----------------------------------------------------------------------

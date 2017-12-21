@@ -27,15 +27,29 @@
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
 
+/*!
+ * \def STACK_FENCEPOST stack canari to detect overflow
+ */
+#define STACK_FENCEPOST 0xdeadbeef	// this is put at the top of the
+					// execution stack, for detecting 
+					// stack overflows
+
+/*!
+ * \def NULL_TID TID of a none initialised thread
+ */
+#define NULL_TID 0xFFFFFFFF	
+
 #ifndef THREAD_H
 #define THREAD_H
 
 #include "copyright.h"
 #include "utility.h"
+#include "system.h"
+#include "list.h"
 
 #ifdef USER_PROGRAM
 #include "machine.h"
-#include "addrspace.h"
+class AddrSpace;
 #endif
 
 // CPU register state to be saved on context switch.  
@@ -105,7 +119,31 @@ class Thread
     {
 		printf ("%s, ", name);
     }
-
+    void setTID (tid_t tid) {
+		ASSERT(mTid == NULL_TID);
+		mTid = tid;
+    }
+    
+    /*!
+     * Get the thread ID of the current process
+     * \return the thread ID
+     */
+    inline tid_t tid() const { return mTid; }
+    
+    /*!
+     * Append a Thread waiting for this Thread to finish
+     * \param t The Thread which is sleeping, waiting to this one to finish
+     */
+    void appendToJoin(Thread*t);
+	
+    /*!
+     * Join to an other Thread identified by an identifier 
+     * \param t The Thread to join
+     * \return Did the join failed? 
+     * 
+     */
+	int join(tid_t t);
+	
   private:
     // some of the private data for this class is listed above
 
@@ -114,6 +152,9 @@ class Thread
     // (If NULL, don't deallocate stack)
     ThreadStatus status;	// ready, running or blocked
     const char *name;
+    tid_t mTid;
+    List* mThreadsWaiting;
+	
 
     void StackAllocate (VoidFunctionPtr func, int arg);
     // Allocate a stack for thread.

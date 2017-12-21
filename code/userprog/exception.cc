@@ -21,6 +21,7 @@
 #include "syscall.h"
 #include "stringtransfer.h"
 #include "userthread.h"
+#include "addrspace.h"
 
 //----------------------------------------------------------------------
 // UpdatePC : Increments the Program Counter register in order to resume
@@ -29,14 +30,13 @@
 static void
 UpdatePC ()
 {
-    int pc = machine->ReadRegister (PCReg);
-    machine->WriteRegister (PrevPCReg, pc);
-    pc = machine->ReadRegister (NextPCReg);
-    machine->WriteRegister (PCReg, pc);
-    pc += 4;
-    machine->WriteRegister (NextPCReg, pc);
+	int pc = machine->ReadRegister (PCReg);
+	machine->WriteRegister (PrevPCReg, pc);
+	pc = machine->ReadRegister (NextPCReg);
+	machine->WriteRegister (PCReg, pc);
+	pc += 4;
+	machine->WriteRegister (NextPCReg, pc);
 }
-
 
 //! ExceptionHandler
 /*!
@@ -53,7 +53,7 @@ UpdatePC ()
 *             arg4 -- r7
 *
 * The result of the system call, if any, must be put back into r2.
-* 
+*
 * \param which The kind of exception to handle. The list of possible exceptions
 * is in machine.h under enum \ref ExceptionType.
 */
@@ -69,86 +69,110 @@ UpdatePC ()
 void
 ExceptionHandler (ExceptionType which)
 {
-    int type = machine->ReadRegister(2);
-    // argument registers used by the syscall functions
-    int reg4, reg5, returnvalue; // , reg6, reg7;
+	int type = machine->ReadRegister(2);
+	// argument registers used by the syscall functions
+	int reg4, reg5, reg6, returnvalue; // , , reg7;
 
 
 	/*! \todo Optimisation by reading only useful register for a given trap */
-    reg4 = machine->ReadRegister(4);
-    reg5 = machine->ReadRegister(5);
-    //reg6 = machine->ReadRegister(6);
-    //reg7 = machine->ReadRegister(7);
+	reg4 = machine->ReadRegister(4);
+	reg5 = machine->ReadRegister(5);
+	reg6 = machine->ReadRegister(6);
+	//reg7 = machine->ReadRegister(7);
 
 
-    if (which == SyscallException) {
+	if (which == SyscallException) {
 		switch (type) {
 
 			case SC_Halt: {
 				DEBUG('a', "Shutdown, initiated by user program.\n");
-				/*! The program shouldn't exit while the thread is still running.
-				 * If it has exited before the call to Halt(), nothing happens here. Otherwise the halting of the main is made clean by calling UserThreadExit() before calling Halt().
+				/*! The main program should not exit before all of the threads have finished \
+				 * their execution or called UserThreadExit, because we don't want to cancel threads \
+				 * before they have finished thier tasks. The program must wait for all threads to be \
+				 * joined before calling Halt();
 				 */
-				do_UserThreadExit();
-				
-				/*! \todo we are not sure */
+				ListElement*e = currentThread->space->threadList()->getFirst();
+				do {
+					tid_t thread_to_join = ((Thread*)e->item)->tid();	
+					if (thread_to_join != currentThread->tid()){				
+						DEBUG('t', "--Halt call: Joining with thread #%d...\n", thread_to_join);
+						currentThread->join(thread_to_join);
+						DEBUG('t', "--Halt call: Thread #%d has joined\n", thread_to_join);
+					}
+				} while ((e = e->next) && currentThread->space->countThread() > 1);
 				interrupt->Halt();
 				break;
 			}
 
 			case SC_Exit: {
 				DEBUG('i', "Exit syscall, initiated by user program.\n");
-				/*! \todo Handle correct process exit  */
+				/*! \todo Handle correct process exit. Waiting for teacher's answer.  */
 				//currentThread->Finish();
 				//For now just call Halt()
 				interrupt->Halt();
 				break;
 			}
 
+			case SC_Yield: {
+				DEBUG('i', "Current thread #%d nicely ask to yield.\n", currentThread->tid());
+				currentThread->Yield();
+				break;
+			}
+
 			case SC_PutChar: {
 				DEBUG('i', "PutChar syscall, initiated by user program.\n");
+				currentThread->space->acquireIO();
 				synchconsole->PutChar((char) reg4);
+				currentThread->space->releaseIO();
 				break;
 			}
 
 			case SC_GetChar: {
 				DEBUG('i', "GetChar syscall, initiated by user program.\n");
+				currentThread->space->acquireIO();
 				returnvalue = synchconsole->GetChar();
 				DEBUG('i', "GetChar syscall, returned.\n");
 				machine->WriteRegister(2, returnvalue);
+				currentThread->space->releaseIO();
 				break;
 			}
 
 			case SC_PutString: {
 				DEBUG('i', "PutString syscall, initiated by user program.\n");
-
+				currentThread->space->acquireIO();
 				char* buffer = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
 				synchconsole->PutString(buffer);
 				free(buffer);
+				currentThread->space->releaseIO();
 				break;
 			}
 
 			case SC_GetString: {
 				DEBUG('i', "GetString syscall, initiated by user program.\n");
+				currentThread->space->acquireIO();
 				char *buffer = (char *) malloc(sizeof(char) * MAX_STRING_SIZE);
 				synchconsole->GetString(buffer, reg5);
 				copyStringToMachine(buffer, reg4, MIN(MAX_STRING_SIZE, reg5));
+				currentThread->space->releaseIO();
 				break;
 			}
 
 			case SC_PutInt: {
 				DEBUG('i', "PutInt syscall, initiated by user program.\n");
+				currentThread->space->acquireIO();
 				char *buffer = (char *) malloc(sizeof(char) * 11);
 
 				snprintf(buffer, 11, "%d", reg4); /*! \todo make a real function if time availbale */
 				synchconsole->PutString(buffer);
 
 				free(buffer);
+				currentThread->space->releaseIO();
 				break;
 			}
 
 			case SC_GetInt: {
 				DEBUG('i', "GetInt syscall, initiated by user program.\n");
+				currentThread->space->acquireIO();
 				char *buffer = (char *) malloc(sizeof(char) * 11);
 
 				synchconsole->GetString(buffer, 11);
@@ -156,21 +180,47 @@ ExceptionHandler (ExceptionType which)
 				machine->WriteMem(reg4, 11, returnvalue);
 
 				free(buffer);
+				currentThread->space->releaseIO();
 				break;
 			}
 
 			case SC_CreateUserThread: {
 				DEBUG('i', "CreateUserThread syscall, initiated by user program.\n");
-				returnvalue = do_UserThreadCreate(reg4, reg5);
+				returnvalue = do_UserThreadCreate(reg4, reg5, reg6);
 				machine->WriteRegister(2, returnvalue);
-                break;
-            }
+				break;
+			}
 
-            case SC_ExitUserThread: {
+			case SC_ExitUserThread: {
 				DEBUG('i', "ExitUserThread syscall, initiated by user program.\n");
-                do_UserThreadExit();
-                break;
-            }
+				do_UserThreadExit();
+				break;
+			}
+
+			case SC_JoinUserThread: {
+				DEBUG('i', "UserThreadJoin syscall, initiated by user program.\n");
+				returnvalue = (int)do_UserThreadJoin((tid_t)reg4);
+				machine->WriteRegister(2, returnvalue);
+				break;
+			}
+
+			case SC_SemaInit: {
+				DEBUG('i', "SemaInit syscall, initiated by user program.\n");
+				*(void**)(machine->mainMemory + reg4) = new Semaphore("User Semaphore", reg5);
+				break;
+			}
+
+			case SC_SemaPost: {
+				DEBUG('i', "SemaPost syscall, initiated by user program.\n");
+				((Semaphore*)reg4)->V();
+				break;
+			}
+
+			case SC_SemaWait: {
+				DEBUG('i', "SemaWait syscall, initiated by user program.\n");
+				((Semaphore*)reg4)->P();
+				break;
+			}
 
 			default: {
 				printf("Unexpected user mode exception %d %d\n", which, type);

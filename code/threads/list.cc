@@ -40,7 +40,8 @@ ListElement::ListElement (void *itemPtr, long long sortKey)
 //      Elements can now be added to the list.
 //----------------------------------------------------------------------
 
-List::List ()
+List::List ():
+	mSize(0)
 {
     first = last = NULL;
 }
@@ -88,6 +89,8 @@ List::Append (void *item)
 	  last->next = element;
 	  last = element;
       }
+     
+    mSize++;
 }
 
 //----------------------------------------------------------------------
@@ -117,6 +120,7 @@ List::Prepend (void *item)
 	  element->next = first;
 	  first = element;
       }
+    mSize++;
 }
 
 //----------------------------------------------------------------------
@@ -130,7 +134,55 @@ List::Prepend (void *item)
 void *
 List::Remove ()
 {
+    mSize = mSize ? mSize - 1 : 0;
     return SortedRemove (NULL);	// Same as SortedRemove, but ignore the key
+}
+
+void * List::Remove (unsigned int n)
+{
+	if (n >= mSize)
+		return nullptr;
+		
+    ListElement *element = first;
+    ListElement **pnt = &first;
+    
+    for (unsigned int i = 0; i < n && element; i++){
+		pnt = &element->next;
+		element = *pnt;
+	}
+		
+    if (element){
+		*pnt = element->next;
+		void* thing = element->item;
+		delete element;
+		
+		mSize = mSize ? mSize - 1 : 0;
+		return thing;	// Same as SortedRemove, but ignore the key
+	}
+	return nullptr;
+}
+
+char List::Remove (void* e)
+{
+	if (!e)
+		return 0;
+		
+    ListElement *element = first;
+    ListElement **pnt = &first;
+    
+    for (unsigned int i = 0; element && element->item != e; i++){
+		pnt = &element->next;
+		element = *pnt;
+	}
+		
+    if (element){
+		*pnt = element->next;
+		delete element;
+		
+		mSize = mSize ? mSize - 1 : 0;
+		return 1;	// Same as SortedRemove, but ignore the key
+	}
+	return 0;
 }
 
 //----------------------------------------------------------------------
