@@ -58,6 +58,8 @@ void do_UserThreadExit() {
     // only to run the user thread
     // TODO: disable interrupts (probably)
     currentThread->Finish();
+    if (currentThread->space->countThread() == 0)
+        interrupt->Halt();
 }
 
 int do_UserThreadJoin(tid_t tid) {
