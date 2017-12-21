@@ -42,8 +42,6 @@ tid_t do_UserThreadCreate(int f, int arg, int exit_handler) {
 
     // the new user thread needs to share its space with the old one
     currentThread->space->appendThread(t);
-    
-    // DEBUG('f', "Created thread %d in UserThreadCreate.\n", t->tid());
 
     // because our new thread will be a user thread
     // its address space should not be NULL
