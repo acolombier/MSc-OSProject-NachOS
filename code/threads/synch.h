@@ -72,7 +72,7 @@ class Semaphore
 // may release it.  As with semaphores, you can't read the lock value
 // (because the value might change immediately after you read it).
 
-//!  A lock mechanism made on top of the semaphore mechanism provided
+/*! A lock mechanism made on top of the semaphore mechanism provided. */
 /*!
  * This Lock class is used to create a exclusion mechanism in order to 
  * ensure MUTual EXclusion (the so called mutex on Linux system).
@@ -91,11 +91,8 @@ class Lock
 
     void Acquire ();		// these are the only operations on a lock
     void Release ();		// they are both *atomic*
-
     bool isHeldByCurrentThread() const;
-    // holds this lock.  Useful for
-    // checking in Release, and in
-    // Condition variable ops below.
+    // Useful for checking in Release, and in Condition variable ops below.
 
   private:
     const char *mName;		// for debugging
@@ -135,7 +132,7 @@ class Lock
 // can acquire the lock, and change data structures, before the woken
 // thread gets a chance to run.
 
-//!  A variable condition mechanism made on top of the lock mechanism
+/*! A variable condition mechanism made on top of the lock mechanism. */
 /*!
  * This Condition class is used to create syncronisation between threads 
  * such as the 'cond' mechanism in Linux.
