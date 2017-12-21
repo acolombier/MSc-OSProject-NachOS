@@ -1,6 +1,7 @@
-// addrspace.cc 
-//      Routines to manage address spaces (executing user programs).
-//
+/*! addrspace.cc 
+      Routines to manage address spaces (executing user programs).
+*/
+
 //      In order to run a user program, you must:
 //
 //      1. link with the -N -T 0 option 
@@ -183,9 +184,9 @@ void AddrSpace::SaveState (){
 }
 	
 /*!
- * Add a Thread to the address space
+ * Add a Thread to the address space.
  * 
- * \param t freshly created thread
+ * \param t Freshly created thread
  * 
  */
 void AddrSpace::appendThread (Thread* t){	
@@ -198,16 +199,15 @@ void AddrSpace::appendThread (Thread* t){
 		DEBUG ('a', "Maximun threads number reached\n");
 }
 /*!
- * Remove a Thread to the address space, and notify the waiting Threads
+ * Remove a Thread from the address space, and notify the waiting Threads.
  * 
- * \param t freshly created thread
+ * \param t Freshly created thread
  * 
  * */
 void AddrSpace::removeThread(Thread* t){
 	char found = mThreadList->Remove(t);
-	DEBUG('t', "Thread #%d has %sbeen found\n", t->tid(), (found ? "": "NOT "));
+	DEBUG('t', "Thread #%d has %s been found\n", t->tid(), (found ? "": "NOT "));
 }
-
 
 Thread* AddrSpace::getThread(unsigned int tid) {
 	ListElement* e = mThreadList->getFirst();

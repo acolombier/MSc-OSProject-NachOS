@@ -9,10 +9,12 @@ void func(void *arg) {
         PutInt(i);
     }
 
-    //~ UserThreadExit();
+    UserThreadExit();
 }
 
 int main() {
+	
+	// TODO make more than 4 threads run!
 
     PutString("In main\n");
 	PutString("Creating thread #");
@@ -21,6 +23,10 @@ int main() {
 	PutInt(UserThreadCreate(func, (void *) 10));
 	PutString("\nCreating thread #");
 	PutInt(UserThreadCreate(func, (void *) 15));
+	
+	PutString("\nCreating thread #");
+	PutInt(UserThreadCreate(func, (void *) 5));
+	
 	PutString("\nHalting...");
     Halt();
 }
