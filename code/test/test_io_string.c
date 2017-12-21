@@ -74,6 +74,29 @@ int phase1_too_long_string(){
     return 1;
 }
 
+/* The provided string has a length that is less than size
+ * Input   : A string of size MAX_STRING_SIZE
+ * Process : The string is read and the string "bust" is appended.
+             PutString should not 
+ * Output  : If the test passed then PutString("PASSED") and return 1.
+ *           If the test failed then PutString("FAILED") and return 0.
+ */
+int phase1_String_Longer_Than_Max(){
+    PutString("\tPhase 1 : Correct string  : ");
+    int  size = 514;
+    char* ref_string = "Phase 1 : This is a correct string";
+    char string[size];
+    GetString(string, size);
+    if(cmp_strings(ref_string,string,size)){
+	PutString("PASSED\n");
+	return 1;
+    }
+    else{
+	PutString("FAILED\n");
+	return 0;
+    }
+}
+
 /**************************** Phase 2 *****************************************/
 void interract() {
     int c;
