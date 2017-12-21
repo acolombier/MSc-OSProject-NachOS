@@ -96,6 +96,7 @@ ExceptionHandler (ExceptionType which)
 						DEBUG('t', "--Halt call: Joining with thread #%d...\n", thread_to_join);
 						currentThread->join(thread_to_join);
 						DEBUG('t', "--Halt call: Thread #%d has joined\n", thread_to_join);
+						e = currentThread->space->threadList()->getFirst(); // To be sure that we don't have a de-allocated 'e'
 					}
 				} while ((e = e->next) && currentThread->space->countThread() > 1);
 				interrupt->Halt();

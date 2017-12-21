@@ -1,4 +1,4 @@
-// addrspace.cc 
+/*! 
 //      Routines to manage address spaces (executing user programs).
 //
 //      In order to run a user program, you must:
@@ -10,7 +10,7 @@
 //      3. load the NOFF file into the Nachos file system
 //              (if you haven't implemented the file system yet, you
 //              don't need to do this last step)
-//
+ */
 // Copyright (c) 1992-1993 The Regents of the University of California.
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
@@ -72,7 +72,7 @@ AddrSpace::AddrSpace (OpenFile * executable):
 	SwapHeader (&noffH);
     ASSERT (noffH.noffMagic == NOFFMAGIC);
 
-// how big is address space?
+	// how big is address space?
     size = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize;	// we need to increase the size
     // to leave room for the stack
     numPages = divRoundUp (size, PageSize);
@@ -85,41 +85,38 @@ AddrSpace::AddrSpace (OpenFile * executable):
 
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
 	   numPages, size);
-// first, set up the translation 
+
+	// first, set up the translation 
     pageTable = new TranslationEntry[numPages];
-    for (i = 0; i < numPages; i++)
-      {
-	  pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
-	  pageTable[i].physicalPage = i;
-	  pageTable[i].valid = TRUE;
-	  pageTable[i].use = FALSE;
-	  pageTable[i].dirty = FALSE;
-	  pageTable[i].readOnly = FALSE;	// if the code segment was entirely on 
-	  // a separate page, we could set its 
-	  // pages to be read-only
-      }
+    for (i = 0; i < numPages; i++) {
+		pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
+		pageTable[i].physicalPage = i;
+		pageTable[i].valid = TRUE;
+		pageTable[i].use = FALSE;
+		pageTable[i].dirty = FALSE;
+		pageTable[i].readOnly = FALSE;	// if the code segment was entirely on 
+		// a separate page, we could set its 
+		// pages to be read-only
+    }
 
 // zero out the entire address space, to zero the unitialized data segment 
 // and the stack segment
-    bzero (machine->mainMemory, size);
+
+    bzero (machine->mainMemory, size); // Depreciated since I can walk
 
 // then, copy in the code and data segments into memory
-    if (noffH.code.size > 0)
-      {
-	  DEBUG ('a', "Initializing code segment, at 0x%x, size %d\n",
-		 noffH.code.virtualAddr, noffH.code.size);
-	  executable->ReadAt (&(machine->mainMemory[noffH.code.virtualAddr]),
-			      noffH.code.size, noffH.code.inFileAddr);
-      }
-    if (noffH.initData.size > 0)
-      {
-	  DEBUG ('a', "Initializing data segment, at 0x%x, size %d\n",
-		 noffH.initData.virtualAddr, noffH.initData.size);
-	  executable->ReadAt (&
-			      (machine->mainMemory
-			       [noffH.initData.virtualAddr]),
-			      noffH.initData.size, noffH.initData.inFileAddr);
-      }
+    if (noffH.code.size > 0) {
+		DEBUG ('a', "Initializing code segment, at 0x%x, size %d\n",
+		noffH.code.virtualAddr, noffH.code.size);
+		executable->ReadAt (&(machine->mainMemory[noffH.code.virtualAddr]),
+			noffH.code.size, noffH.code.inFileAddr);
+    }
+    if (noffH.initData.size > 0) {
+		DEBUG ('a', "Initializing data segment, at 0x%x, size %d\n",
+		noffH.initData.virtualAddr, noffH.initData.size);
+		executable->ReadAt (machine->mainMemory + noffH.initData.virtualAddr,
+						noffH.initData.size, noffH.initData.inFileAddr);
+   }
 
 }
 
