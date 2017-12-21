@@ -202,6 +202,30 @@ UserThreadJoin:
     j   $31
     .end UserThreadJoin
 
+    .globl sem_init
+    .ent    sem_init
+sem_init:
+    addiu $2,$0,SC_SemaInit
+    syscall
+    j   $31
+    .end sem_init
+
+    .globl sem_post
+    .ent    sem_post
+sem_post:
+    addiu $2,$0,SC_SemaPost
+    syscall
+    j   $31
+    .end sem_post
+
+    .globl sem_wait
+    .ent    sem_wait
+sem_wait:
+    addiu $2,$0,SC_SemaWait
+    syscall
+    j   $31
+    .end sem_wait
+
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main

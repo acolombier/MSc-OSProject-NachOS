@@ -39,6 +39,9 @@
 #define SC_CreateUserThread 17
 #define SC_ExitUserThread	18
 #define SC_JoinUserThread	19
+#define SC_SemaInit 20
+#define SC_SemaWait	21
+#define SC_SemaPost	22
 
 #define ConsoleInput	0
 #define ConsoleOutput	1
@@ -48,6 +51,10 @@
     The EOF reprensation on 4 bytes.
 */
 #define EOF	0xFFFFFFFF
+
+
+/*! \brief Semaphore provided to the user */
+//~ typedef void* sem_t;
 
 
 #ifdef IN_USER_MODE
@@ -176,6 +183,15 @@ void UserThreadExit() __attribute__((noreturn));
 
 /*! \brief Wait for the specified thread to finish */
 int UserThreadJoin(int tid);
+
+/*! \brief Semaphore initialiser */
+void sem_init(void* s, int e);
+
+/*! \brief Semaphore initialiser */
+void sem_post(void* s);
+
+/*! \brief Semaphore initialiser */
+void sem_wait(void* s);
 
 #endif // IN_USER_MODE
 

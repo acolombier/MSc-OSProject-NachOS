@@ -111,6 +111,12 @@ ExceptionHandler (ExceptionType which)
 				break;
 			}
 
+			case SC_Yield: {
+				DEBUG('i', "Current thread #%d nicely ask to yield.\n", currentThread->tid());
+				currentThread->Yield();
+				break;
+			}
+
 			case SC_PutChar: {
 				DEBUG('i', "PutChar syscall, initiated by user program.\n");
 				currentThread->space->acquireIO();
@@ -193,6 +199,24 @@ ExceptionHandler (ExceptionType which)
 				DEBUG('i', "UserThreadJoin syscall, initiated by user program.\n");
 				returnvalue = (int)do_UserThreadJoin((tid_t)reg4);
 				machine->WriteRegister(2, returnvalue);
+				break;
+			}
+
+			case SC_SemaInit: {
+				DEBUG('i', "SemaInit syscall, initiated by user program.\n");
+				*(void**)(machine->mainMemory + reg4) = new Semaphore("User Semaphore", reg5);
+				break;
+			}
+
+			case SC_SemaPost: {
+				DEBUG('i', "SemaPost syscall, initiated by user program.\n");
+				((Semaphore*)reg4)->V();
+				break;
+			}
+
+			case SC_SemaWait: {
+				DEBUG('i', "SemaWait syscall, initiated by user program.\n");
+				((Semaphore*)reg4)->P();
 				break;
 			}
 

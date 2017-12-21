@@ -146,6 +146,7 @@ Thread::CheckOverflow ()
 
 int Thread::join(tid_t t){
 #ifdef USER_PROGRAM		
+	ASSERT(t != tid());
 	Thread* thread_to_join = space->getThread(t);
 	if (!thread_to_join)
 		return -1; // It does not exit (or not anymore)
