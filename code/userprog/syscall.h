@@ -42,6 +42,7 @@
 #define SC_SemaInit 20
 #define SC_SemaWait	21
 #define SC_SemaPost	22
+#define SC_ForkExec 23
 
 #define ConsoleInput	0
 #define ConsoleOutput	1
@@ -192,6 +193,8 @@ void sem_post(void* s);
 
 /*! \brief Semaphore initialiser */
 void sem_wait(void* s);
+
+int ForkExec(char *s);
 
 #endif // IN_USER_MODE
 

@@ -220,6 +220,12 @@ ExceptionHandler (ExceptionType which)
 				((Semaphore*)reg4)->P();
 				break;
 			}
+			
+			case SC_ForkExec: {
+				DEBUG('i', "ForkExec syscall, initiated by user program.\n");
+				
+				break;
+			}
 
 			default: {
 				printf("Unexpected user mode exception %d %d\n", which, type);

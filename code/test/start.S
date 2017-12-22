@@ -225,6 +225,14 @@ sem_wait:
     syscall
     j   $31
     .end sem_wait
+    
+     .globl ForkExec
+    .ent    ForkExec
+ForkExec:
+    addiu $2,$0,SC_ForkExec
+    syscall
+    j   $31
+    .end ForkExec
 
 /* dummy function to keep gcc happy */
         .globl  __main
