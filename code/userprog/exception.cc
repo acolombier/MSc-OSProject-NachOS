@@ -92,7 +92,8 @@ ExceptionHandler (ExceptionType which)
 				 * joined before calling Halt();
 				 */
 				ListElement *e = currentThread->space->threadList()->getFirst();
-				do {	
+				do {
+				    tid_t thread_to_join = ((Thread*) e->item)->tid();
 					if (thread_to_join != currentThread->tid()){				
 						DEBUG('t', "--Halt call: Joining with thread #%d...\n", thread_to_join);
 						currentThread->join(thread_to_join);
