@@ -47,6 +47,10 @@ void SynchConsole::PutString(const char s[]){
 	PutChar(0);
 }
 
+
+void SynchConsole::handlerReadAvail() { mReadAvail->V(); }
+void SynchConsole::handlerWriteDone() { mWriteDone->V(); }
+		
 void SynchConsole::GetString(char *s, int n){
 	mReadingMode->P();
 

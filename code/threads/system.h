@@ -11,8 +11,16 @@
 */
 #define MAX_STRING_SIZE 512
 
+/*! \def MAX_THREADS
+
+    The maximun number of userthread that can be associated to an address space (= process) .
+*/
+#define MAX_THREADS 16
+
 #ifndef SYSTEM_H
 #define SYSTEM_H
+
+typedef unsigned int tid_t;
 
 #include "copyright.h"
 #include "utility.h"
@@ -21,6 +29,7 @@
 #include "interrupt.h"
 #include "stats.h"
 #include "timer.h"
+
 
 // Initialization and cleanup routines
 extern void Initialize (int argc, char **argv);	// Initialization,
@@ -36,7 +45,6 @@ extern Statistics *stats;	// performance metrics
 extern Timer *timer;		// the hardware alarm clock
 
 #ifdef USER_PROGRAM
-#define MAX_STRING_SIZE 512
 
 #include "machine.h"
 extern Machine *machine;	// user program memory and registers

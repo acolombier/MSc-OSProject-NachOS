@@ -15,8 +15,12 @@
 
 #include "copyright.h"
 #include "filesys.h"
+#include "system.h"
+#include "synch.h"
 
 #define UserStackSize		1024	// increase this as necessary!
+
+class Thread;
 
 class AddrSpace
 {
@@ -31,11 +35,26 @@ class AddrSpace
 
     void SaveState ();		// Save/restore address space-specific
     void RestoreState ();	// info on a context switch 
+    
+    Thread* getThread(unsigned int tid);
+	inline List* threadList() { return mThreadList; }
+    
+    void appendThread(Thread*);
+    void removeThread(Thread*);
+    
+    inline unsigned int countThread() const { return mThreadList->size(); }
+    
+    inline void acquireIO() { mIOLock->Acquire(); }
+    inline void releaseIO() { mIOLock->Release(); }
 
   private:
       TranslationEntry * pageTable;	// Assume linear page table translation
     // for now!
     unsigned int numPages;	// Number of pages in the virtual 
+    tid_t lastTID;
+    List* mThreadList;
+    
+    Lock* mIOLock;
     // address space
 };
 

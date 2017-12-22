@@ -4,7 +4,9 @@
 #include "copyright.h"
 #include "utility.h"
 #include "console.h"
-#include "synch.h"
+
+class Semaphore;
+class Lock;
 
 //!  A console kernel device adding an other layer over the main console
 /*!
@@ -12,8 +14,6 @@
  * interrupt themselves in order not to have to handle inside the user
  * code the availability of the I/O text device. This class is visible by the kernel only.
 */
-
-
 class SynchConsole : public Console {
 	public:
 		//! The class device constructor.
@@ -47,12 +47,12 @@ class SynchConsole : public Console {
 		//! Class method to get an array of char synchronously.
 		/*!
 		  \param s Pointer the array of char where the read string will be stored.
-		  \param n Maximun number of char that can be read including \0. If this value is greater that \ref MAX_STRING_SIZE, the constant will be used instead. The function will also stop reading if it encounts a \0 char.
+		  \param n Maximun number of char that can be read including \0. If this value is greater that \ref MAX_STRING_SIZE, the constant will be used instead and the rest of the string will get truncated. The function will also stop reading if it encounts a \0 char.
 		*/
 		void GetString(char *s, int n);       // Unix fgets(3S)
 
-		void handlerReadAvail() { mReadAvail->V(); }
-		void handlerWriteDone() { mWriteDone->V(); }
+		void handlerReadAvail();
+		void handlerWriteDone();
 
 		static void handlerReadAvail(int);
 		static void handlerWriteDone(int);
