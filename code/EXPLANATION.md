@@ -35,11 +35,11 @@ Threads
 -------
 
 ### Locks ###
-We implemented [kernel locks](@ref Locks) but the wrapper for the user to use them in user code is not implemented yet. For now we have a very unstable use of semaphores because we provided them to the user with a void pointer just to check that our work on threads works. However our locks work in kernel mode.
+We implemented [kernel locks](@ref Locks) but the wrapper for the user to use them in user code is not implemented yet. For now we have a very unstable use of semaphores because we provided them to the user with a void pointer just to check that our work on threads works. Our locks work in kernel mode in order to do handle thread mnagement. From all this feature, we have the ability to do a Prod-Cons with at most [MAX_THREADS](@ref MAX_THREADS).
 
 ### Halt ###
 Calling Halt() should not just instantly stop everything. We've decided to join all the threads and then close the system.
-At the moment Exit() is mapped to Halt(). For this reason if we there is not call to halt at the end of the main function there is an bad internal error.
+At the moment Exit() is mapped to Halt(). For this reason if there is no call to halt at the end of the main function, then the system calls the kernal halt, which does not make any safe stop, and this is actually leading to a bad internal error.
 
 ### int Join(tid_t t) ###
 The function [join()](@ref Thread::join) used to join threads returns an `int` that can be [NULL_TID](@ref NULL_TID) = -1 (Thread not found : never existed or no longer running). This shows that we do check that the thread that should be joined exists.
