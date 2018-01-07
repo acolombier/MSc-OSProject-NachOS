@@ -10,8 +10,8 @@
 
 # Remove -Werror if this is a too big constraint
 CPPFLAGS+=-Wall -Wshadow -Werror
-CFLAGS+=-g
-CXXFLAGS+=-g
+CFLAGS+=-ggdb3
+CXXFLAGS+=-ggdb3
 
 # HOST_CC (and other similar variables) is the compiler used to
 # produce native code

@@ -15,12 +15,12 @@ void interract() {
 }
 
 int main() {
-    //~ print('a', 4);
-    //~ PutString("C'est quoi ton p'tit nom ? ");
-    //~ char name[30];
-    //~ GetString(name, 30);
-    //~ PutString("Salut ");
-    //~ PutString(name);
-    interract();
+    print('a', 4);
+    PutString("C'est quoi ton p'tit nom ? ");
+    char name[30];
+    GetString(name, 30);
+    PutString("Salut ");
+    PutString(name);
+    //~ interract();
     Halt();
 }

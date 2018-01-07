@@ -44,11 +44,27 @@ class AddrSpace
     
     void appendThread(Thread*);
     void removeThread(Thread*);
+
+    int Sbrk(unsigned int n);
     
     inline unsigned int countThread() const { return mThreadList->size(); }
     
-    inline void acquireIO() { mIOLock->Acquire(); }
-    inline void releaseIO() { mIOLock->Release(); }
+    inline SpaceId pid() const { return mPid; }
+    inline SpaceId ppid() const { return mPpid; }
+    
+    inline void ppid(SpaceId pid) { mPpid = pid; }
+    
+    inline void resultCode(int code) { mResultCode = code; }
+    inline int resultCode() const { return mResultCode; }
+    
+    static unsigned int ADDR_SPACE_COUNT() { return AddrSpace::_SPACE_LIST->size(); }
+
+    /*!
+     * Append a Thread waiting for this Thread to finish
+     * \param t The Thread which is sleeping, waiting to this one to finish
+     */
+    void appendToJoin(Thread*t);
+    int join(SpaceId pid);
 
   private:
       TranslationEntry * pageTable;	// Assume linear page table translation
@@ -56,8 +72,19 @@ class AddrSpace
     unsigned int numPages;	// Number of pages in the virtual 
     tid_t lastTID;
     List* mThreadList;
+
+    unsigned int mBrk;
     
-    Lock* mIOLock;
+    SpaceId mPid;
+    SpaceId mPpid;
+    List* mThreadsWaiting;
+    int mResultCode;
+
+  protected:
+    static Lock* _ADDR_SPACE_LOCK;
+    
+    static SpaceId _LAST_PID;
+    static List* _SPACE_LIST;
     // address space
 };
 

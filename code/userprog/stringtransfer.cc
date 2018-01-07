@@ -17,11 +17,8 @@ char *copyStringFromMachine(int from, unsigned int max_size) {
 }
 
 void copyStringToMachine(char *string, int to, unsigned max_size) {
-    char *buffer = (char *) (machine->mainMemory + to);
-    unsigned int i;
-
-    for (i = 0; i < max_size - 1; i++) {
-        buffer[i] = string[i];
+    for (unsigned int i = 0; i < max_size - 1; i++) {
+        machine->WriteMem(to + i, 1, string[i]);
         if (string[i] == '\0')
             break;
     }

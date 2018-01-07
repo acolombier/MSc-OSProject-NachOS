@@ -43,6 +43,7 @@
 #define SC_SemaWait	21
 #define SC_SemaPost	22
 #define SC_ForkExec 23
+#define SC_Kill 24
 
 #define ConsoleInput	0
 #define ConsoleOutput	1
@@ -193,6 +194,10 @@ void sem_post(void* s);
 
 /*! \brief Semaphore initialiser */
 void sem_wait(void* s);
+
+/*! \brief send a signal
+ * \todo signal system */
+void Kill(SpaceId pid, char sig);
 
 int ForkExec(char *s);
 

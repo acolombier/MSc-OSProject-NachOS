@@ -65,6 +65,8 @@ Thread::Thread (const char *threadName):
 
 Thread::~Thread ()
 {
+	delete mThreadsWaiting;
+	
     DEBUG ('t', "Deleting thread \"%s\"\n", name);
 
     ASSERT (this != currentThread);
@@ -197,10 +199,15 @@ Thread::Finish ()
     while ((t = (Thread*)mThreadsWaiting->Remove()))
 		scheduler->ReadyToRun(t);
 
-
 #ifdef USER_PROGRAM		
-	if (space)
+	if (space != nullptr){
 		space->removeThread(this);
+
+		if (!space->countThread()){
+			DEBUG ('a', "No more thread in this space, deleting...\n");
+			delete space;
+		}
+	}
 #endif
 
     threadToBeDestroyed = currentThread;

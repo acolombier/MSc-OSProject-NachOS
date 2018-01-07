@@ -242,7 +242,7 @@ define gen-rules-lang # 1:HOST/MIPS 2:prefix 3:source 4:lang 5:show_prefix
 $$(eval $$(call gen-rules-lang2,$1,$2,$$(call objs-to-depends,$$(patsubst %.$4,%.o,$3),$2),$$(call addprefix-dir,$2,$$(patsubst %.$4,%.o,$3)),$3,$4,$5))
 endef
 define gen-rules-C # 1:HOST/MIPS 2:prefix 3:source
-$$(eval $$(call gen-rules-lang,$1,$2,$3,c,cc))
+$$(eval $$(call gen-rules-lang,$1,$2,$3,c,cc,h))
 endef
 define gen-rules-CC # 1:HOST/MIPS 2:prefix 3:source
 $$(eval $$(call gen-rules-lang,$1,$2,$3,cc,cxx))

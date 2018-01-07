@@ -36,8 +36,8 @@ class TranslationEntry {
 	enum Type {VALID = 0b1, READ_ONLY = 0b10, USE = 0b100, DIRTY = 0b1000};
 			//  start of "mainMemory"
 			
-	TranslationEntry(unsigned int vpage, unsigned int ppage):
-		mFlag(0), virtualPage(vpage), physicalPage(ppage) {}
+	TranslationEntry(unsigned int vpage = 0, unsigned int ppage = 0):
+		mFlag(0), mVirtualPage(vpage), mPhysicalPage(ppage) {}
 			
 	inline bool valid() const { return mFlag & VALID; }  // If this bit is set, the translation is ignored.
 		// (In other words, the entry hasn't been initialized.)
@@ -60,11 +60,27 @@ class TranslationEntry {
 	inline void setDirty(bool v) {
 		mFlag = (v ? mFlag | DIRTY : mFlag & ~DIRTY);
 	}
+	
+	inline void virtualPage(unsigned int p) {
+		mVirtualPage = p;
+	}
+	
+	inline void physicalPage(unsigned int p) {
+		mPhysicalPage = p;
+	}
+	
+	inline unsigned int virtualPage() {
+		return mVirtualPage;
+	}
+	
+	inline unsigned int physicalPage() {
+		return mPhysicalPage;
+	}
 			
-  private:
+  protected:
 	char mFlag;  
-    unsigned int virtualPage;  	// The page number in virtual memory.
-    unsigned int physicalPage; 	// The page number in real memory (relative to the
+    unsigned int mVirtualPage;  	// The page number in virtual memory.
+    unsigned int mPhysicalPage; 	// The page number in real memory (relative to the
 		
 };
 

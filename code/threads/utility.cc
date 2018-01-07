@@ -17,6 +17,17 @@
 #include "/usr/include/stdarg.h"
 #endif
 
+#define KNRM  "\x1B[0m"
+#define KRED  "\x1B[31m"
+#define KGRN  "\x1B[32m"
+#define KYEL  "\x1B[33m"
+#define KBLU  "\x1B[34m"
+#define KMAG  "\x1B[35m"
+#define KCYN  "\x1B[36m"
+#define KWHT  "\x1B[37m"
+#define EOL   "\033[0m"
+
+
 static const char *enableFlags = NULL;	// controls which DEBUG messages are printed 
 
 //----------------------------------------------------------------------
@@ -64,9 +75,27 @@ DEBUG (char flag, const char *format, ...)
       {
 	  va_list ap;
 	  // You will get an unused variable message here -- ignore it.
+	  switch (flag){
+		case 'l':
+		  printf(KRED);
+		  break;
+		case 't':
+		  printf(KGRN);
+		  break;
+		case 'c':
+		  printf(KYEL);
+		  break;
+	  }
 	  va_start (ap, format);
 	  vfprintf (stdout, format, ap);
 	  va_end (ap);
+	  switch (flag){
+		case 't':
+		case 'l':
+		case 'c':
+		  printf(EOL);
+		  break;
+	  }
 	  fflush (stdout);
       }
 }

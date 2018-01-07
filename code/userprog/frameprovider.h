@@ -12,6 +12,13 @@
   *                                                    *
   ******************************************************/
 
+#ifndef FRAMEPROVIDER_H
+#define FRAMEPROVIDER_H
+
+#include "bitmap.h"
+
+class Lock;
+
 class FrameProvider
 {
   public:
@@ -19,10 +26,12 @@ class FrameProvider
      ~FrameProvider ();		// De-allocate a frameprovider
 
 	// returns might not be correct
-    TranslationEntry GetEmptyFrame();	// retrieve a free frame initialized to 0 by bzero
-    TranslationEntry ReleaseFrame(TranslationEntry entry);	// release a frame obtained via GetEmptyFrame
+    unsigned int GetEmptyFrame();	// retrieve a free frame initialized to 0 by bzero
+    void ReleaseFrame(int entry);	// release a frame obtained via GetEmptyFrame
     int NumAvailFrame();	// return the number of available frames
 
   private:
-
+	BitMap allocatedPage;
+	Lock* mutex;
 };
+#endif

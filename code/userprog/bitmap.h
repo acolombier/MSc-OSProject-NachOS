@@ -45,6 +45,8 @@ class BitMap
     // effect, set the bit. 
     // If no bits are clear, return -1.
     int NumClear ();		// Return the number of clear bits
+    
+    inline int bits() const { return numBits; }		// Return the number of clear bits
 
     void Print ();		// Print contents of bitmap
 

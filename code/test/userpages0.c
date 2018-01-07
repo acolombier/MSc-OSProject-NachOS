@@ -1,17 +1,19 @@
 #include "syscall.h"
 
-void prod(void *arg) {
-	PutString("Moi c'est Jackie\n");
-}
-void consume(void *arg) {	
-	PutString("Moi c'est Michel\n");
+#define THIS "a"
+#define THAT "b"
+
+const int N = 5; // Choose it large enough!
+
+void puts(char *s){
+	char *p; for (p = s; *p != '\0'; p++) PutChar(*p);
+	}
+
+void f(void *s){
+	for (int i = 0; i < N; i++) puts((char *)s);
 }
 
-int main() {
-    PutString("In main\n");
-	PutString("Creating producer #");
-	PutInt(UserThreadCreate(prod, (void *) 0));
-	PutString("\nCreating consumer #");
-	PutInt(UserThreadCreate(consume, (void *) 1));
-    Halt();
+int main(){
+	UserThreadCreate(f, (void *) THIS);
+	f((void*) THAT);
 }
