@@ -114,35 +114,31 @@ AddrSpace::AddrSpace (OpenFile * executable):
     //~ size = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize * MAX_THREADS;	// we need to increase the size
     // to leave room for the stack
 
+	unsigned int ro_code = divRoundUp(noffH.code.size + noffH.initData.size, PageSize),
+		rw_code = divRoundUp(noffH.uninitData.size, PageSize);
+	
+    numPages = ro_code + rw_code;
+    size = numPages * PageSize;
+
     ASSERT (numPages <= NumPhysPages);	// check we're not trying
     // to run anything too big --
     // at least until we have
     // virtual memory
-
+    
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
 	   numPages, size);
 
 	// first, set up the translation 
     pageTable = new TranslationEntry[ADDRSPACE_PAGES_SIZE];
-
-	int ro_code = divRoundUp(noffH.code.size + noffH.initData.size, PageSize),
-		rw_code = divRoundUp(noffH.uninitData.size, PageSize);
+    numPages = ADDRSPACE_PAGES_SIZE;
     
     for (i = 0; i < ADDRSPACE_PAGES_SIZE; i++)
 		pageTable[i].virtualPage(i);
 		
-    for (i = 0; i < ro_code; i++){
-		pageTable[i].setReadOnly(true);
+    for (i = 0; i < ro_code + rw_code; i++){
 		pageTable[i].setValid(true);
 		pageTable[i].physicalPage(frameprovider->GetEmptyFrame());
 	}
-    for (; i < rw_code; i++){
-		pageTable[i].setValid(true);
-		pageTable[i].physicalPage(frameprovider->GetEmptyFrame());
-	}
-	
-    numPages = ro_code + rw_code;
-    size = numPages * PageSize;
     mBrk = size - 1;
     
     RestoreState();
@@ -161,7 +157,10 @@ AddrSpace::AddrSpace (OpenFile * executable):
 		
 		ReadAtVirtual(executable, noffH.initData.virtualAddr, noffH.initData.size,
 				noffH.initData.inFileAddr, pageTable, numPages);
-   }
+	}
+	/*! \todo be able to set up all the RO page in read only without screwing everything  */
+    //~ for (i = 0; i < ro_code; i++)
+		//~ pageTable[i].setReadOnly(true);
 
 }
 
@@ -233,9 +232,9 @@ AddrSpace::InitRegisters ()
     // allocated the stack; but subtract off a bit, to make sure we don't
     // accidentally reference off the end!
     
-    machine->WriteRegister (StackReg, (numPages - countThread() + 1) * PageSize - 16);
+    machine->WriteRegister (StackReg, (ADDRSPACE_PAGES_SIZE * PageSize) - (UserStackSize * (countThread() - 1)) - 16);
     DEBUG ('a', "Initializing stack register to %d for thread #%d\n",
-	   (numPages - countThread() + 1) * PageSize - 16, currentThread->tid());
+	   (ADDRSPACE_PAGES_SIZE * PageSize) - (UserStackSize * (countThread() - 1)) - 16, currentThread->tid());
 }
 
 //----------------------------------------------------------------------
@@ -256,24 +255,23 @@ void AddrSpace::SaveState (){
  * 
  */
 void AddrSpace::appendThread (Thread* t){	
-	stackNbPages = divRoundUp(UserStackSize, PageSize);
-	if (countThread() < MAX_THREADS && mBrk >= (ADDRSPACE_PAGES_SIZE * PageSize) - (UserStackSize * (countThread() + 1)) && frameprovider->GetEmptyFrame() >= stackNbPages){
+	unsigned int stackNbPages = divRoundUp(UserStackSize, PageSize);
+	if (countThread() < MAX_THREADS && mBrk < (ADDRSPACE_PAGES_SIZE * PageSize) - (UserStackSize * (countThread() + 1)) && frameprovider->NumAvailFrame() >= stackNbPages){
 		t->space = this;
 		t->setTID(lastTID++);
 		mThreadList->Append(t);
 		DEBUG ('a', "New thread mapped in the space as ID #%d\n", t->tid());
 
-		for (i = 0; i < stackNbPages; i++){
-			pageTable[ADDRSPACE_PAGES_SIZE - i - (stackNbPages * (countThread() - 1) - 1].setValid(true);
-			pageTable[ADDRSPACE_PAGES_SIZE - i - (stackNbPages * (countThread() - 1) - 1].physicalPage(frameprovider->GetEmptyFrame());
+		for (unsigned int i = 0; i < stackNbPages; i++){
+			if (pageTable[ADDRSPACE_PAGES_SIZE - i - (stackNbPages * (countThread() - 1)) - 1].valid()) continue;
+			pageTable[ADDRSPACE_PAGES_SIZE - i - (stackNbPages * (countThread() - 1)) - 1].setValid(true);
+			pageTable[ADDRSPACE_PAGES_SIZE - i - (stackNbPages * (countThread() - 1)) - 1].physicalPage(frameprovider->GetEmptyFrame());
 		}
-		numPages += stackNbPages;
-		size = numPages * PageSize;
-		DEBUG ('a', "Stack allocated for thread ID #%d\n", t->tid());
-	} else if (countThread() < MAX_THREADS)
-		DEBUG ('a', "Maximun threads number reached\n");
+		DEBUG ('t', "Stack allocated for thread ID #%d\n", t->tid());
+	} else if (countThread() == MAX_THREADS)
+		DEBUG ('t', "Maximun threads number reached\n");
 	else
-		DEBUG ('a', "No more page free to hold a thread stack\n");
+		DEBUG ('t', "No more page free to hold a thread stack.\n");
 }
 /*!
  * Remove a Thread to the address space, and notify the waiting Threads
@@ -283,6 +281,7 @@ void AddrSpace::appendThread (Thread* t){
  * */
 void AddrSpace::removeThread(Thread* t){
 	char found = mThreadList->Remove(t);
+	/*! \todo deallocate the thread stack using its register */
 	DEBUG('t', "Thread #%d has %sbeen found\n", t->tid(), (found ? "": "NOT "));
 }
 
@@ -354,23 +353,24 @@ Thread* AddrSpace::getThread(unsigned int tid) {
  * 
  * */
 int AddrSpace::Sbrk(unsigned int n){
-	stackNbPages = divRoundUp(UserStackSize);
+	unsigned int stackNbPages = divRoundUp(UserStackSize, PageSize);
 
-	stackStart = (ADDRSPACE_PAGES_SIZE - (stackNbPages * countThread())) * PageSize;
+	unsigned int stackStart = (ADDRSPACE_PAGES_SIZE - (stackNbPages * countThread())) * PageSize;
 	
 	if (mBrk + (n * PageSize) >= stackStart){
 		DEBUG('a', "Trying to allocate new pages, but none available in the address space.\n");
-		return NULL;
+		return 0;
 	}
 
 	if (frameprovider->NumAvailFrame() < n){
 		DEBUG('a', "Trying to allocate new pages, but none available in the physical memory.\n");
-		return NULL;
+		return 0;
 	}
 
 	ASSERT(divRoundDown(mBrk, PageSize) == divRoundUp(mBrk, PageSize));
 	
-	for (i = divRoundDown(mBrk, PageSize); i < divRoundDown(mBrk, PageSize) + n; i++){
+	for (unsigned int i = divRoundDown(mBrk, PageSize); i < divRoundDown(mBrk, PageSize) + n; i++){
+		if (pageTable[i].valid()) continue;
 		pageTable[i].setValid(true);
 		pageTable[i].physicalPage(frameprovider->GetEmptyFrame());
 	}

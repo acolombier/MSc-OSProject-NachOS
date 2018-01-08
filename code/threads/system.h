@@ -21,7 +21,7 @@
 
     The number of page that a virtual space contains by default.
 */
-#define ADDRSPACE_PAGES_SIZE
+#define ADDRSPACE_PAGES_SIZE 64
 
 #ifndef SYSTEM_H
 #define SYSTEM_H

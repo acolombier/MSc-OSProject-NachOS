@@ -44,6 +44,8 @@
 #define SC_SemaPost	22
 #define SC_ForkExec 23
 #define SC_Kill 24
+#define SC_Malloc 25
+#define SC_Free 26
 
 #define ConsoleInput	0
 #define ConsoleOutput	1
@@ -189,17 +191,27 @@ int UserThreadJoin(int tid);
 /*! \brief Semaphore initialiser */
 void sem_init(void* s, int e);
 
-/*! \brief Semaphore initialiser */
+/*! \brief Semaphore post */
 void sem_post(void* s);
 
-/*! \brief Semaphore initialiser */
+/*! \brief Semaphore wait */
 void sem_wait(void* s);
 
 /*! \brief send a signal
  * \todo signal system */
 void Kill(SpaceId pid, char sig);
 
+/*! \brief Fork and run a process */
 int ForkExec(char *s);
+
+/*! \brief Fork and run a process */
+int ForkExec(char *s);
+
+/*! \brief Dynamically allocate n bytes */
+void* malloc(int n);
+
+/*! \brief De-allocate the dynamic block */
+void free(void* block_malloced);
 
 #endif // IN_USER_MODE
 

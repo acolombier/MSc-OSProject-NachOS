@@ -42,6 +42,6 @@ void FrameProvider::ReleaseFrame(int entry){
 	mutex->Release();
 }
 
-int FrameProvider::NumAvailFrame(){
+unsigned int FrameProvider::NumAvailFrame(){
 	return allocatedPage.NumClear();
 }

@@ -246,6 +246,18 @@ ExceptionHandler (ExceptionType which)
 				
 				break;
 			}
+			
+			case SC_Malloc: {
+				DEBUG('c', "Malloc syscall on %p, initiated by user program.\n", reg4);
+				/*! \todo Implementation */
+				break;
+			}
+			
+			case SC_Free: {
+				DEBUG('c', "Free syscall on %p, initiated by user program.\n", reg4);
+				/*! \todo Implementation */
+				break;
+			}
 
 			default: {
 				printf("Unexpected user mode exception %d %ud\n", which, type);

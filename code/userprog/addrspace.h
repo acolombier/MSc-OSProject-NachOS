@@ -17,11 +17,12 @@
 #include "filesys.h"
 #include "system.h"
 #include "synch.h"
+#include "mem_alloc.h"
 
 /*!
  * \def UserStackSize Used macro for stack allocation
  */
-#define UserStackSize		1024	// increase this as necessary!
+#define UserStackSize		512	// increase this as necessary!
 
 class Thread;
 
