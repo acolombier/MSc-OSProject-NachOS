@@ -162,7 +162,7 @@ $3.coff: %.coff: $$(strip $$(call addprefix-dir,$$(call serie-get-PREFIX,$2),$$(
 .INTERMEDIATE: $$(patsubst %,%.coff,$3)
 
 $3: %: %.coff $$(topsrc_dir)/bin/coff2noff
-	$$(c2n_V)$$(topsrc_dir)/bin/coff2noff $$< $$@ && chmod +x $$@
+	$$(c2n_V) $$(topsrc_dir)/bin/coff2noff $$< $$@ && chmod +x $$@
 
 clean::
 	$$(RM) $3 $3.coff

@@ -77,25 +77,25 @@ DEBUG (char flag, const char *format, ...)
 	  // You will get an unused variable message here -- ignore it.
 	  switch (flag){
 		case 'l':
-		  printf(KRED);
+		  fprintf(stderr, KRED);
 		  break;
 		case 't':
-		  printf(KGRN);
+		  fprintf(stderr, KGRN);
 		  break;
 		case 'c':
-		  printf(KYEL);
+		  fprintf(stderr, KYEL);
 		  break;
 	  }
 	  va_start (ap, format);
-	  vfprintf (stdout, format, ap);
+	  vfprintf (stderr, format, ap);
 	  va_end (ap);
 	  switch (flag){
 		case 't':
 		case 'l':
 		case 'c':
-		  printf(EOL);
+		  fprintf(stderr, EOL);
 		  break;
 	  }
-	  fflush (stdout);
+	  fflush (stderr);
       }
 }
