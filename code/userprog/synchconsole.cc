@@ -17,7 +17,9 @@ SynchConsole::SynchConsole(char *readFile, char *writeFile):
 	Console(readFile, writeFile, &SynchConsole::handlerReadAvail, &SynchConsole::handlerWriteDone, (int)this),
 	mReadAvail(new Semaphore("read avail", 0)),
 	mWriteDone(new Semaphore("write done", 0)),
-	mReadingMode(new Semaphore("single/array exclusion", 1))
+	mReadingMode(new Lock("single/array exclusion")),
+	mInputLock(new Lock("interprocess input exclusion")),
+	mOutputLock(new Lock("interprocess output exclusion"))
 {
 }
 
@@ -25,6 +27,9 @@ SynchConsole::~SynchConsole()
 {
 	delete mWriteDone;
 	delete mReadAvail;
+	delete mReadingMode;
+	delete mInputLock;
+	delete mOutputLock;
 }
 
 void SynchConsole::PutChar(const char ch){
@@ -33,10 +38,10 @@ void SynchConsole::PutChar(const char ch){
 }
 
 int SynchConsole::GetChar(){
-	mReadingMode->P();
+	mReadingMode->Acquire();
 	mReadAvail->P();
 	int c = Console::GetChar();
-	mReadingMode->V();
+	mReadingMode->Release();
 	return c;
 }
 
@@ -47,12 +52,16 @@ void SynchConsole::PutString(const char s[]){
 	PutChar(0);
 }
 
+void SynchConsole::AcquireInput() { mInputLock->Acquire(); }
+void SynchConsole::AcquireOutput() { mOutputLock->Acquire(); }
+void SynchConsole::ReleaseInput() { mInputLock->Release(); }
+void SynchConsole::ReleaseOutput() { mOutputLock->Release(); }
 
 void SynchConsole::handlerReadAvail() { mReadAvail->V(); }
 void SynchConsole::handlerWriteDone() { mWriteDone->V(); }
 		
 void SynchConsole::GetString(char *s, int n){
-	mReadingMode->P();
+	mReadingMode->Acquire();
 
 	int i = 0;
 	while (i < MIN(MAX_STRING_SIZE, n) - 1){
@@ -62,5 +71,5 @@ void SynchConsole::GetString(char *s, int n){
 		s[i++] = c;
 	}
 	s[i] = 0;
-	mReadingMode->V();
+	mReadingMode->Release();
 }

@@ -54,13 +54,21 @@ class SynchConsole : public Console {
 		void handlerReadAvail();
 		void handlerWriteDone();
 
+		void AcquireInput();
+		void AcquireOutput();
+		void ReleaseInput();
+		void ReleaseOutput();
+
 		static void handlerReadAvail(int);
 		static void handlerWriteDone(int);
 
 	private:
 		Semaphore *mReadAvail;
 		Semaphore *mWriteDone;
-		Semaphore *mReadingMode; /*! \todo replace by a Lock when tested */
+		
+		Lock *mReadingMode;
+		Lock *mInputLock;
+		Lock *mOutputLock;
 
 };
 

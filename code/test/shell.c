@@ -1,37 +1,31 @@
 #include "syscall.h"
+#include "userlib.h"
 
-int
-main ()
-{
-    SpaceId newProc;
-    OpenFileId input = ConsoleInput;
-    OpenFileId output = ConsoleOutput;
-    char prompt[2], buffer[60];
-    int i;
+int main (){
+	char cmd[128];
+	
+    while (1){
+		PutString("nach_shell> ");
+		GetString(cmd, 128);
 
-    prompt[0] = '-';
-    prompt[1] = '-';
+		if (strcmp("exit", cmd) == 0)
+		break;
 
-    while (1)
-      {
-	  Write (prompt, 2, output);
-
-	  i = 0;
-
-	  do
-	    {
-
-		Read (&buffer[i], 1, input);
-
-	    }
-	  while (buffer[i++] != '\n');
-
-	  buffer[--i] = '\0';
-
-	  if (i > 0)
-	    {
-		newProc = Exec (buffer);
-		Join (newProc);
-	    }
-      }
+		if (strlen(cmd)){
+			SpaceId process = ForkExec(cmd);
+			if (!process){
+				PutString("Error! Can't run the command ");
+				PutString(cmd);
+				PutChar('\n');
+			} else {
+				PutString("Command ");
+				PutString(cmd);
+				PutString(" running with the pid ");
+				PutInt(process);
+				PutChar('\n');
+				Join(process);
+			}
+		}
+    }
+    return 0;
 }

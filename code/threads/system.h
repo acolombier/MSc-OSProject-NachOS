@@ -17,10 +17,17 @@
 */
 #define MAX_THREADS 16
 
+/*! \def ADDRSPACE_PAGES_SIZE
+
+    The number of page that a virtual space contains by default.
+*/
+#define ADDRSPACE_PAGES_SIZE 64
+
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
 typedef unsigned int tid_t;
+typedef int SpaceId;
 
 #include "copyright.h"
 #include "utility.h"
@@ -50,6 +57,8 @@ extern Timer *timer;		// the hardware alarm clock
 extern Machine *machine;	// user program memory and registers
 #include "synchconsole.h"
 extern SynchConsole *synchconsole;		// synchronized console
+#include "frameprovider.h"
+extern FrameProvider *frameprovider;		// synchronized console
 #endif
 
 #ifdef FILESYS_NEEDED		// FILESYS or FILESYS_STUB

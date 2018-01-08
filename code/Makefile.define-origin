@@ -43,7 +43,7 @@ THREAD_SRC      :=      main.cc list.cc scheduler.cc synch.cc synchlist.cc \
 
 USERPROG_SRC    :=      addrspace.cc bitmap.cc exception.cc synchconsole.cc console.cc \
                         machine.cc mipssim.cc translate.cc progtest.cc stringtransfer.cc \
-                        userthread.cc
+                        userthread.cc userprocess.cc frameprovider.cc
 
 VM_SRC          :=
 
@@ -67,7 +67,7 @@ thread-test_CPPFLAGS=-DTHREADS
 # userprog feature: add support to load userspace program
 userprog_DEP_ALT=filesys filesys-stub
 userprog_SRC=$(USERPROG_SRC)
-userprog_CPPFLAGS=-DUSER_PROGRAM
+userprog_CPPFLAGS=-DUSER_PROGRAM -DFRAME_ALLOC_SEQUENTIAL
 userprog_INCDIRS=bin userprog
 
 # filesys: add support for filesystem
