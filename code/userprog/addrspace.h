@@ -1,5 +1,5 @@
-/*! addrspace.h 
-//      Data structures to keep track of executing user programs 
+/*! addrspace.h
+//      Data structures to keep track of executing user programs
 //      (address spaces).
 //
 //      For now, we don't keep any information about address spaces.
@@ -7,7 +7,7 @@
 //      executing the user program (see thread.h).
 */
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #ifndef ADDRSPACE_H
@@ -54,11 +54,11 @@ class AddrSpace
     // before jumping to user code
 
     void SaveState ();		// Save/restore address space-specific
-    void RestoreState ();	// info on a context switch 
-    
+    void RestoreState ();	// info on a context switch
+
     Thread* getThread(unsigned int tid);
 	inline List* threadList() { return mThreadList; }
-    
+
     void appendThread(Thread*);
     void removeThread(Thread*, int result_code);
 
@@ -105,19 +105,19 @@ class AddrSpace
   private:
       TranslationEntry * pageTable;	// Assume linear page table translation
     // for now!
-    unsigned int numPages;	// Number of pages in the virtual 
+    unsigned int numPages;	// Number of pages in the virtual
     tid_t lastTID;
     List* mThreadList;
 
     unsigned int mBrk;
-    
+
     SpaceId mPid;
     SpaceId mPpid;
     List* mThreadsWaiting;
 
   protected:
     static Lock* _ADDR_SPACE_LOCK;
-    
+
     static SpaceId _LAST_PID;
     static List* _SPACE_LIST;
     
