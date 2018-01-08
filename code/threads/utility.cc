@@ -85,6 +85,9 @@ DEBUG (char flag, const char *format, ...)
 		case 'c':
 		  printf(KYEL);
 		  break;
+		case 'n':
+		  printf(KCYN);
+		  break;
 	  }
 	  va_start (ap, format);
 	  vfprintf (stdout, format, ap);
@@ -93,6 +96,7 @@ DEBUG (char flag, const char *format, ...)
 		case 't':
 		case 'l':
 		case 'c':
+		case 'n':
 		  printf(EOL);
 		  break;
 	  }
