@@ -168,15 +168,20 @@ char List::Remove (void* e)
 		return 0;
 		
     ListElement *element = first;
+    ListElement *previous = NULL;
     ListElement **pnt = &first;
     
     for (unsigned int i = 0; element && element->item != e; i++){
-		pnt = &element->next;
+		pnt = &(element->next);
+		previous = element;
 		element = *pnt;
 	}
 		
     if (element){
 		*pnt = element->next;
+		if (element == last)
+			last = previous;
+		
 		delete element;
 		
 		mSize = mSize ? mSize - 1 : 0;

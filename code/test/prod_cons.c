@@ -21,7 +21,7 @@ void prod(void *arg) {
 		
 		sem_post(lock);
 		if (buffer[in - 1] == 'q')
-			return;
+			break;
 		Yield();
 	}
 }
@@ -29,8 +29,14 @@ void consume(void *arg) {
 	while (1){
 		sem_wait(ready_to_consume);
 		sem_wait(lock);
-		
-		PutString("Consuming: ");
+
+		PutInt((int)arg);
+		PutString(" - Consuming: ");
+		if (buffer[out] == 'q'){		
+			sem_post(ready_to_consume);			
+			sem_post(lock);
+			break;
+		}
 		PutChar(buffer[out++]);
 		PutChar('\n');
 		out = out % SIZE;
@@ -38,10 +44,11 @@ void consume(void *arg) {
 		sem_post(free_to_fill);
 		
 		sem_post(lock);
-		if (buffer[in - 1] == 'q')
-			return;
 		Yield();
 	}
+	PutString("Consumer#");
+	PutInt((int)arg);
+	PutString(" is done\n");
 }
 
 int main() {
@@ -50,17 +57,19 @@ int main() {
 	sem_init(&free_to_fill, SIZE);
 	sem_init(&ready_to_consume, 0);
 
+	int n_consumer = 10;
+
     PutString("In main\n");
 	PutString("Creating producer #");
 	PutInt(UserThreadCreate(prod, (void *) 0));
-	PutString("\nCreating consumer #");
-	PutInt(UserThreadCreate(consume, (void *) 1));
-	PutString("\nCreating consumer #");
-	PutInt(UserThreadCreate(consume, (void *) 2));
+
+	for (int i = 1; i <= n_consumer; i++){
+		PutString("\nCreating consumer #");
+		PutInt(UserThreadCreate(consume, (void *) i));
+	}
 	
-	UserThreadJoin(1);
-	UserThreadJoin(2);
-	UserThreadJoin(3);
+	for (int i = 1; i <= n_consumer; i++)
+		UserThreadJoin(i);
 	
 	PutString("\nHalting...");
     Halt();

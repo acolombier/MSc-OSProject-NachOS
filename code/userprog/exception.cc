@@ -21,6 +21,7 @@
 #include "syscall.h"
 #include "stringtransfer.h"
 #include "userthread.h"
+#include "userprocess.h"
 #include "addrspace.h"
 
 //----------------------------------------------------------------------
@@ -86,93 +87,88 @@ ExceptionHandler (ExceptionType which)
 
 			case SC_Halt: {
 				DEBUG('a', "Shutdown, initiated by user program.\n");
-				/*! The main program should not exit before all of the threads have finished \
-				 * their execution or called UserThreadExit, because we don't want to cancel threads \
-				 * before they have finished thier tasks. The program must wait for all threads to be \
-				 * joined before calling Halt();
-				 */
-				ListElement *e = currentThread->space->threadList()->getFirst();
-				do {
-				    tid_t thread_to_join = ((Thread*) e->item)->tid();
-					if (thread_to_join != currentThread->tid()){				
-						DEBUG('t', "--Halt call: Joining with thread #%d...\n", thread_to_join);
-						currentThread->join(thread_to_join);
-						DEBUG('t', "--Halt call: Thread #%d has joined\n", thread_to_join);
-					}
-				} while ((e = e->next) && currentThread->space->countThread() > 1);
-				interrupt->Halt();
+				// the prog shouldn't exit while the thread is still running
+				// if it has exited before; then nothing happens here
+				// otherwise the halting of the main is made clean
+				
+				do_UserHalt();
 				break;
 			}
 
 			case SC_Exit: {
-				DEBUG('i', "Exit syscall, initiated by user program.\n");
-				/*! \todo Handle correct process exit. Waiting for teacher's answer.  */
-				//currentThread->Finish();
-				//For now just call Halt()
-				interrupt->Halt();
+				DEBUG('c', "Exit syscall, initiated by user program.\n");
+				do_UserProcessExit(reg4);
+				break;
+			}
+
+			case SC_Join: {
+				DEBUG('c', "Join syscall, initiated by user program.\n");
+				returnvalue = (int)do_UserProcessJoin((SpaceId)reg4);
+				machine->WriteRegister(2, returnvalue);
 				break;
 			}
 
 			case SC_Yield: {
-				DEBUG('i', "Current thread #%d nicely ask to yield.\n", currentThread->tid());
+				DEBUG('c', "Current thread #%d nicely ask to yield.\n", currentThread->tid());
 				currentThread->Yield();
 				break;
 			}
 
 			case SC_PutChar: {
-				DEBUG('i', "PutChar syscall, initiated by user program.\n");
-				currentThread->space->acquireIO();
+				DEBUG('c', "PutChar syscall, initiated by user program.\n");
+				synchconsole->AcquireOutput();
 				synchconsole->PutChar((char) reg4);
-				currentThread->space->releaseIO();
+				synchconsole->ReleaseOutput();
 				break;
 			}
 
 			case SC_GetChar: {
-				DEBUG('i', "GetChar syscall, initiated by user program.\n");
-				currentThread->space->acquireIO();
+				DEBUG('c', "GetChar syscall, initiated by user program.\n");
+				synchconsole->AcquireInput();
 				returnvalue = synchconsole->GetChar();
-				DEBUG('i', "GetChar syscall, returned.\n");
+				DEBUG('c', "GetChar syscall, returned.\n");
 				machine->WriteRegister(2, returnvalue);
-				currentThread->space->releaseIO();
+				synchconsole->ReleaseInput();
 				break;
 			}
 
 			case SC_PutString: {
-				DEBUG('i', "PutString syscall, initiated by user program.\n");
-				currentThread->space->acquireIO();
+				DEBUG('c', "PutString syscall, initiated by user program.\n");
+				synchconsole->AcquireOutput();
 				char* buffer = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
 				synchconsole->PutString(buffer);
-				free(buffer);
-				currentThread->space->releaseIO();
+				delete [] buffer;
+				synchconsole->ReleaseOutput();
 				break;
 			}
 
 			case SC_GetString: {
-				DEBUG('i', "GetString syscall, initiated by user program.\n");
-				currentThread->space->acquireIO();
+				DEBUG('c', "GetString syscall, initiated by user program.\n");
+				synchconsole->AcquireInput();
 				char *buffer = (char *) malloc(sizeof(char) * MAX_STRING_SIZE);
 				synchconsole->GetString(buffer, reg5);
 				copyStringToMachine(buffer, reg4, MIN(MAX_STRING_SIZE, reg5));
-				currentThread->space->releaseIO();
+				synchconsole->ReleaseInput();
+				free(buffer);
 				break;
 			}
 
 			case SC_PutInt: {
-				DEBUG('i', "PutInt syscall, initiated by user program.\n");
-				currentThread->space->acquireIO();
+				DEBUG('c', "PutInt syscall, initiated by user program.\n");
+				synchconsole->AcquireOutput();
 				char *buffer = (char *) malloc(sizeof(char) * 11);
 
 				snprintf(buffer, 11, "%d", reg4); /*! \todo make a real function if time availbale */
 				synchconsole->PutString(buffer);
 
 				free(buffer);
-				currentThread->space->releaseIO();
+				synchconsole->ReleaseOutput();
 				break;
 			}
 
 			case SC_GetInt: {
-				DEBUG('i', "GetInt syscall, initiated by user program.\n");
-				currentThread->space->acquireIO();
+				DEBUG('c', "GetInt syscall, initiated by user program.\n");
+				synchconsole->AcquireInput();
 				char *buffer = (char *) malloc(sizeof(char) * 11);
 
 				synchconsole->GetString(buffer, 11);
@@ -180,50 +176,91 @@ ExceptionHandler (ExceptionType which)
 				machine->WriteMem(reg4, 11, returnvalue);
 
 				free(buffer);
-				currentThread->space->releaseIO();
+				synchconsole->ReleaseInput();
 				break;
 			}
 
 			case SC_CreateUserThread: {
-				DEBUG('i', "CreateUserThread syscall, initiated by user program.\n");
+				DEBUG('c', "CreateUserThread syscall, initiated by user program.\n");
 				returnvalue = do_UserThreadCreate(reg4, reg5, reg6);
 				machine->WriteRegister(2, returnvalue);
 				break;
 			}
 
 			case SC_ExitUserThread: {
-				DEBUG('i', "ExitUserThread syscall, initiated by user program.\n");
-				do_UserThreadExit();
+				DEBUG('c', "ExitUserThread syscall, initiated by user program. %d thread(s) remaining in this space.\n", currentThread->space->countThread());
+
+				/*! \todo Handle a return code for thread exit  */
+				if (currentThread->space->countThread() > 1)
+					do_UserThreadExit();
+				else 
+					do_UserProcessExit(-1);
 				break;
 			}
 
 			case SC_JoinUserThread: {
-				DEBUG('i', "UserThreadJoin syscall, initiated by user program.\n");
+				DEBUG('c', "UserThreadJoin syscall, initiated by user program.\n");
 				returnvalue = (int)do_UserThreadJoin((tid_t)reg4);
 				machine->WriteRegister(2, returnvalue);
 				break;
 			}
 
 			case SC_SemaInit: {
-				DEBUG('i', "SemaInit syscall, initiated by user program.\n");
-				*(void**)(machine->mainMemory + reg4) = new Semaphore("User Semaphore", reg5);
+				int sema = (int)new Semaphore("User Semaphore", reg5);
+				DEBUG('c', "SemaInit syscall on %p -> %p, initiated by user program.\n", reg4, (int*)sema);
+				machine->WriteMem(reg4, 4, sema);
 				break;
 			}
 
 			case SC_SemaPost: {
-				DEBUG('i', "SemaPost syscall, initiated by user program.\n");
+				DEBUG('c', "SemaPost syscall on %p, initiated by user program.\n", reg4);
 				((Semaphore*)reg4)->V();
 				break;
 			}
 
 			case SC_SemaWait: {
-				DEBUG('i', "SemaWait syscall, initiated by user program.\n");
+				DEBUG('c', "SemaWait syscall on %p, initiated by user program.\n", reg4);
 				((Semaphore*)reg4)->P();
+				break;
+			}
+			case SC_Kill: {
+				DEBUG('c', "Kill syscall on %p, initiated by user program.\n", reg4);
+				/*! \todo Implementation */
+				break;
+			}
+			
+			case SC_ForkExec: {
+				DEBUG('c', "ForkExec syscall, initiated by user program.\n");
+
+				char* filename = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
+				OpenFile *executable = fileSystem->Open (filename);
+
+				if (executable == NULL){
+					DEBUG('c', "Unable to open file %s\n", filename);
+					machine->WriteRegister(2, 0);
+					break;
+				}	
+				delete [] filename;			
+				returnvalue = do_UserProcessCreate(executable, reg6);
+				machine->WriteRegister(2, returnvalue);			
+				
+				break;
+			}
+			
+			case SC_Malloc: {
+				DEBUG('c', "Malloc syscall on %p, initiated by user program.\n", reg4);
+				/*! \todo Implementation */
+				break;
+			}
+			
+			case SC_Free: {
+				DEBUG('c', "Free syscall on %p, initiated by user program.\n", reg4);
+				/*! \todo Implementation */
 				break;
 			}
 
 			default: {
-				printf("Unexpected user mode exception %d %d\n", which, type);
+				printf("Unexpected user mode exception %d %ud\n", which, type);
 				ASSERT(FALSE);
 			}
 		}
@@ -231,6 +268,11 @@ ExceptionHandler (ExceptionType which)
 		// LB: Do not forget to increment the pc before returning!
 		UpdatePC ();
 		// End of addition
+	} else if (which == BusErrorException){
+		DEBUG('i', "SIGBUS on the thread %s. Aborting process\n", currentThread->getName());
+
+		/*! \todo error code */
+		do_UserProcessExit(-1);
 	}
 
 }
