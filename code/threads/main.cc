@@ -86,7 +86,7 @@ main (int argc, char **argv)
     (void) Initialize (argc, argv);
 
 #ifdef THREADS
-    ThreadTest ();
+   // ThreadTest ();
 #endif
 
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount)
@@ -166,10 +166,12 @@ main (int argc, char **argv)
 	  if (!strcmp (*argv, "-o"))
 	    {
 		ASSERT (argc > 1);
-		Delay (2);	// delay for 2 seconds
+		Delay (5);	// delay for 2 seconds
 		// to give the user time to 
 		// start up another nachos
+		printf("--------->Starting mail test![NAT]\n");
 		MailTest (atoi (*(argv + 1)));
+		printf("--------->Returning from mail test![NAT]\n");
 		argCount = 2;
 	    }
 #endif // NETWORK

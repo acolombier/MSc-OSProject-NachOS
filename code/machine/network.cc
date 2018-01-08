@@ -121,7 +121,9 @@ Network::Send(PacketHeader hdr, char* data)
     char *buffer = new char[MaxWireSize];
     *(PacketHeader *)buffer = hdr;
     bcopy(data, buffer + sizeof(PacketHeader), hdr.length);
+    printf("------> Network send.[NAT]\n");
     SendToSocket(sock, buffer, MaxWireSize, toName);
+    printf("------> Return from send.[NAT]\n");
     delete []buffer;
 }
 

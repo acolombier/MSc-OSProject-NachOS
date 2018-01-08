@@ -17,7 +17,7 @@
 #include "filesys.h"
 #include "system.h"
 #include "synch.h"
-#include "mem_alloc.h"
+//#include "mem_alloc.h"
 
 /*!
  * \def UserStackSize Used macro for stack allocation

@@ -118,10 +118,10 @@ $(eval $(call define-flavor,filesys,userprog filesys))
 
 ###########################################################################
 ######### network
-$(eval $(call define-flavor,network,thread-test userprog filesys network))
+$(eval $(call define-flavor,network,thread-test userprog filesys-stub network))
 
 # bare bones version
-# $(eval $(call define-flavor,network,thread-test network))
+#$(eval $(call define-flavor,network,thread-test network))
 
 ###########################################################################
 ######### vm
