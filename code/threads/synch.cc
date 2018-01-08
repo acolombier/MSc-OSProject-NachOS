@@ -114,6 +114,7 @@ Lock::~Lock (){
 }
 
 void Lock::Acquire (){
+	ASSERT(mThreadHolder != currentThread);
 	mMutexLock->P();
 	mThreadHolder=currentThread;
 }

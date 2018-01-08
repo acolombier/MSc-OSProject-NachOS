@@ -1,6 +1,6 @@
-/*! addrspace.cc 
-      Routines to manage address spaces (executing user programs).
-
+/*! 
+//      Routines to manage address spaces (executing user programs).
+//
 //      In order to run a user program, you must:
 //
 //      1. link with the -N -T 0 option 
@@ -92,7 +92,18 @@ AddrSpace::AddrSpace (OpenFile * executable):
 {
 	AddrSpace::_ADDR_SPACE_LOCK->Acquire();
 	mPid = ++AddrSpace::_LAST_PID;
-	AddrSpace::_SPACE_LIST->Append(this);
+	
+	addrspace_bundle_t* a_bundle = new addrspace_bundle_t;
+	
+	a_bundle->object = this;
+	a_bundle->pid = mPid;
+	a_bundle->result_code = 0;
+	
+	AddrSpace::_SPACE_LIST->Append(a_bundle);
+	
+	AddrSpace::_ADDR_SPACE_LOCK->Release();
+	INC_REF(pid());
+	AddrSpace::_ADDR_SPACE_LOCK->Acquire();
 	
 	ListElement* e = AddrSpace::_SPACE_LIST->getFirst();
 	
@@ -136,7 +147,7 @@ AddrSpace::AddrSpace (OpenFile * executable):
 		pageTable[i].virtualPage(i);
 		
     for (i = 0; i < ro_code + rw_code; i++){
-		pageTable[i].setValid(true);
+		pageTable[i].setValid();
 		pageTable[i].physicalPage(frameprovider->GetEmptyFrame());
 	}
     mBrk = size - 1;
@@ -182,6 +193,18 @@ AddrSpace::~AddrSpace ()
 	DEBUG('a', "Deleting pageTable after releasing frame.\n");		
 	delete [] pageTable;
 
+	AddrSpace::_ADDR_SPACE_LOCK->Acquire();
+	DEBUG('a', "Removing process %d of the registered process list\n", pid());
+
+	ListElement* e = _SPACE_LIST->getFirst();
+	while (this != ((addrspace_bundle_t*)e->item)->object && (e = e->next)) {}
+
+	((addrspace_bundle_t*)e->item)->object = nullptr;
+	
+	AddrSpace::_ADDR_SPACE_LOCK->Release();
+	DEC_REF(pid());
+	AddrSpace::_ADDR_SPACE_LOCK->Acquire();
+	
 	// Waking up waiting threads from other process
 	DEBUG ('t', "%d thread(s) were waiting this space to finish, notifying...\n", mThreadsWaiting->size());
     Thread* t;
@@ -195,11 +218,56 @@ AddrSpace::~AddrSpace ()
 	
 	DEBUG('a', "Deleting list of threads as no one is here anymore.\n");		
 	delete mThreadList;
-	AddrSpace::_ADDR_SPACE_LOCK->Acquire();
-	DEBUG('a', "Removing process %d of the registered process list\n", pid());
-	AddrSpace::_SPACE_LIST->Remove(this);
+	
 	AddrSpace::_ADDR_SPACE_LOCK->Release();
   // End of modification
+}
+
+/*!
+ * \param the pid of the space
+ * \return the corresponding bundle
+ */   
+addrspace_bundle_t* AddrSpace::INC_REF(SpaceId pid){
+	AddrSpace::_ADDR_SPACE_LOCK->Acquire();
+	ListElement* e = _SPACE_LIST->getFirst();
+	while (pid != ((addrspace_bundle_t*)e->item)->pid && (e = e->next)) {}
+	
+	if (!e || !e->item){
+		AddrSpace::_ADDR_SPACE_LOCK->Release();
+		return nullptr;
+	}
+
+	((addrspace_bundle_t*)e->item)->ref_cnt++;
+	AddrSpace::_ADDR_SPACE_LOCK->Release();
+	return (addrspace_bundle_t*)e->item;
+}
+
+/*!
+ * \param the pid of the space
+ */  
+void AddrSpace::DEC_REF(SpaceId pid){
+	_ADDR_SPACE_LOCK->Acquire();
+	
+	ListElement* e = _SPACE_LIST->getFirst();
+	while (pid != ((addrspace_bundle_t*)e->item)->pid && (e = e->next)) {}
+	
+	if (!e->item){
+		_ADDR_SPACE_LOCK->Release();
+		return;
+	}
+
+	addrspace_bundle_t* a_bundle = (addrspace_bundle_t*)e->item;
+	a_bundle->ref_cnt--;
+
+	if (a_bundle->ref_cnt <= 0){
+		char found = _SPACE_LIST->Remove(a_bundle);
+		DEBUG('a', "AddrSpace bundle #%d has %sbeen deleted\n", pid, (found ? "": "NOT "));
+		ASSERT(!a_bundle->object);
+		ASSERT(found == true);
+		delete a_bundle;
+	}
+	_ADDR_SPACE_LOCK->Release();
+	
 }
 
 //----------------------------------------------------------------------
@@ -249,9 +317,9 @@ void AddrSpace::SaveState (){
 }
 	
 /*!
- * Add a Thread to the address space.
+ * Add a Thread to the address space
  * 
- * \param t Freshly created thread
+ * \param t freshly created thread
  * 
  */
 void AddrSpace::appendThread (Thread* t){	
@@ -259,12 +327,22 @@ void AddrSpace::appendThread (Thread* t){
 	if (countThread() < MAX_THREADS && mBrk < (ADDRSPACE_PAGES_SIZE * PageSize) - (UserStackSize * (countThread() + 1)) && frameprovider->NumAvailFrame() >= stackNbPages){
 		t->space = this;
 		t->setTID(lastTID++);
-		mThreadList->Append(t);
+
+		thread_bundle_t* t_bundle = new thread_bundle_t;
+		
+		t_bundle->object = t;
+		t_bundle->result_code = 0;
+		t_bundle->tid = t->tid();
+		t_bundle->stack_first_page = ADDRSPACE_PAGES_SIZE - (stackNbPages * (countThread() + 1));
+		
+		mThreadList->Append(t_bundle);
+		inc_ref_thread(t->tid());
+		
 		DEBUG ('a', "New thread mapped in the space as ID #%d\n", t->tid());
 
 		for (unsigned int i = 0; i < stackNbPages; i++){
 			if (pageTable[ADDRSPACE_PAGES_SIZE - i - (stackNbPages * (countThread() - 1)) - 1].valid()) continue;
-			pageTable[ADDRSPACE_PAGES_SIZE - i - (stackNbPages * (countThread() - 1)) - 1].setValid(true);
+			pageTable[ADDRSPACE_PAGES_SIZE - i - (stackNbPages * (countThread() - 1)) - 1].setValid();
 			pageTable[ADDRSPACE_PAGES_SIZE - i - (stackNbPages * (countThread() - 1)) - 1].physicalPage(frameprovider->GetEmptyFrame());
 		}
 		DEBUG ('t', "Stack allocated for thread ID #%d\n", t->tid());
@@ -274,15 +352,44 @@ void AddrSpace::appendThread (Thread* t){
 		DEBUG ('t', "No more page free to hold a thread stack.\n");
 }
 /*!
- * Remove a Thread from the address space, and notify the waiting Threads.
+ * Remove a Thread to the address space, and notify the waiting Threads
  * 
- * \param t Freshly created thread
+ * \param t freshly created thread
  * 
  * */
-void AddrSpace::removeThread(Thread* t){
-	char found = mThreadList->Remove(t);
-	/*! \todo deallocate the thread stack using its register */
-	DEBUG('t', "Thread #%d has %s been found\n", t->tid(), (found ? "": "NOT "));
+void AddrSpace::removeThread(Thread* t, int result_code){
+	ListElement* e = mThreadList->getFirst();
+	while (t != ((thread_bundle_t*)e->item)->object && (e = e->next)) {}
+	
+	DEBUG('t', "Thread #%d has %sbeen found\n", t->tid(), (e->item ? "": "NOT "));
+	if (!e->item)
+		return;
+
+	thread_bundle_t* t_bundle = (thread_bundle_t*)e->item;
+
+	t_bundle->object = nullptr;
+	t_bundle->result_code = result_code;
+
+	unsigned int stackNbPages = divRoundUp(UserStackSize, PageSize);
+	for (unsigned int i = t_bundle->stack_first_page; i < t_bundle->stack_first_page + stackNbPages; i++){
+		pageTable[i].clearValid();
+		frameprovider->ReleaseFrame(pageTable[i].physicalPage());
+	}
+
+	if (countThread() == 0){ //No more thread, this result code is the space result code
+		DEBUG('t', "Thread #%d is the last one, its result code %d will be the process one\n", t->tid(), result_code);
+		_ADDR_SPACE_LOCK->Acquire();
+		
+		e = _SPACE_LIST->getFirst();
+		while (this != ((addrspace_bundle_t*)e->item)->object && (e = e->next)) {}
+
+		((addrspace_bundle_t*)e->item)->result_code = result_code;
+		
+		_ADDR_SPACE_LOCK->Release();
+	}
+		
+
+	dec_ref_thread(t->tid());
 }
 
 /*!
@@ -292,9 +399,36 @@ void AddrSpace::removeThread(Thread* t){
  * 
  * */
 void AddrSpace::appendToJoin(Thread*t) {
+	DEBUG ('t', "Thread %s#%d from process %d is joining the process...\n", t->getName(), t->tid(), t->space->pid());
 	mThreadsWaiting->Append(t);
 }
 
+unsigned int AddrSpace::countThread() const {
+	int cnt = 0;
+	ListElement* e = mThreadList->getFirst();
+	while (e){
+		if (((thread_bundle_t*)e->item)->object)
+			cnt++;
+		e = e->next;
+	}
+	return cnt;
+}
+
+unsigned int AddrSpace::ADDR_SPACE_COUNT() {
+	_ADDR_SPACE_LOCK->Acquire();
+	
+	int cnt = 0;
+	ListElement* e = _SPACE_LIST->getFirst();
+	while (e){
+		if (((addrspace_bundle_t*)e->item)->object)
+			cnt++;
+		e = e->next;
+	}
+	
+	_ADDR_SPACE_LOCK->Release();
+	
+	return cnt;
+}
 
 /*!
  * Block the current thread related to this space, until the given AddrSpace is deleted
@@ -302,31 +436,58 @@ void AddrSpace::appendToJoin(Thread*t) {
  * \param pid The space ID
  * 
  * */
-int AddrSpace::join(SpaceId s_pid) {
+int AddrSpace::join(SpaceId s_pid, int result_code_pnt) {
 #ifdef USER_PROGRAM		
 	ASSERT(pid() != s_pid);
 	ASSERT(currentThread->space == this);
 	
-	AddrSpace::_ADDR_SPACE_LOCK->Acquire();
-	
-	ListElement* e = AddrSpace::_SPACE_LIST->getFirst();
-	while (s_pid != ((AddrSpace*)e->item)->pid() && (e = e->next)) {}
-	AddrSpace::_ADDR_SPACE_LOCK->Release();
-
-	if (!e || !e->item){
+	addrspace_bundle_t* a_bundle = INC_REF(s_pid);
+	if (!a_bundle){
 		DEBUG('c', "JoiningProcess: %d does not exist\n", s_pid);
 		return 0;
 	}
 		
-	AddrSpace* process_to_join = (AddrSpace*)e->item;
-		
+	AddrSpace* process_to_join = a_bundle->object;	
 	process_to_join->appendToJoin(currentThread); // Will be elected when the thread will finish
 	
     IntStatus oldLevel = interrupt->SetLevel (IntOff);	// disable interrupts
 	currentThread->Sleep ();
     (void) interrupt->SetLevel (oldLevel);	// re-enable interrupts
+
+	if (result_code_pnt)
+		machine->WriteMem(result_code_pnt, 4, a_bundle->result_code);
+	DEC_REF(s_pid);
 #endif
 	return 0;
+}
+
+thread_bundle_t* AddrSpace::inc_ref_thread(tid_t tid){
+	ListElement* e = mThreadList->getFirst();
+	while (tid != ((thread_bundle_t*)e->item)->tid && (e = e->next)) {}
+	
+	if (!e->item)
+		return nullptr;
+
+	((thread_bundle_t*)e->item)->ref_cnt++;
+	return (thread_bundle_t*)e->item;
+}
+
+void AddrSpace::dec_ref_thread(tid_t tid){	
+	ListElement* e = mThreadList->getFirst();
+	while (tid != ((thread_bundle_t*)e->item)->tid && (e = e->next)) {}
+	
+	if (!e->item)
+		return;
+
+	thread_bundle_t* t_bundle = (thread_bundle_t*)e->item;
+	t_bundle->ref_cnt--;
+
+	if (t_bundle->ref_cnt <= 0){
+		char found = mThreadList->Remove(t_bundle);
+		DEBUG('t', "Thread bundle #%d has %sbeen deketed\n", t_bundle->tid, (found ? "": "NOT "));
+		ASSERT(found == true);
+		delete t_bundle;
+	}
 }
 
 
@@ -340,8 +501,8 @@ int AddrSpace::join(SpaceId s_pid) {
  * */
 Thread* AddrSpace::getThread(unsigned int tid) {
 	ListElement* e = mThreadList->getFirst();
-	while ((e = e->next) && tid != ((Thread*)e->item)->tid()) {}
-	return (e ? (Thread*)e->item : nullptr);
+	while (tid != ((thread_bundle_t*)e->item)->tid && (e = e->next)) {}
+	return (e ? ((thread_bundle_t*)e->item)->object : nullptr);
 }
 
 
@@ -371,7 +532,7 @@ int AddrSpace::Sbrk(unsigned int n){
 	
 	for (unsigned int i = divRoundDown(mBrk, PageSize); i < divRoundDown(mBrk, PageSize) + n; i++){
 		if (pageTable[i].valid()) continue;
-		pageTable[i].setValid(true);
+		pageTable[i].setValid();
 		pageTable[i].physicalPage(frameprovider->GetEmptyFrame());
 	}
 	int oldBrk = mBrk;

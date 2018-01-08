@@ -60,14 +60,14 @@ SpaceId do_UserProcessCreate(OpenFile* executable/*, int argc, char** argv*/, in
     return space->pid();
 }
 
-int do_UserProcessJoin(SpaceId pid){	
-	return currentThread->space->join(pid);
+int do_UserProcessJoin(SpaceId pid, int result_code_ptr){	
+	return currentThread->space->join(pid, result_code_ptr);
 }
 
 void do_UserProcessExit(int code){
 	DEBUG('a', "Going to delete a process, %d currently remaining.\n", AddrSpace::ADDR_SPACE_COUNT());
 	if (AddrSpace::ADDR_SPACE_COUNT() > 1)
-		currentThread->Finish();
+		currentThread->Finish(code);
 	else {
 		DEBUG('a', "Last process has exited, halting machine.\n");
 		do_UserHalt();
@@ -86,11 +86,11 @@ void do_UserHalt(){
 		tid_t thread_to_join = ((Thread*)e->item)->tid();	
 		if (thread_to_join != currentThread->tid()){				
 			DEBUG('t', "--Halt call: Joining with thread #%d...\n", thread_to_join);
-			currentThread->join(thread_to_join);
+			currentThread->join(thread_to_join, 0);
 			DEBUG('t', "--Halt call: Thread #%d has joined\n", thread_to_join);
 			e = currentThread->space->threadList()->getFirst(); // To be sure that we don't have a de-allocated 'e'
 		}
-	} while ((e = e->next) && currentThread->space->countThread() > 1);
+	} while (currentThread->space->countThread() > 1 && (e = e->next));
 	interrupt->Halt();
 }
 

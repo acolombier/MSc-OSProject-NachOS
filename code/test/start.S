@@ -186,6 +186,15 @@ UserThreadCreate:
 	j	$31
     .end UserThreadCreate
 
+	.globl _user_thread_exit_by_return
+    .ent    _user_thread_exit_by_return
+_user_thread_exit_by_return:
+    addiu $2,$0,SC_CreateUserThread
+    addiu $6,$0,UserThreadExit
+    syscall
+	j	$31
+    .end _user_thread_exit_by_return
+
     .globl UserThreadExit
     .ent    UserThreadExit
 UserThreadExit:
@@ -197,9 +206,8 @@ UserThreadExit:
     .globl UserThreadJoin
     .ent    UserThreadJoin
 UserThreadJoin:
-    addiu $2,$0,SC_JoinUserThread
-    syscall
-    j   $31
+	move	$4,$2
+	jal	UserThreadExit
     .end UserThreadJoin
 
     .globl sem_init

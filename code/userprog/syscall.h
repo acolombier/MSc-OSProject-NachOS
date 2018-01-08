@@ -63,6 +63,10 @@
 
 #ifdef IN_USER_MODE
 
+#define EXIT_SUCCESS 0
+#define EXIT_FAILURE 0xFF
+#define NULL 0
+
 /* when an address space starts up, it has two open files, representing
  * keyboard input and display output (in UNIX terms, stdin and stdout).
  * Read and Write can be used directly on these, without first opening
@@ -90,7 +94,8 @@ void Halt () __attribute__((noreturn));
 
 /* Address space control operations: Exit, Exec, and Join */
 
-/* This user program is done (status = 0 means exited normally). */
+/*! This user program is done (status = 0 means exited normally).
+ */
 void Exit (int status) __attribute__((noreturn));
 
 /* A unique identifier for an executing user program (address space) */
@@ -101,10 +106,11 @@ typedef int SpaceId;
  */
 SpaceId Exec (char *name);
 
-/* Only return once the the user program "id" has finished.
- * Return the exit status.
+/*! Only return once the the user program "id" has finished.
+ * \param pointer to store the result code. NULL to ignore it
+ * \return boolean saying if the process has been join
  */
-int Join (SpaceId id);
+int Join (SpaceId id, int* result_code_ptr);
 
 
 /* File system operations: Create, Open, Read, Write, Close
@@ -177,16 +183,24 @@ void PutInt(int n);
 void GetInt(int *n);
 
 /*! \brief Create a user thread
- *  \param f User pointer to the user function to execute.
+ *  \param f User pointer to the user function to execute. The function signature must be  following this signature void* f(void *)
  * 	\param arg User pointer to the args of the function to execute.
  */
-int UserThreadCreate(void f(void *arg), void *arg);
+int UserThreadCreate(void* f(void *arg), void *arg);
 
-/*! \brief Exit a user thread */
-void UserThreadExit() __attribute__((noreturn));
+/*! \brief Exit a user thread
+ * \param result_code resolut code to return to any waiting thread.
+ */
+void UserThreadExit(int result_code) __attribute__((noreturn));
 
-/*! \brief Wait for the specified thread to finish */
-int UserThreadJoin(int tid);
+/*! Should not be called by the user. Default handler in case of return of a thread function to call exit with a code */
+void _user_thread_exit_by_return() __attribute__((noreturn));
+
+/*! \brief Wait for the specified thread to finish
+ * \param pointer to store the result code. NULL to ignore it
+ * \return booolean saying if there in an error
+ */
+int UserThreadJoin(int tid, void* result_code_ptr);
 
 /*! \brief Semaphore initialiser */
 void sem_init(void* s, int e);
@@ -200,9 +214,6 @@ void sem_wait(void* s);
 /*! \brief send a signal
  * \todo signal system */
 void Kill(SpaceId pid, char sig);
-
-/*! \brief Fork and run a process */
-int ForkExec(char *s);
 
 /*! \brief Fork and run a process */
 int ForkExec(char *s);
