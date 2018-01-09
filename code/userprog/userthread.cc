@@ -55,11 +55,10 @@ tid_t do_UserThreadCreate(int f, int arg, int exit_handler) {
     return t->tid();
 }
 
-void do_UserThreadExit(/*int code*/) {
-    //~ currentThread->setResult(code);
-	currentThread->Finish();
+void do_UserThreadExit(int code) {
+	currentThread->Finish(code);
 }
 
-int do_UserThreadJoin(tid_t tid) {
-	return currentThread->join(tid);
+int do_UserThreadJoin(tid_t tid, int return_code_ptr) {
+	return currentThread->join(tid, return_code_ptr);
 }

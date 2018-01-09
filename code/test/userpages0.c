@@ -9,11 +9,13 @@ void puts(char *s){
 	char *p; for (p = s; *p != '\0'; p++) PutChar(*p);
 	}
 
-void f(void *s){
+void* f(void *s){
 	for (int i = 0; i < N; i++) puts((char *)s);
+	return (void*)1001;
 }
 
 int main(){
 	UserThreadCreate(f, (void *) THIS);
 	f((void*) THAT);
+	return 1000;
 }

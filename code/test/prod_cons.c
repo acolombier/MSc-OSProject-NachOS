@@ -9,7 +9,7 @@ void* ready_to_consume;
 int in = 0, out = 0;
 char buffer[10];
 
-void prod(void *arg) {
+void* prod(void *arg) {
 	while (1){
 		sem_wait(free_to_fill);
 		sem_wait(lock);
@@ -24,8 +24,9 @@ void prod(void *arg) {
 			break;
 		Yield();
 	}
+	return NULL;
 }
-void consume(void *arg) {
+void* consume(void *arg) {
 	while (1){
 		sem_wait(ready_to_consume);
 		sem_wait(lock);
@@ -49,6 +50,7 @@ void consume(void *arg) {
 	PutString("Consumer#");
 	PutInt((int)arg);
 	PutString(" is done\n");
+	return (void*)arg;
 }
 
 int main() {
@@ -67,10 +69,9 @@ int main() {
 		PutString("\nCreating consumer #");
 		PutInt(UserThreadCreate(consume, (void *) i));
 	}
-	
+	int result;
 	for (int i = 1; i <= n_consumer; i++)
-		UserThreadJoin(i);
-	
-	PutString("\nHalting...");
-    Halt();
+		UserThreadJoin(i + 1, &result);
+
+	return result;
 }

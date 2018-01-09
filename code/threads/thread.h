@@ -103,7 +103,11 @@ class Thread
     // other thread is runnable
     void Sleep ();		// Put the thread to sleep and
     // relinquish the processor
-    void Finish ();		// The thread is done executing
+    /*!
+     * The thread is done executing
+     * \param return_code the return code (optionnal)
+     */
+    void Finish (int return_code=0);		// 
 
     void CheckOverflow ();	// Check if thread has
     // overflowed its stack
@@ -139,10 +143,11 @@ class Thread
     /*!
      * Join to an other Thread identified by an identifier
      * \param t The Thread to join
+     * \param result_code_pnt The address where to store the result code for the current thread
      * \return Did the join failed?
      *
      */
-	int join(tid_t t);
+	int join(tid_t t, int result_code_pnt=0);
 
   private:
     // some of the private data for this class is listed above
