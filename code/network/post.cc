@@ -122,15 +122,17 @@ MailBox::Put(PacketHeader pktHdr, MailHeader mailHdr, char *data)
 void 
 MailBox::Get(PacketHeader *pktHdr, MailHeader *mailHdr, char *data) 
 { 
-    DEBUG('n', "Waiting for mail in mailbox\n");
+    DEBUG('n', "Waiting for mail\n");
     Mail *mail = (Mail *) messages->Remove();	// remove message from list;
 						// will wait if list is empty
+
+	DEBUG('n', "Took mail in mbox %d from mbox %d\n", mailHdr->to, mailHdr->from);
 
     *pktHdr = mail->pktHdr;
     *mailHdr = mail->mailHdr;
     if (DebugIsEnabled('n')) {
-	printf("Got mail from mailbox: ");
-	PrintHeader(*pktHdr, *mailHdr);
+		printf("Got mail from mailbox: ");
+		PrintHeader(*pktHdr, *mailHdr);
     }
     bcopy(mail->data, data, mail->mailHdr.length);
 					// copy the message data into
@@ -233,15 +235,15 @@ PostOffice::PostalDelivery()
 
         mailHdr = *(MailHeader *)buffer;
         if (DebugIsEnabled('n')) {
-	    printf("Putting mail into mailbox: ");
-	    PrintHeader(pktHdr, mailHdr);
-        }
+			printf("Putting mail into mailbox: ");
+			PrintHeader(pktHdr, mailHdr);
+		}
 
-	// check that arriving message is legal!
-	ASSERT(0 <= mailHdr.to && mailHdr.to < numBoxes);
-	ASSERT(mailHdr.length <= MaxMailSize);
+		// check that arriving message is legal!
+		ASSERT(0 <= mailHdr.to && mailHdr.to < numBoxes);
+		ASSERT(mailHdr.length <= MaxMailSize);
 
-	// put into mailbox
+		// put into mailbox
         boxes[mailHdr.to].Put(pktHdr, mailHdr, buffer + sizeof(MailHeader));
     }
 }
@@ -266,8 +268,8 @@ PostOffice::Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data)
 						// mailHdr + data
 
     if (DebugIsEnabled('n')) {
-	printf("Post send: ");
-	PrintHeader(pktHdr, mailHdr);
+		printf("Post send: ");
+		PrintHeader(pktHdr, mailHdr);
     }
     ASSERT(mailHdr.length <= MaxMailSize);
     ASSERT(0 <= mailHdr.to && mailHdr.to < numBoxes);
@@ -292,7 +294,7 @@ PostOffice::Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data)
 }
 
 //----------------------------------------------------------------------
-// PostOffice::Send
+// PostOffice::Receive
 // 	Retrieve a message from a specific box if one is available, 
 //	otherwise wait for a message to arrive in the box.
 //
