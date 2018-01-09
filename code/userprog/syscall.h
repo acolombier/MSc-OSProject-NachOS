@@ -66,6 +66,8 @@
 #define EXIT_FAILURE 0xFF
 #define NULL 0
 
+typedef unsigned int size_t;
+
 /* when an address space starts up, it has two open files, representing
  * keyboard input and display output (in UNIX terms, stdin and stdout).
  * Read and Write can be used directly on these, without first opening
@@ -218,10 +220,7 @@ void Kill(SpaceId pid, char sig);
 int ForkExec(char *s);
 
 /*! \brief Dynamically allocate n bytes */
-void* malloc(int n);
-
-/*! \brief De-allocate the dynamic block */
-void free(void* block_malloced);
+void *Sbrk(size_t size);
 
 #endif // IN_USER_MODE
 

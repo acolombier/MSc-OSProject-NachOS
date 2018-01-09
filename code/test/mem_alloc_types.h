@@ -16,7 +16,7 @@
     //~ int block_size;
     //~ struct memory_block_free *next;
     //~ /* ...*/
-//~ } mem_bfree_t; 
+//~ } mem_bfree_t;
 
 /* Structure declaration for an allocated block */
 //~ typedef mem_bfree_t mem_balloc_t;
@@ -32,7 +32,6 @@ typedef struct memory_block{
      unsigned char flag;
     /* ...*/
 } mem_block;
-
 
 
 #endif
