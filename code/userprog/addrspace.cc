@@ -346,10 +346,13 @@ void AddrSpace::appendThread (Thread* t){
 			pageTable[ADDRSPACE_PAGES_SIZE - i - (stackNbPages * (countThread() - 1)) - 1].physicalPage(frameprovider->GetEmptyFrame());
 		}
 		DEBUG ('t', "Stack allocated for thread ID #%d\n", t->tid());
-	} else if (countThread() == MAX_THREADS)
+	} else if (countThread() == MAX_THREADS){
 		DEBUG ('t', "Maximun threads number reached\n");
-	else
+		t->space = NULL;
+	} else{
 		DEBUG ('t', "No more page free to hold a thread stack.\n");
+		t->space = NULL;
+	}
 }
 /*!
  * Remove a Thread to the address space, and notify the waiting Threads
@@ -444,7 +447,7 @@ int AddrSpace::join(SpaceId s_pid, int result_code_pnt) {
 	addrspace_bundle_t* a_bundle = INC_REF(s_pid);
 	if (!a_bundle){
 		DEBUG('c', "JoiningProcess: %d does not exist\n", s_pid);
-		return 0;
+		return -1;
 	}
 		
 	AddrSpace* process_to_join = a_bundle->object;	
