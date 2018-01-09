@@ -90,7 +90,7 @@ ExceptionHandler (ExceptionType which)
 				// the prog shouldn't exit while the thread is still running
 				// if it has exited before; then nothing happens here
 				// otherwise the halting of the main is made clean
-				
+
 				do_UserHalt();
 				break;
 			}
@@ -193,7 +193,7 @@ ExceptionHandler (ExceptionType which)
 				/*! \todo Handle a return code for thread exit  */
 				if (currentThread->space->countThread() > 1)
 					do_UserThreadExit(reg4);
-				else 
+				else
 					do_UserProcessExit(reg4);
 				break;
 			}
@@ -228,7 +228,7 @@ ExceptionHandler (ExceptionType which)
 				/*! \todo Implementation */
 				break;
 			}
-			
+
 			case SC_ForkExec: {
 				DEBUG('c', "ForkExec syscall, initiated by user program.\n");
 
@@ -239,23 +239,19 @@ ExceptionHandler (ExceptionType which)
 					DEBUG('c', "Unable to open file %s\n", filename);
 					machine->WriteRegister(2, 0);
 					break;
-				}	
-				delete [] filename;			
+				}
+				delete [] filename;
 				returnvalue = do_UserProcessCreate(executable, reg6);
-				machine->WriteRegister(2, returnvalue);			
-				
+				machine->WriteRegister(2, returnvalue);
+
 				break;
 			}
-			
-			case SC_Malloc: {
-				DEBUG('c', "Malloc syscall on %p, initiated by user program.\n", reg4);
+
+			case SC_Sbrk: {
+				DEBUG('c', "Sbrk syscall to move brk of %p, initiated by user program.\n", reg4);
 				/*! \todo Implementation */
-				break;
-			}
-			
-			case SC_Free: {
-				DEBUG('c', "Free syscall on %p, initiated by user program.\n", reg4);
-				/*! \todo Implementation */
+				returnvalue = currentThread->space->Sbrk(reg4);
+				machine->WriteMem(reg4, 11, returnvalue);
 				break;
 			}
 

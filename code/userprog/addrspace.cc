@@ -1,9 +1,9 @@
-/*! 
+/*!
 //      Routines to manage address spaces (executing user programs).
 //
 //      In order to run a user program, you must:
 //
-//      1. link with the -N -T 0 option 
+//      1. link with the -N -T 0 option
 //      2. run coff2noff to convert the object file to Nachos format
 //              (Nachos object code format is essentially just a simpler
 //              version of the UNIX executable object code format)
@@ -12,7 +12,7 @@
 //              don't need to do this last step)
  */
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
@@ -25,7 +25,7 @@
 
 //----------------------------------------------------------------------
 // SwapHeader
-//      Do little endian to big endian conversion on the bytes in the 
+//      Do little endian to big endian conversion on the bytes in the
 //      object file header, in case the file was generated on a little
 //      endian machine, and we're now running on a big endian machine.
 //----------------------------------------------------------------------
@@ -61,10 +61,10 @@ static void ReadAtVirtual(OpenFile *executable, int virtualaddr,
 	TranslationEntry *pageTable,unsigned numPages){
     char* buf = new char[numBytes];
     numBytes = executable->ReadAt(buf, numBytes, position);
-    
+
     for (int i = 0; i < numBytes; i++)
 		machine->WriteMem(virtualaddr + i, 1, buf[i]);
-		
+
     delete [] buf;
 }
 
@@ -80,7 +80,7 @@ Lock* AddrSpace::_ADDR_SPACE_LOCK = new Lock("AddrSpace");
 //
 //      Assumes that the object code file is in NOFF format.
 //
-//      First, set up the translation from program memory to physical 
+//      First, set up the translation from program memory to physical
 //      memory.  For now, this is really simple (1:1), since we are
 //      only uniprogramming, and we have a single unsegmented page table
 //
@@ -92,26 +92,26 @@ AddrSpace::AddrSpace (OpenFile * executable):
 {
 	AddrSpace::_ADDR_SPACE_LOCK->Acquire();
 	mPid = ++AddrSpace::_LAST_PID;
-	
+
 	addrspace_bundle_t* a_bundle = new addrspace_bundle_t;
-	
+
 	a_bundle->object = this;
 	a_bundle->pid = mPid;
 	a_bundle->result_code = 0;
-	
+
 	AddrSpace::_SPACE_LIST->Append(a_bundle);
-	
+
 	AddrSpace::_ADDR_SPACE_LOCK->Release();
 	INC_REF(pid());
 	AddrSpace::_ADDR_SPACE_LOCK->Acquire();
-	
+
 	ListElement* e = AddrSpace::_SPACE_LIST->getFirst();
-	
+
 	do {
 		DEBUG('c', "ListProcess: current is %d\n", ((AddrSpace*)e->item)->pid());
 	} while ((e = e->next));
 	AddrSpace::_ADDR_SPACE_LOCK->Release();
-	
+
     NoffHeader noffH;
     unsigned int i, size;
 
@@ -127,7 +127,7 @@ AddrSpace::AddrSpace (OpenFile * executable):
 
 	unsigned int ro_code = divRoundUp(noffH.code.size + noffH.initData.size, PageSize),
 		rw_code = divRoundUp(noffH.uninitData.size, PageSize);
-	
+
     numPages = ro_code + rw_code;
     size = numPages * PageSize;
 
@@ -135,37 +135,37 @@ AddrSpace::AddrSpace (OpenFile * executable):
     // to run anything too big --
     // at least until we have
     // virtual memory
-    
+
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
 	   numPages, size);
 
-	// first, set up the translation 
+	// first, set up the translation
     pageTable = new TranslationEntry[ADDRSPACE_PAGES_SIZE];
     numPages = ADDRSPACE_PAGES_SIZE;
-    
+
     for (i = 0; i < ADDRSPACE_PAGES_SIZE; i++)
 		pageTable[i].virtualPage(i);
-		
+
     for (i = 0; i < ro_code + rw_code; i++){
 		pageTable[i].setValid();
 		pageTable[i].physicalPage(frameprovider->GetEmptyFrame());
 	}
     mBrk = size - 1;
-    
+
     RestoreState();
 
 // then, copy in the code and data segments into memory
     if (noffH.code.size > 0) {
 		DEBUG ('a', "Initializing code segment, at 0x%x, size %d\n",
 		noffH.code.virtualAddr, noffH.code.size);
-		
+
 		ReadAtVirtual(executable, noffH.code.virtualAddr, noffH.code.size,
 				noffH.code.inFileAddr, pageTable, numPages);
     }
     if (noffH.initData.size > 0) {
 		DEBUG ('a', "Initializing data segment, at 0x%x, size %d\n",
 		noffH.initData.virtualAddr, noffH.initData.size);
-		
+
 		ReadAtVirtual(executable, noffH.initData.virtualAddr, noffH.initData.size,
 				noffH.initData.inFileAddr, pageTable, numPages);
 	}
@@ -185,12 +185,12 @@ AddrSpace::~AddrSpace ()
   // LB: Missing [] for delete
   // delete pageTable;
 	ASSERT(countThread() == 0);
-	
+
     for (unsigned int i = 0; i < ADDRSPACE_PAGES_SIZE; i++)
 		if (pageTable[i].valid())
 			frameprovider->ReleaseFrame(pageTable[i].physicalPage());
-			
-	DEBUG('a', "Deleting pageTable after releasing frame.\n");		
+
+	DEBUG('a', "Deleting pageTable after releasing frame.\n");
 	delete [] pageTable;
 
 	AddrSpace::_ADDR_SPACE_LOCK->Acquire();
@@ -200,11 +200,11 @@ AddrSpace::~AddrSpace ()
 	while (this != ((addrspace_bundle_t*)e->item)->object && (e = e->next)) {}
 
 	((addrspace_bundle_t*)e->item)->object = nullptr;
-	
+
 	AddrSpace::_ADDR_SPACE_LOCK->Release();
 	DEC_REF(pid());
 	AddrSpace::_ADDR_SPACE_LOCK->Acquire();
-	
+
 	// Waking up waiting threads from other process
 	DEBUG ('t', "%d thread(s) were waiting this space to finish, notifying...\n", mThreadsWaiting->size());
     Thread* t;
@@ -212,13 +212,13 @@ AddrSpace::~AddrSpace ()
 		DEBUG ('t', "Waking up thread %s#%d from process %d...\n", t->getName(), t->tid(), t->space->pid());
 		scheduler->ReadyToRun(t);
 	}
-	
-	DEBUG('a', "Deleting list of waiting threads after waking them up.\n");		
+
+	DEBUG('a', "Deleting list of waiting threads after waking them up.\n");
 	delete mThreadsWaiting;
-	
-	DEBUG('a', "Deleting list of threads as no one is here anymore.\n");		
+
+	DEBUG('a', "Deleting list of threads as no one is here anymore.\n");
 	delete mThreadList;
-	
+
 	AddrSpace::_ADDR_SPACE_LOCK->Release();
   // End of modification
 }
@@ -226,12 +226,12 @@ AddrSpace::~AddrSpace ()
 /*!
  * \param the pid of the space
  * \return the corresponding bundle
- */   
+ */
 addrspace_bundle_t* AddrSpace::INC_REF(SpaceId pid){
 	AddrSpace::_ADDR_SPACE_LOCK->Acquire();
 	ListElement* e = _SPACE_LIST->getFirst();
 	while (pid != ((addrspace_bundle_t*)e->item)->pid && (e = e->next)) {}
-	
+
 	if (!e || !e->item){
 		AddrSpace::_ADDR_SPACE_LOCK->Release();
 		return nullptr;
@@ -244,13 +244,13 @@ addrspace_bundle_t* AddrSpace::INC_REF(SpaceId pid){
 
 /*!
  * \param the pid of the space
- */  
+ */
 void AddrSpace::DEC_REF(SpaceId pid){
 	_ADDR_SPACE_LOCK->Acquire();
-	
+
 	ListElement* e = _SPACE_LIST->getFirst();
 	while (pid != ((addrspace_bundle_t*)e->item)->pid && (e = e->next)) {}
-	
+
 	if (!e->item){
 		_ADDR_SPACE_LOCK->Release();
 		return;
@@ -267,7 +267,7 @@ void AddrSpace::DEC_REF(SpaceId pid){
 		delete a_bundle;
 	}
 	_ADDR_SPACE_LOCK->Release();
-	
+
 }
 
 //----------------------------------------------------------------------
@@ -299,7 +299,7 @@ AddrSpace::InitRegisters ()
     // Set the stack register to the end of the address space, where we
     // allocated the stack; but subtract off a bit, to make sure we don't
     // accidentally reference off the end!
-    
+
     machine->WriteRegister (StackReg, (ADDRSPACE_PAGES_SIZE * PageSize) - (UserStackSize * (countThread() - 1)) - 16);
     DEBUG ('a', "Initializing stack register to %d for thread #%d\n",
 	   (ADDRSPACE_PAGES_SIZE * PageSize) - (UserStackSize * (countThread() - 1)) - 16, currentThread->tid());
@@ -315,29 +315,29 @@ AddrSpace::InitRegisters ()
 
 void AddrSpace::SaveState (){
 }
-	
+
 /*!
  * Add a Thread to the address space
- * 
+ *
  * \param t freshly created thread
- * 
+ *
  */
-void AddrSpace::appendThread (Thread* t){	
+void AddrSpace::appendThread (Thread* t){
 	unsigned int stackNbPages = divRoundUp(UserStackSize, PageSize);
 	if (countThread() < MAX_THREADS && mBrk < (ADDRSPACE_PAGES_SIZE * PageSize) - (UserStackSize * (countThread() + 1)) && frameprovider->NumAvailFrame() >= stackNbPages){
 		t->space = this;
 		t->setTID(lastTID++);
 
 		thread_bundle_t* t_bundle = new thread_bundle_t;
-		
+
 		t_bundle->object = t;
 		t_bundle->result_code = 0;
 		t_bundle->tid = t->tid();
 		t_bundle->stack_first_page = ADDRSPACE_PAGES_SIZE - (stackNbPages * (countThread() + 1));
-		
+
 		mThreadList->Append(t_bundle);
 		inc_ref_thread(t->tid());
-		
+
 		DEBUG ('a', "New thread mapped in the space as ID #%d\n", t->tid());
 
 		for (unsigned int i = 0; i < stackNbPages; i++){
@@ -353,14 +353,14 @@ void AddrSpace::appendThread (Thread* t){
 }
 /*!
  * Remove a Thread to the address space, and notify the waiting Threads
- * 
+ *
  * \param t freshly created thread
- * 
+ *
  * */
 void AddrSpace::removeThread(Thread* t, int result_code){
 	ListElement* e = mThreadList->getFirst();
 	while (t != ((thread_bundle_t*)e->item)->object && (e = e->next)) {}
-	
+
 	DEBUG('t', "Thread #%d has %sbeen found\n", t->tid(), (e->item ? "": "NOT "));
 	if (!e->item)
 		return;
@@ -379,24 +379,24 @@ void AddrSpace::removeThread(Thread* t, int result_code){
 	if (countThread() == 0){ //No more thread, this result code is the space result code
 		DEBUG('t', "Thread #%d is the last one, its result code %d will be the process one\n", t->tid(), result_code);
 		_ADDR_SPACE_LOCK->Acquire();
-		
+
 		e = _SPACE_LIST->getFirst();
 		while (this != ((addrspace_bundle_t*)e->item)->object && (e = e->next)) {}
 
 		((addrspace_bundle_t*)e->item)->result_code = result_code;
-		
+
 		_ADDR_SPACE_LOCK->Release();
 	}
-		
+
 
 	dec_ref_thread(t->tid());
 }
 
 /*!
  * Append a Thread from another space, and notify the waiting Threads when it will be deleted
- * 
+ *
  * \param t the waiting thread
- * 
+ *
  * */
 void AddrSpace::appendToJoin(Thread*t) {
 	DEBUG ('t', "Thread %s#%d from process %d is joining the process...\n", t->getName(), t->tid(), t->space->pid());
@@ -416,7 +416,7 @@ unsigned int AddrSpace::countThread() const {
 
 unsigned int AddrSpace::ADDR_SPACE_COUNT() {
 	_ADDR_SPACE_LOCK->Acquire();
-	
+
 	int cnt = 0;
 	ListElement* e = _SPACE_LIST->getFirst();
 	while (e){
@@ -424,32 +424,32 @@ unsigned int AddrSpace::ADDR_SPACE_COUNT() {
 			cnt++;
 		e = e->next;
 	}
-	
+
 	_ADDR_SPACE_LOCK->Release();
-	
+
 	return cnt;
 }
 
 /*!
  * Block the current thread related to this space, until the given AddrSpace is deleted
- * 
+ *
  * \param pid The space ID
- * 
+ *
  * */
 int AddrSpace::join(SpaceId s_pid, int result_code_pnt) {
-#ifdef USER_PROGRAM		
+#ifdef USER_PROGRAM
 	ASSERT(pid() != s_pid);
 	ASSERT(currentThread->space == this);
-	
+
 	addrspace_bundle_t* a_bundle = INC_REF(s_pid);
 	if (!a_bundle){
 		DEBUG('c', "JoiningProcess: %d does not exist\n", s_pid);
 		return 0;
 	}
-		
-	AddrSpace* process_to_join = a_bundle->object;	
+
+	AddrSpace* process_to_join = a_bundle->object;
 	process_to_join->appendToJoin(currentThread); // Will be elected when the thread will finish
-	
+
     IntStatus oldLevel = interrupt->SetLevel (IntOff);	// disable interrupts
 	currentThread->Sleep ();
     (void) interrupt->SetLevel (oldLevel);	// re-enable interrupts
@@ -464,7 +464,7 @@ int AddrSpace::join(SpaceId s_pid, int result_code_pnt) {
 thread_bundle_t* AddrSpace::inc_ref_thread(tid_t tid){
 	ListElement* e = mThreadList->getFirst();
 	while (tid != ((thread_bundle_t*)e->item)->tid && (e = e->next)) {}
-	
+
 	if (!e->item)
 		return nullptr;
 
@@ -472,10 +472,10 @@ thread_bundle_t* AddrSpace::inc_ref_thread(tid_t tid){
 	return (thread_bundle_t*)e->item;
 }
 
-void AddrSpace::dec_ref_thread(tid_t tid){	
+void AddrSpace::dec_ref_thread(tid_t tid){
 	ListElement* e = mThreadList->getFirst();
 	while (tid != ((thread_bundle_t*)e->item)->tid && (e = e->next)) {}
-	
+
 	if (!e->item)
 		return;
 
@@ -494,10 +494,10 @@ void AddrSpace::dec_ref_thread(tid_t tid){
 
 /*!
  * Get a thread by is ID on the space
- * 
+ *
  * \param tid the thread id
  * \return the thread matching with this id
- * 
+ *
  * */
 Thread* AddrSpace::getThread(unsigned int tid) {
 	ListElement* e = mThreadList->getFirst();
@@ -508,16 +508,16 @@ Thread* AddrSpace::getThread(unsigned int tid) {
 
 /*!
  * Allocate new page to a process
- * 
+ *
  * \param the number of page required
- * \return a boolean saying wheather there is an error (false is success)
- * 
+ * \return the address of the previous break value
+ *
  * */
 int AddrSpace::Sbrk(unsigned int n){
 	unsigned int stackNbPages = divRoundUp(UserStackSize, PageSize);
 
 	unsigned int stackStart = (ADDRSPACE_PAGES_SIZE - (stackNbPages * countThread())) * PageSize;
-	
+
 	if (mBrk + (n * PageSize) >= stackStart){
 		DEBUG('a', "Trying to allocate new pages, but none available in the address space.\n");
 		return 0;
@@ -529,7 +529,7 @@ int AddrSpace::Sbrk(unsigned int n){
 	}
 
 	ASSERT(divRoundDown(mBrk, PageSize) == divRoundUp(mBrk, PageSize));
-	
+
 	for (unsigned int i = divRoundDown(mBrk, PageSize); i < divRoundDown(mBrk, PageSize) + n; i++){
 		if (pageTable[i].valid()) continue;
 		pageTable[i].setValid();
