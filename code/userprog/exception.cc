@@ -103,7 +103,7 @@ ExceptionHandler (ExceptionType which)
 
 			case SC_Join: {
 				DEBUG('c', "Join syscall, initiated by user program.\n");
-				returnvalue = (int)do_UserProcessJoin((SpaceId)reg4);
+				returnvalue = (int)do_UserProcessJoin((SpaceId)reg4, reg5);
 				machine->WriteRegister(2, returnvalue);
 				break;
 			}
@@ -192,15 +192,15 @@ ExceptionHandler (ExceptionType which)
 
 				/*! \todo Handle a return code for thread exit  */
 				if (currentThread->space->countThread() > 1)
-					do_UserThreadExit();
+					do_UserThreadExit(reg4);
 				else 
-					do_UserProcessExit(-1);
+					do_UserProcessExit(reg4);
 				break;
 			}
 
 			case SC_JoinUserThread: {
 				DEBUG('c', "UserThreadJoin syscall, initiated by user program.\n");
-				returnvalue = (int)do_UserThreadJoin((tid_t)reg4);
+				returnvalue = (int)do_UserThreadJoin((tid_t)reg4, reg5);
 				machine->WriteRegister(2, returnvalue);
 				break;
 			}

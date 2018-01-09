@@ -146,18 +146,24 @@ Thread::CheckOverflow ()
 #endif
 }
 
-int Thread::join(tid_t t) {
+int Thread::join(tid_t t, int result_code_pnt) {
 #ifdef USER_PROGRAM		
 	ASSERT(t != tid());
 	Thread* thread_to_join = space->getThread(t);
 	if (!thread_to_join)
 		return -1; // It does not exit (or not anymore)
-		
+
+
+	thread_bundle_t* t_bundle = thread_to_join->space->inc_ref_thread(t);		
 	thread_to_join->appendToJoin(this); // Will be elected when the thread will finish
 	
     IntStatus oldLevel = interrupt->SetLevel (IntOff);	// disable interrupts
 	Sleep ();
     (void) interrupt->SetLevel (oldLevel);	// re-enable interrupts
+
+	if (result_code_pnt)
+		machine->WriteMem(result_code_pnt, 4, t_bundle->result_code);
+	space->dec_ref_thread(t);
 #endif
 	return NULL_TID;
 	
@@ -183,12 +189,12 @@ void Thread::appendToJoin(Thread*t) {
 
 //
 void
-Thread::Finish ()
+Thread::Finish (int result_code)
 {
     (void) interrupt->SetLevel (IntOff);
     ASSERT (this == currentThread);
 
-    DEBUG ('t', "Finishing thread #%d:\"%s\"\n", tid(), getName ());
+    DEBUG ('t', "Finishing thread #%d:\"%s\" with code %d\n", tid(), getName (), result_code);
 
     // LB: Be careful to guarantee that no thread to be destroyed 
     // is ever lost 
@@ -196,12 +202,13 @@ Thread::Finish ()
     // End of addition 
     
     Thread* t;
-    while ((t = (Thread*)mThreadsWaiting->Remove()))
+    while ((t = (Thread*)mThreadsWaiting->Remove())){
 		scheduler->ReadyToRun(t);
+	}
 
 #ifdef USER_PROGRAM		
 	if (space != nullptr){
-		space->removeThread(this);
+		space->removeThread(this, result_code);
 
 		if (!space->countThread()){
 			DEBUG ('a', "No more thread in this space, deleting...\n");

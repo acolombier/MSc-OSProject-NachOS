@@ -17,7 +17,6 @@
 #include "filesys.h"
 #include "system.h"
 #include "synch.h"
-#include "mem_alloc.h"
 
 /*!
  * \def UserStackSize Used macro for stack allocation
@@ -25,6 +24,23 @@
 #define UserStackSize		512	// increase this as necessary!
 
 class Thread;
+
+extern "C" {
+	typedef struct thread_bundle_struct {
+		Thread* object;
+		int result_code;
+		tid_t tid;
+		unsigned int stack_first_page;
+		unsigned int ref_cnt;
+	} thread_bundle_t;
+	
+	typedef struct addrspace_bundle_struct {
+		AddrSpace* object;
+		int result_code;
+		SpaceId pid;
+		unsigned int ref_cnt;
+	} addrspace_bundle_t;
+}
 
 class AddrSpace
 {
@@ -44,28 +60,47 @@ class AddrSpace
 	inline List* threadList() { return mThreadList; }
 
     void appendThread(Thread*);
-    void removeThread(Thread*);
+    void removeThread(Thread*, int result_code);
 
     int Sbrk(unsigned int n);
-
-    inline unsigned int countThread() const { return mThreadList->size(); }
-
+    
+    unsigned int countThread() const;
+    
     inline SpaceId pid() const { return mPid; }
     inline SpaceId ppid() const { return mPpid; }
-
-    inline void ppid(SpaceId arg_pid) { mPpid = arg_pid; }
-
-    inline void resultCode(int code) { mResultCode = code; }
-    inline int resultCode() const { return mResultCode; }
-
-    static unsigned int ADDR_SPACE_COUNT() { return AddrSpace::_SPACE_LIST->size(); }
+    
+    inline void ppid(SpaceId pid) { mPpid = pid; }
+    
+    static unsigned int ADDR_SPACE_COUNT();
+    
+    static addrspace_bundle_t* INC_REF(SpaceId);
+    static void DEC_REF(SpaceId);
 
     /*!
-     * Append a Thread waiting for this Thread to finish
+     * Append a Thread waiting for this process to finish
      * \param t The Thread which is sleeping, waiting to this one to finish
      */
     void appendToJoin(Thread*t);
-    int join(SpaceId pid);
+    
+    /*!
+     * Join the current process, with the other process
+     * \param pid The process to join
+     * \param result_code_pnt the pointer where to store the result code (optionnal)
+     */
+    int join(SpaceId pid, int result_code_pnt = 0);
+    
+    /*!
+     * Increase the reference counter of the bundle
+     * \param t The thread TID
+     * \return the bundle it refers to
+     */
+    thread_bundle_t* inc_ref_thread(tid_t tid);
+    
+    /*!
+     * Decrease the reference counter of the bundle
+     * \param t The thread TID
+     */
+    void dec_ref_thread(tid_t pid);
 
   private:
       TranslationEntry * pageTable;	// Assume linear page table translation
@@ -79,13 +114,13 @@ class AddrSpace
     SpaceId mPid;
     SpaceId mPpid;
     List* mThreadsWaiting;
-    int mResultCode;
 
   protected:
     static Lock* _ADDR_SPACE_LOCK;
 
     static SpaceId _LAST_PID;
     static List* _SPACE_LIST;
+    
     // address space
 };
 
