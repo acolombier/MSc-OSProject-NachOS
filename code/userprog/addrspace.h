@@ -69,7 +69,7 @@ class AddrSpace
     inline SpaceId pid() const { return mPid; }
     inline SpaceId ppid() const { return mPpid; }
     
-    inline void ppid(SpaceId pid) { mPpid = pid; }
+    inline void ppid(SpaceId arg_pid) { mPpid = arg_pid; }
     
     static unsigned int ADDR_SPACE_COUNT();
     
