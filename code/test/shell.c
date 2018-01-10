@@ -3,9 +3,10 @@
 
 int main (){
 	char cmd[128];
+	int result_code;
 	
     while (1){
-		PutString("nach_shell> ");
+		PutString("\x1B[32mnach_shell\x1B[31m>\033[0m ");
 		GetString(cmd, 128);
 
 		if (strcmp("exit", cmd) == 0)
@@ -23,7 +24,10 @@ int main (){
 				PutString(" running with the pid ");
 				PutInt(process);
 				PutChar('\n');
-				Join(process);
+				Join(process, &result_code);
+				PutString("Command exit with the code ");
+				PutInt(process);
+				PutChar('\n');
 			}
 		}
     }

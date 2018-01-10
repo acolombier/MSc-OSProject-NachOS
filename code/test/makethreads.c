@@ -1,6 +1,6 @@
 #include "syscall.h"
 
-void func(void *arg) {
+void* func(void *arg) {
     int i, n = (int) arg;
 
     PutString("\nIn func\n");
@@ -10,6 +10,7 @@ void func(void *arg) {
     }
 
     //~ UserThreadExit();
+	return NULL;
 }
 
 int main() {

@@ -48,18 +48,29 @@ class TranslationEntry {
 	inline bool dirty() const { return mFlag & DIRTY; }// This bit is set by the hardware every time the
 		// page is modified.
 		
-	inline void setValid(bool v) {
+	inline void valid(bool v) {
 		mFlag = (v ? mFlag | VALID : mFlag & ~VALID);
 	}
-	inline void setReadOnly(bool v) {
+	inline void setValid() { valid(true); }
+	inline void clearValid() { valid(false); }
+	
+	inline void readOnly(bool v) {
 		mFlag = (v ? mFlag | READ_ONLY : mFlag & ~READ_ONLY);
 	}
-	inline void setUse(bool v) {
+	inline void setReadOnly() { readOnly(true); }
+	inline void clearReadOnly() { readOnly(false); }
+	
+	inline void use(bool v) {
 		mFlag = (v ? mFlag | USE : mFlag & ~USE);
 	}
-	inline void setDirty(bool v) {
+	inline void setUse() { use(true); }
+	inline void clearUse() { use(false); }
+	
+	inline void dirty(bool v) {
 		mFlag = (v ? mFlag | DIRTY : mFlag & ~DIRTY);
 	}
+	inline void setDirty() { dirty(true); }
+	inline void clearDirty() { dirty(false); }
 	
 	inline void virtualPage(unsigned int p) {
 		mVirtualPage = p;

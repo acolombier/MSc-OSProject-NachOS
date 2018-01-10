@@ -245,9 +245,9 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
 	DEBUG('a', "*** frame %d > %d!\n", pageFrame, NumPhysPages);
 	return BusErrorException;
     }
-    entry->setUse(TRUE);		// set the use, dirty bits
+    entry->setUse();		// set the use, dirty bits
     if (writing)
-	entry->setDirty(TRUE);
+	entry->setDirty();
     *physAddr = pageFrame * PageSize + offset;
     ASSERT((*physAddr >= 0) && ((*physAddr + size) <= MemorySize));
     DEBUG('a', "phys addr = 0x%x\n", *physAddr);

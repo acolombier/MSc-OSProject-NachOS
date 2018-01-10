@@ -38,9 +38,9 @@ CXX=$($(TG)CXX)
 TARGET_ARCH?=$($(TG)TARGET_ARCH)
 TARGET_MACH?=$($(TG)TARGET_MACH)
 ASFLAGS+=$($(TG)ASFLAGS)
-CFLAGS+=$($(TG)CFLAGS)
+CFLAGS+=$($(TG)CFLAGS) -std=c99
 CXXFLAGS+=$($(TG)CXXFLAGS) -std=c++11
-CPPFLAGS+=$($(TG)CPPFLAGS) 
+CPPFLAGS+=$($(TG)CPPFLAGS)
 LDFLAGS+=$($(TG)LDFLAGS)
 LDLIBS+=$($(TG)LDLIBS)
 
@@ -88,7 +88,7 @@ lkcc_V_0 = @echo "  [$(TG_SPC)LINK CXX] $@      ($^)";
 
 c2n_V = $(c2n_V_$(V))
 c2n_V_ = $(c2n_V_$(DEFAULT_VERBOSITY))
-c2n_V_0 = @echo "  [NACHOS RELINK]      $@      ($<)"; >/dev/null 
+c2n_V_0 = @echo "  [NACHOS RELINK]      $@      ($<)"; >/dev/null
 
 ###########################################################################
 define nachos-kernel-rules # 1:flavor 2:prefix 3:target 4:CPPFLAGS
@@ -162,7 +162,7 @@ $3.coff: %.coff: $$(strip $$(call addprefix-dir,$$(call serie-get-PREFIX,$2),$$(
 .INTERMEDIATE: $$(patsubst %,%.coff,$3)
 
 $3: %: %.coff $$(topsrc_dir)/bin/coff2noff
-	$$(c2n_V)$$(topsrc_dir)/bin/coff2noff $$< $$@ && chmod +x $$@
+	$$(c2n_V) $$(topsrc_dir)/bin/coff2noff $$< $$@ && chmod +x $$@
 
 clean::
 	$$(RM) $3 $3.coff
@@ -270,8 +270,8 @@ define define-flavor # 1:name 2:features 3:sources 4:defines
 	$$(foreach g,$$(filter $$($$f_CONFLICTS),$$(flavor_$1_FEATURES)),\
 		$$(error flavor $1 cannot have feature "$$f" and feature "$$g"))\
   ))
-  flavor_$1_SOURCES=$$(sort $$(foreach f,$$(flavor_$1_FEATURES),$$($$f_SRC)) $3) 
-  flavor_$1_DEFINES=$$(foreach f,$$(flavor_$1_FEATURES),$$($$f_CPPFLAGS)) $4 
+  flavor_$1_SOURCES=$$(sort $$(foreach f,$$(flavor_$1_FEATURES),$$($$f_SRC)) $3)
+  flavor_$1_DEFINES=$$(foreach f,$$(flavor_$1_FEATURES),$$($$f_CPPFLAGS)) $4
   flavor_$1_INCDIRS=$$(sort $$(foreach f,$$(flavor_$1_FEATURES),$$($$f_INCDIRS)))
   #$$(warning flavor $1 defined with features: $$(flavor_$1_FEATURES))
   #$$(warning flavor $1 defined with sources: $$(flavor_$1_SOURCES))
@@ -299,8 +299,8 @@ serie-get-SFILES=$(foreach e,c S,$(patsubst %.$e,%.s,$(filter %.$e,$(call serie-
 serie-get-OSFILES=$(serie-get-OFILES) $(serie-get-SFILES)
 
 define define-serie # 1:serie_name 2:prefix 3:defines 4:incdirs
-  serie_$1_PREFIX=$2 
-  serie_$1_DEFINES=$3 
+  serie_$1_PREFIX=$2
+  serie_$1_DEFINES=$3
   serie_$1_INCDIRS=$4 userprog threads
 endef
 
@@ -332,4 +332,3 @@ $(foreach s,$(SERIES),\
 
 $(foreach f,$(sort $(UFLAVORS_LIST)),\
   $(eval $(call nachos-userprog-obj-rules,$f)))
-

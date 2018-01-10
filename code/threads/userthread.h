@@ -11,7 +11,7 @@
 extern tid_t do_UserThreadCreate(int f, int arg, int exit_handler);
 
 /*! Kernel part of the UserThreadExit syscall */
-extern void do_UserThreadExit(/*int code*/);
+extern void do_UserThreadExit(int code);
 
 /*! Kernel part of the UserThreadJoin syscall */
-extern int do_UserThreadJoin(tid_t tid);
+extern int do_UserThreadJoin(tid_t tid, int return_code_ptr);

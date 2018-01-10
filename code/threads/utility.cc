@@ -1,9 +1,9 @@
-// utility.cc 
-//      Debugging routines.  Allows users to control whether to 
+// utility.cc
+//      Debugging routines.  Allows users to control whether to
 //      print DEBUG statements, based on a command line argument.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
@@ -28,16 +28,16 @@
 #define EOL   "\033[0m"
 
 
-static const char *enableFlags = NULL;	// controls which DEBUG messages are printed 
+static const char *enableFlags = NULL;	// controls which DEBUG messages are printed
 
 //----------------------------------------------------------------------
 // DebugInit
-//      Initialize so that only DEBUG messages with a flag in flagList 
+//      Initialize so that only DEBUG messages with a flag in flagList
 //      will be printed.
 //
 //      If the flag is "+", we enable all DEBUG messages.
 //
-//      "flagList" is a string of characters for whose DEBUG messages are 
+//      "flagList" is a string of characters for whose DEBUG messages are
 //              to be enabled.
 //----------------------------------------------------------------------
 
@@ -77,29 +77,28 @@ DEBUG (char flag, const char *format, ...)
 	  // You will get an unused variable message here -- ignore it.
 	  switch (flag){
 		case 'l':
-		  printf(KRED);
+		  fprintf(stderr, KRED);
 		  break;
 		case 't':
-		  printf(KGRN);
+		  fprintf(stderr, KGRN);
 		  break;
 		case 'c':
-		  printf(KYEL);
+		  fprintf(stderr, KYEL);
 		  break;
 		case 'n':
 		  printf(KCYN);
 		  break;
 	  }
 	  va_start (ap, format);
-	  vfprintf (stdout, format, ap);
+	  vfprintf (stderr, format, ap);
 	  va_end (ap);
 	  switch (flag){
 		case 't':
 		case 'l':
 		case 'c':
-		case 'n':
-		  printf(EOL);
+		  fprintf(stderr, EOL);
 		  break;
 	  }
-	  fflush (stdout);
+	  fflush (stderr);
       }
 }
