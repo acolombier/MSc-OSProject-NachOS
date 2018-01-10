@@ -1,6 +1,7 @@
 #ifndef 	_MEM_ALLOC_H_
 #define 	_MEM_ALLOC_H_
 
+#define BEST_FIT
 
 #include "mem_alloc_types.h"
 

@@ -10,7 +10,7 @@
 
 #define NULL 0
 
-//~ #include "syscall.h"
+#include "syscall.h"
 
 //~ typedef struct sema_struct {
 	//~ void* internal;
@@ -60,6 +60,19 @@ int atoi(char* s){
 		k--;
 	}
 	return k ? -1 : i;
+}
+
+void *memcpy(void *dest, const void *src, size_t n){
+	char* out_ptr = (char*)dest, *in_ptr = (char*)src;
+	for (int i = 0; i < n; i++)
+		*(out_ptr + i) = *(in_ptr + n);
+	return dest;
+}
+void *memset(void *s, int c, size_t n){
+	char* out_ptr = (char*)s;
+	for (int i = 0; i < n; i++)
+		*(out_ptr + i) = (c >> ((i % sizeof(int) * 8))) & 0xFF;
+	return s;
 }
 
 #endif

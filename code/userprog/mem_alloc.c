@@ -1,4 +1,5 @@
 #include "syscall.h"
+#include "userlib.h"
 #include "mem_alloc.h"
 #include "mem_alloc_types.h"
 
