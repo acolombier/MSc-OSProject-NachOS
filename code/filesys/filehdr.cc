@@ -72,7 +72,12 @@ FileHeader::Allocate(BitMap *freeMap, int allocSize)
     unsigned int _last_extended_sector = divRoundDown(new_first_sector, AllocSector);
     int tot_sector__lloc = divRoundUp(data_to__lloc, SectorSize * AllocSector) + divRoundUp(data_to__lloc, SectorSize);
     
-    if (sector_to__lloc > 0 && freeMap->NumClear() < tot_sector__lloc){
+    if (divRoundDown(new_last_sector, AllocSector) == _last_extended_sector) // if we won't need an other extented sector, we correct the required value
+	tot_sector__lloc--;
+    
+    if ((sector_to__lloc > 0 && freeMap->NumClear() < tot_sector__lloc) || _last_extended_sector == NumDirect){
+	DEBUG('f', "The file can't be grown.\n"); 
+	numBytes = numSectors * SectorSize; // We give the max of it already has allocated for sector
 	_lock->Release();
 	return false;
     }
@@ -88,7 +93,14 @@ FileHeader::Allocate(BitMap *freeMap, int allocSize)
 	memset(sector, 0, SectorSize);
     }
     
+    bool is_full = false;
+    
     for (int i = new_first_sector; i < new_last_sector; i++){
+	if (divRoundDown(i, AllocSector) == NumDirect){
+	    DEBUG('f', "The file has allocated the maximun data.\n"); 
+	    is_full = true;
+	    break;
+	}
 	if (divRoundDown(i, AllocSector) > _last_extended_sector){
 	    if (sector_to__lloc < 0){ // Free...
 		freeMap->Clear(dataSectors[_last_extended_sector]);
@@ -111,7 +123,13 @@ FileHeader::Allocate(BitMap *freeMap, int allocSize)
 	    DEBUG('f', "Allocate %d a data sector %d in the table sector %d.\n", sector[i % AllocSector], i, _last_extended_sector);
 	}
     }
-    synchDisk->WriteSector(dataSectors[_last_extended_sector], (char*)sector);
+    if ((divRoundDown(new_last_sector, AllocSector) > _last_extended_sector || new_first_sector / AllocSector == divRoundDown(new_first_sector, AllocSector)) && sector_to__lloc < 0){ // Free...
+	freeMap->Clear(dataSectors[_last_extended_sector]);
+	DEBUG('f', "Clearing the unused extended entry %d => %d.\n", dataSectors[_last_extended_sector], _last_extended_sector);  
+    } else {
+	DEBUG('f', "Updating the extended entry %d => %d.\n", _last_extended_sector, dataSectors[_last_extended_sector]);
+	synchDisk->WriteSector(dataSectors[_last_extended_sector], (char*)sector);
+    }
     delete [] sector;
     
     numBytes = allocSize;
@@ -119,7 +137,7 @@ FileHeader::Allocate(BitMap *freeMap, int allocSize)
     
     _lock->Release();
     
-    return TRUE;
+    return !is_full;
 }
 
 //----------------------------------------------------------------------

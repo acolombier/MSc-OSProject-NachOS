@@ -64,6 +64,8 @@ Directory::~Directory()
 void
 Directory::FetchFrom(OpenFile *file)
 {
+    ASSERT(file->type() == (int)FileHeader::Directory);
+    
     mItself = file;
     
     file->Seek(0);
@@ -72,13 +74,15 @@ Directory::FetchFrom(OpenFile *file)
     table = (DirectoryEntry*)malloc(sizeof(DirectoryEntry) * tableSize); // So we can use realloc in a perfect way
     memset(table, 0, sizeof(DirectoryEntry) * tableSize);
     
-    ASSERT(file->type() == (int)FileHeader::Directory);
-    
     (void) file->Read((char *)&parent_sector, sizeof (int));
+    
+    DEBUG('f', "Current read directory has table of size %d\n", tableSize);
     
     for (int i = 0; i < tableSize; i++){
 	(void) file->Read((char *)&table[i].sector, sizeof(int));
-	(void) file->Read((char *)&table[i].namelen, sizeof(short));
+	DEBUG('f', "Current entry has sector at %d\n", table[i].sector);
+	(void) file->Read((char *)&table[i].namelen, sizeof(int));
+	DEBUG('f', "Current entry has name size of %d\n", table[i].namelen);
 	table[i].name = new char[table[i].namelen + 1];
 	(void) file->Read(table[i].name, table[i].namelen);
 	table[i].name[table[i].namelen] = '\0';
@@ -101,9 +105,8 @@ Directory::WriteBack(OpenFile *file)
     
     for (int i = 0; i < tableSize; i++){
 	(void) file->Write((char *)&table[i].sector, sizeof(int));
-	(void) file->Write((char *)&table[i].namelen, sizeof(short));
+	(void) file->Write((char *)&table[i].namelen, sizeof(int));
 	(void) file->Write(table[i].name, table[i].namelen);
-	DEBUG('F', "Writting entrie %d - %s\n", i, table[i].name);
     }
 }
 
@@ -119,7 +122,7 @@ int
 Directory::FindIndex(const char *name)
 {
     for (int i = 0; i < tableSize; i++)
-        if (!strncmp(table[i].name, name, table[i].namelen))
+        if (!strcmp(table[i].name, name))
 	    return i;
     return -1;		// name not in directory
 }
@@ -159,12 +162,15 @@ Directory::Add(const char *name, int newSector, BitMap* freeMap)
 { 
     if (FindIndex(name) == -1){
 	BitMap* bm = freeMap ? freeMap : fileSystem->bitmapTransaction();	
-	if (!mItself->header()->Allocate(bm, mItself->header()->FileLength() + strlen(name) + DirectoryEntryLen))
+	if (!mItself->header()->Allocate(bm, mItself->header()->FileLength() + strlen(name) + DirectoryEntryLen)){
+	    if (!freeMap) fileSystem->bitmapCommit(bm);
 	    return false;
+	}
 	if (!freeMap) fileSystem->bitmapCommit(bm);
 	
 	table = (DirectoryEntry*)realloc(table, ++tableSize * sizeof(DirectoryEntry));
 	table[tableSize - 1].name = new char[strlen(name) + 1];
+	table[tableSize - 1].namelen = strlen(name);
 	strcpy(table[tableSize - 1].name, name); 
 	table[tableSize - 1].sector = newSector;
 	return true;

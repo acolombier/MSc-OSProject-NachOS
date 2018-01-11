@@ -32,7 +32,16 @@ OpenFile::OpenFile(int sector, FileHeader* h):
     if (!h){
         hdr = new FileHeader;
         hdr->FetchFrom(sector);
-    }
+    } else
+        hdr->inc_ref();
+        
+    seekPosition = 0;
+}
+
+OpenFile::OpenFile(FileHeader* h):
+    hdr(h), headerSector(-1)
+{ 
+    hdr->inc_ref();        
     seekPosition = 0;
 }
 
@@ -162,13 +171,14 @@ OpenFile::WriteAt(const char *from, int numBytes, int position)
         DEBUG('f', "File need to be grown from %d to %d.\n", fileLength, position + numBytes);
         BitMap* bm = fileSystem->bitmapTransaction();
         if (!hdr->Allocate(bm, position + numBytes)){
-            DEBUG('F', "Can't realloc file from %d to %d. Trunking data.\n", fileLength, position + numBytes);
-            numBytes = fileLength - position;
+            DEBUG('F', "Can't realloc file from %d to %d. Trunking data.\n", hdr->FileLength(), position + numBytes);
+            numBytes = hdr->FileLength() - position;
+        } else {            
+            DEBUG('F', "Header has been written down at %d.\n", headerSector); 
         }
-        fileSystem->bitmapCommit(bm);
-        hdr->WriteBack(headerSector);
         fileLength = hdr->FileLength();
-        DEBUG('F', "Header has been written down at %d.\n", headerSector);            
+        fileSystem->bitmapCommit(bm);   
+        SaveHeader(); // It might has grown it size to the max it could
     }
     
     if ((position + numBytes) > fileLength)
@@ -216,3 +226,5 @@ OpenFile::Length()
 }
 
 int OpenFile::type() const { return (int)hdr->type(); }
+
+void OpenFile::SaveHeader() { ASSERT(headerSector); hdr->WriteBack(headerSector); }

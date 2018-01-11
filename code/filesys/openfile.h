@@ -64,6 +64,7 @@ class FileHeader;
 class OpenFile {
   public:
     OpenFile(int sector, FileHeader * hdr = nullptr);		// Open a file whose already have an used header
+    OpenFile(FileHeader * hdr = nullptr);		// Open a file whose already have an used header
     ~OpenFile();			// Close the file
 
     void Seek(int position); 		// Set the position from which to 
@@ -88,6 +89,16 @@ class OpenFile {
     int type() const;
     
     inline FileHeader* header() const { return hdr; }
+    
+    /*!
+     * Write back the FileHeader to the disk. Careful! sector must have been setted when initialised
+     */
+    void SaveHeader();
+    
+    /*!
+     * Get the header sector of this file.
+     */
+    inline int sector() { return headerSector; }
     
   private:
     FileHeader *hdr;			// Header for this file 

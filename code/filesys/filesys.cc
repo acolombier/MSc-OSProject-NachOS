@@ -99,9 +99,10 @@ FileSystem::FileSystem(bool format):
     
     if (format) {
         BitMap *freeMap = new BitMap(NumSectors);
-        Directory *directory = new Directory;
+        Directory *directory = new Directory;        
+        OpenFile* rootDirectory;
         FileHeader *mapHdr = new FileHeader;
-        FileHeader *dirHdr = new FileHeader(FileHeader::Directory);
+        rootHeader = new FileHeader(FileHeader::Directory);
 
         DEBUG('F', "Formatting the file system.\n");
 
@@ -114,7 +115,7 @@ FileSystem::FileSystem(bool format):
         // of the directory and bitmap files.  There better be enough space!
 
         ASSERT(mapHdr->Allocate(freeMap, FreeMapFileSize));
-        ASSERT(dirHdr->Allocate(freeMap, 2 * sizeof(int)));
+        ASSERT(rootHeader->Allocate(freeMap, 2 * sizeof(int)));
 
         // Flush the bitmap and directory FileHeaders back to disk
         // We need to do this before we can "Open" the file, since open
@@ -123,14 +124,14 @@ FileSystem::FileSystem(bool format):
 
         DEBUG('F', "Writing headers back to disk.\n");
         mapHdr->WriteBack(FreeMapSector);    
-        dirHdr->WriteBack(DirectorySector);
 
         // OK to open the bitmap and directory files now
         // The file system operations assume these two files are left open
         // while Nachos is running.
 
         freeMapFile = new OpenFile(FreeMapSector);
-        directoryFile = new OpenFile(DirectorySector);
+        
+        rootDirectory = new OpenFile(DirectorySector, rootHeader);
 
         // Once we have the files "open", we can write the initial version
         // of each file back to disk.  The directory at this point is completely
@@ -140,63 +141,67 @@ FileSystem::FileSystem(bool format):
 
         DEBUG('F', "Writing bitmap and directory back to disk.\n");
         freeMap->WriteBack(freeMapFile);     // flush changes to disk
-        directory->WriteBack(directoryFile);
+        
+        directory->WriteBack(rootDirectory);
+        rootHeader->WriteBack(DirectorySector);        
 
         if (DebugIsEnabled('f')) {
             freeMap->Print();
             directory->Print();
 
-            delete freeMap; 
-            delete directory; 
             mapHdr->dec_ref(); 
-            dirHdr->dec_ref();
         }
+        delete freeMap;
+        delete rootDirectory;
+		delete directory; 
     } else {
     // if we are not formatting the disk, just open the files representing
     // the bitmap and directory; these are left open while Nachos is running
         freeMapFile = new OpenFile(FreeMapSector);
-        directoryFile = new OpenFile(DirectorySector);
+        rootHeader = new FileHeader(FileHeader::Directory);
+        rootHeader->FetchFrom(DirectorySector);
     }
 }
 
-int FileSystem::walkThrough(int* directory_sector, const char* ro_name){    
-    OpenFile* directory_descriptor = directoryFile;
+int FileSystem::walkThrough(OpenFile** directory_file, const char* ro_name){    
+    *directory_file = new OpenFile(DirectorySector, rootHeader);
     Directory* directory = nullptr;
     int sector = DirectorySector;
     
     char* name = new char[strlen(ro_name) + 1];
     strcpy(name, ro_name);
     
-    *directory_sector = 0; // By default, we did not found the directory
+    //~ *directory_header = nullptr; // By default, we did not found the directory
     
     const char *element_name = strtok(name, DELIMITER);
 	
 	while( element_name != NULL ) {			
 		if (directory) delete directory;	
 		directory = new Directory;
-		directory->FetchFrom(directory_descriptor);
+		directory->FetchFrom(*directory_file);
 		
 		if ((sector = directory->Find(element_name)) == -1){
 			delete directory;
-			if (directory_descriptor != directoryFile) delete directory_descriptor;
+			delete *directory_file;
+			*directory_file = nullptr;
 			return E_NOTFOUND;
 		} else {	
-			if (directory_descriptor != directoryFile) delete directory_descriptor;		
-			directory_descriptor = new OpenFile(sector);
-			if (directory_descriptor->type() != (int)FileHeader::Directory){
+			delete *directory_file;		
+			*directory_file = new OpenFile(sector);
+			DEBUG('F', "Walking in %d", sector);
+			if ((*directory_file)->type() != (int)FileHeader::Directory){
 				delete directory;
-				DEBUG('F', "The parent is of type %p", directory_descriptor->type());
-				delete directory_descriptor;
+				DEBUG('F', "The parent is of type %p", (*directory_file)->type());
+				delete *directory_file;
+				*directory_file = nullptr;
 				return E_NOTDIR;
 			} 
 		}	
 		
 		element_name = strtok(NULL, DELIMITER);
 	}
-	*directory_sector = sector;
 	
 	if (directory) delete directory;
-	if (directory_descriptor != directoryFile) delete directory_descriptor;
 	
 	delete [] name;
 	
@@ -235,11 +240,12 @@ int FileSystem::walkThrough(int* directory_sector, const char* ro_name){
 
 int FileSystem::Create(const char *name, int initialSize, FileHeader::Type type)
 {   
-    initialSize = (type == FileHeader::File ? initialSize : DirectoryFileSize);
+    initialSize = (type == FileHeader::File ? initialSize : sizeof(int) * 2);
     
     fs_lock->Acquire();
     
-    int parent_sector, success;
+    int success;
+    OpenFile *parent_element;
 
     DEBUG('F', "Creating file %s, size %d\n", name, initialSize);
     
@@ -248,18 +254,15 @@ int FileSystem::Create(const char *name, int initialSize, FileHeader::Type type)
     
     
     DEBUG('F', "Basename is %s\n", parent_name);
-	if ((success = walkThrough(&parent_sector, parent_name))){
+	if ((success = walkThrough(&parent_element, parent_name))){
 		delete [] element_name;
 		delete [] parent_name;
 		return success;
 	}	
 	
-	ASSERT(parent_sector != 0);
-	
 	int sector;
     FileHeader *hdr;	
     Directory *directory;
-    OpenFile *parent_element = new OpenFile(parent_sector);
     
 	ASSERT(parent_element->type() == (int)FileHeader::Directory);
 	
@@ -282,20 +285,22 @@ int FileSystem::Create(const char *name, int initialSize, FileHeader::Type type)
             hdr = new FileHeader(type);
             if (!hdr->Allocate(freeMap, initialSize))
                 success = E_DISK;    // no space on disk for data
-            else {  
-                success = E_SUCESS;
-                hdr->WriteBack(sector);       
+            else {   
+                hdr->WriteBack(sector);
+                directory->WriteBack(parent_element);
+                parent_element->SaveHeader();
+                
+                success = E_SUCESS;  
+                    
                 if (type == FileHeader::Directory){
 					OpenFile* new_file = new OpenFile(sector);
 					Directory* new_directory = new Directory;
 					new_directory->FetchFrom(new_file);
-					new_directory->parent(parent_sector);
+					new_directory->parent(parent_element->sector());
 					new_directory->WriteBack(new_file);
 					delete new_directory;
 					delete new_file;
 				}
-				directory->Add(element_name, sector, freeMap);
-                directory->WriteBack(parent_element);
                 freeMap->WriteBack(freeMapFile);
             }
 			hdr->dec_ref();
@@ -303,7 +308,7 @@ int FileSystem::Create(const char *name, int initialSize, FileHeader::Type type)
         delete freeMap;
     }
     
-    DEBUG('F', "filename is %sis now at %d\n", name, sector);
+    DEBUG('F', "filename is %s is now at %d\n", name, sector);
     
     delete directory;
     delete [] parent_name;
@@ -328,13 +333,12 @@ int FileSystem::Create(const char *name, int initialSize, FileHeader::Type type)
 OpenFile *
 FileSystem::Open(const char *name)
 { 
-    int sector;
     OpenFile *openFile = NULL;
 
     char *element_name, *parent_name;
     basename(name, &parent_name, &element_name);
     
-	if (walkThrough(&sector, parent_name)){
+	if (walkThrough(&openFile, parent_name)){
 		delete [] element_name;
 		delete [] parent_name;
 		return NULL;
@@ -363,8 +367,6 @@ FileSystem::Open(const char *name)
 		DEBUG('F', "No more room to open a file\n");
 		return nullptr;
 	}
-		
-	openFile = new OpenFile(sector);
 	
 	ASSERT(openFile->type() == (int)FileHeader::Directory);
 	
@@ -377,7 +379,7 @@ FileSystem::Open(const char *name)
 		openFile = nullptr;
 			
 		DEBUG('F', "Opening file %s in %s\n", element_name, parent_name);
-		sector = directory->Find(element_name); 
+		int sector = directory->Find(element_name); 
 		if (sector >= 0)        
 			openFile = new OpenFile(sector);    // name was found in directory 
 		else
@@ -394,7 +396,7 @@ FileSystem::Open(const char *name)
 	files_table[free_block].spaceid = new std::vector<int>;
 	files_table[free_block].spaceid->push_back(currentThread->space ? currentThread->space->pid() : 0);
 	files_table[free_block].file = openFile->header();
-	files_table[free_block].sector = sector;
+	files_table[free_block].sector = openFile->sector();
 	
 	fs_lock->Release();
     
@@ -453,8 +455,8 @@ int FileSystem::Move(const char *oldpath, const char *newpath)
 		}
 	}
 		
-    int old_parent_sector, new_parent_sector, sector, success;
-    OpenFile *openFile_1 = NULL, *openFile_2 = NULL;
+    int sector, success;
+    OpenFile *old_parent_file = NULL, *new_parent_file = NULL;
 
     char *prefix_name_old, *suffix_name_old;
     char *prefix_name_new, *suffix_name_new;
@@ -462,18 +464,18 @@ int FileSystem::Move(const char *oldpath, const char *newpath)
     basename(oldpath, &prefix_name_old, &suffix_name_old);
     
     DEBUG('F', "Move: looking for the old prefix %s\n", prefix_name_old);
-	if ((success = walkThrough(&old_parent_sector, prefix_name_old))){
+	if ((success = walkThrough(&old_parent_file, prefix_name_old))){
 		delete [] prefix_name_old;
 		delete [] suffix_name_old;
 		
 		fs_lock->Release();
 		return success;
 	}
-    DEBUG('F', "Move: oldpath found in %s at sector %d\n", prefix_name_old, old_parent_sector);
+    DEBUG('F', "Move: oldpath found in %s at sector %d\n", prefix_name_old, old_parent_file->sector());
 	
     basename(newpath, &prefix_name_new, &suffix_name_new);
 	
-	if ((success = walkThrough(&new_parent_sector, prefix_name_new))){
+	if ((success = walkThrough(&new_parent_file, prefix_name_new))){
 		delete [] prefix_name_old;
 		delete [] suffix_name_old;
 		delete [] prefix_name_new;
@@ -482,30 +484,19 @@ int FileSystem::Move(const char *oldpath, const char *newpath)
 		fs_lock->Release();
 		return success;
 	}
-    DEBUG('F', "Move: newpath found in %s at sector %d\n", prefix_name_new, new_parent_sector);
-		
-	openFile_1 = new OpenFile(old_parent_sector);
-	openFile_2 = new OpenFile(new_parent_sector);
-	
-	ASSERT(openFile_1->type() == (int)FileHeader::Directory);
-	ASSERT(openFile_2->type() == (int)FileHeader::Directory);
-	
+    DEBUG('F', "Move: newpath found in %s at sector %d\n", prefix_name_new, new_parent_file->sector());
+    
 	Directory *old_directory = new Directory, *new_directory = new Directory;
-	old_directory->FetchFrom(openFile_1);
-	new_directory->FetchFrom(openFile_2);
-	
-	delete openFile_1;
-	delete openFile_2;
+	old_directory->FetchFrom(old_parent_file);
+	new_directory->FetchFrom(new_parent_file);
 	
 	if ((sector = new_directory->Find(suffix_name_new)) != -1){
-		openFile_1 = new OpenFile(sector);
-		if (openFile_1->type() == (int)FileHeader::Directory){
-			new_directory->FetchFrom(openFile_1);
+		new_parent_file = new OpenFile(sector);
+		if (new_parent_file->type() == (int)FileHeader::Directory){
+			new_directory->FetchFrom(new_parent_file);
 			delete [] suffix_name_new;
 			suffix_name_new = suffix_name_old;
-			new_parent_sector = sector;
-			DEBUG('F', "%s is a directory at %d, moving %s inside\n", newpath, sector, suffix_name_old);
-			delete openFile_1;
+			DEBUG('F', "%s is a directory at %d, moving %s inside\n", newpath, new_parent_file->sector(), suffix_name_old);
 		} else {
 			delete [] prefix_name_old;
 			delete [] suffix_name_old;
@@ -534,16 +525,13 @@ int FileSystem::Move(const char *oldpath, const char *newpath)
 	
 	DEBUG('F', "Moving file %s in %s\n", oldpath, newpath);
 	
-	openFile_1 = new OpenFile(old_parent_sector);
-	openFile_2 = new OpenFile(new_parent_sector);
-	
 	DEBUG('F', "Comitting new path\n", oldpath, newpath);
 	fs_lock->Release();
 	if (!new_directory->Add(suffix_name_new, sector))
 		return E_DISK;
 	fs_lock->Acquire();
-	new_directory->WriteBack(openFile_2);
-	openFile_2->header()->WriteBack(new_parent_sector);
+	new_directory->WriteBack(new_parent_file);
+	new_parent_file->SaveHeader();
 	delete new_directory;
 	
 	DEBUG('F', "Comitting old path\n", oldpath, newpath);
@@ -551,12 +539,12 @@ int FileSystem::Move(const char *oldpath, const char *newpath)
 	if (!old_directory->Remove(suffix_name_old))
 		return E_DISK;
 	fs_lock->Acquire();
-	old_directory->WriteBack(openFile_1);
-	openFile_1->header()->WriteBack(old_parent_sector);
+	old_directory->WriteBack(old_parent_file);
+	old_parent_file->SaveHeader();
 	delete old_directory;
 	
-	delete openFile_1;
-	delete openFile_2;
+	delete old_parent_file;
+	delete new_parent_file;
 		
 	delete [] prefix_name_old;
 	delete [] prefix_name_new;
@@ -586,7 +574,7 @@ int FileSystem::Move(const char *oldpath, const char *newpath)
 bool
 FileSystem::Remove(const char *name)
 { 
-    int parent_sector, sector;
+    int sector;
     OpenFile *openFile = NULL;
     
 	DEBUG('F', "Deleting file %s\n", name);
@@ -603,7 +591,7 @@ FileSystem::Remove(const char *name)
     char *element_name = nullptr, *parent_name = nullptr;
     basename(name, &parent_name, &element_name);
     
-	if (walkThrough(&parent_sector, parent_name)){
+	if (walkThrough(&openFile, parent_name)){
 		delete [] element_name;
     
 		fs_lock->Release();
@@ -611,8 +599,6 @@ FileSystem::Remove(const char *name)
 		delete [] parent_name;
 		return false;
 	}
-		
-	openFile = new OpenFile(parent_sector);
 	
 	ASSERT(openFile->type() == (int)FileHeader::Directory);
 	
@@ -653,6 +639,7 @@ FileSystem::Remove(const char *name)
 		directory->Remove(element_name, freeMap);
 		freeMap->WriteBack(freeMapFile);        // flush to disk
 		directory->WriteBack(openFile);        // flush to disk
+		openFile->SaveHeader();
 		
 		fileHdr->dec_ref(); //implicit delete
 		delete freeMap;
@@ -717,9 +704,13 @@ void
 FileSystem::List()
 {
     Directory *directory = new Directory;
+    
+	OpenFile* rootDirectory = new OpenFile(DirectorySector, rootHeader);
 
-    directory->FetchFrom(directoryFile);
+    directory->FetchFrom(rootDirectory);
     directory->List();
+        
+	delete rootDirectory;
     delete directory;
 }
 
@@ -759,7 +750,8 @@ FileSystem::Print()
     FileHeader *bitHdr = new FileHeader;
     FileHeader *dirHdr = new FileHeader;
     BitMap *freeMap = new BitMap(NumSectors);
-    Directory *directory = new Directory;
+    Directory *directory = new Directory;    
+	OpenFile* rootDirectory = new OpenFile(DirectorySector, rootHeader);
 
     printf("Bit map file header:\n");
     bitHdr->FetchFrom(FreeMapSector);
@@ -772,9 +764,10 @@ FileSystem::Print()
     freeMap->FetchFrom(freeMapFile);
     freeMap->Print();
 
-    directory->FetchFrom(directoryFile);
+    directory->FetchFrom(rootDirectory);
     directory->Print();
 
+    delete rootDirectory;
     delete bitHdr;
     delete dirHdr;
     delete freeMap;

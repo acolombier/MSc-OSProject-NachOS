@@ -149,7 +149,7 @@ class FileSystem {
 					// the disk, so initialize the directory
     					// and the bitmap of free blocks.
 
-    int Create(const char *name, int initialSize, FileHeader::Type type = FileHeader::File);  	
+    int Create(const char *name, int initialSize = 0, FileHeader::Type type = FileHeader::File);  	
 					// Create a file (UNIX creat)
 					
 	int Move(const char *oldpath, const char *newpath);
@@ -195,14 +195,14 @@ class FileSystem {
   private:
    OpenFile* freeMapFile;		// Bit map of free disk blocks,
 					// represented as a file
-   OpenFile* directoryFile;		// "Root" directory -- list of 
+   FileHeader* rootHeader;		// "Root" directory -- list of 
 					// file names, represented as a file
 					
 	openfile_t* files_table;
 	
 	Lock* fs_lock;
 
-	int walkThrough(int* directory_sector, const char* name);
+	int walkThrough(OpenFile** directory_file, const char* name);
 	
 	
 };

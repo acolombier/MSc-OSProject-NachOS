@@ -262,15 +262,35 @@ QuickTest()
     printf("Trying to display in an other object\n");
     Print("/test_file_1");
     
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 120; i++)
 	file->Write(data, 1024);
     
     fileSystem->Close(file);
     
-    //~ if (!(errorCode = fileSystem->Remove("/test_file_1"))) {
-      //~ printf("Perf test: cannot remove the file\n");
-      //~ return;
-    //~ }
+    if ((errorCode = fileSystem->Create("/my_super_long_file_name"))) {
+      printf("Perf test: can't create /my_super_long_file_name: %d\n", errorCode);
+      return;
+    }
+    OpenFile* file2 = fileSystem->Open("/my_super_long_file_name");
+    
+    for (int i = 0; i < 80; i++)
+	file2->Write(data, 128);
+    
+    fileSystem->Close(file2);
+    if ((errorCode = fileSystem->Move("/my_super_long_file_name", "/" DirName "/" DirName "/"))) {
+      printf("Perf test: can't move file: %d\n", errorCode);
+      return;
+    }
+    
+    if (!(errorCode = fileSystem->Remove("/test_file_1"))) {
+      printf("Perf test: cannot remove the file\n");
+      return;
+    }
+    
+    if (!(errorCode = fileSystem->Remove("/" DirName "/" DirName "/my_super_long_file_name"))) {
+      printf("Perf test: cannot remove the file\n");
+      return;
+    }
 }
 
 void 
