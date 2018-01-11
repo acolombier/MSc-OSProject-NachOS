@@ -51,7 +51,7 @@ Directory::~Directory()
 { 
     for (int i = 0; i < tableSize; i++)
 	delete [] table[i].name;
-    delete [] table;
+    free(table);
 } 
 
 //----------------------------------------------------------------------
@@ -193,8 +193,9 @@ Directory::Remove(const char *name, BitMap* freeMap)
 
     if (i == -1)
 	return FALSE; 		// name not in directory
-	
-    delete [] table[tableSize - 1].name;
+	    
+	    
+    delete [] table[i].name;
     
     if (i != tableSize - 1){
 	table[i].name = table[tableSize - 1].name;

@@ -520,15 +520,18 @@ fd_bundle_t* AddrSpace::get_fd(int fd){
 
 int AddrSpace::store_fd(fd_bundle_t*bundle){
 	fd_lock->Acquire();
-	for (int i = 0; i < MAX_OPEN_FILE; i++){
+	int i;
+	for (i = 0; i < MAX_OPEN_FILE; i++){
 		if (mFdTable[i].object == nullptr){
 			memcpy(mFdTable + i, bundle, sizeof(fd_bundle_t));
-			mFdTable[i].fd = lastFD++;
+			delete bundle;
+			mFdTable[i].fd = ++lastFD;
 			break;
 		}
 	}
+	DEBUG('f', "Space#%d has allocated %p at %d\n", mPid, mFdTable[i].object, mFdTable[i].fd);
 	fd_lock->Release();
-	return bundle->fd;
+	return i < MAX_OPEN_FILE ? mFdTable[i].fd : 0;
 }
 
 void AddrSpace::del_fd(int fd){

@@ -45,6 +45,10 @@
 #define SC_ForkExec 23
 #define SC_Kill 24
 
+#define SC_Tell 25
+#define SC_Seek 26
+#define SC_Size 27
+
 #define ConsoleInput	0
 #define ConsoleOutput	1
 
@@ -132,7 +136,7 @@ void Create (char *name);
 OpenFileId Open (char *name);
 
 /* Write "size" bytes from "buffer" to the open file. */
-void Write (char *buffer, int size, OpenFileId id);
+int Write (char *buffer, int size, OpenFileId id);
 
 /*!
  * \brief Read "size" bytes from the open file into "buffer".
@@ -145,6 +149,29 @@ void Write (char *buffer, int size, OpenFileId id);
   you should always wait until you can return at least one character).
  */
 int Read (char *buffer, int size, OpenFileId id);
+
+
+/*!
+ * \brief Move the reading head of the file
+ * \param fd the file
+ * \param offset the value where the head should be
+ * \return Return the value after beeing set. Might be different if there was a range error
+ */
+int Seek (OpenFileId fd);
+
+/*!
+ * \brief Get the reading head position
+ * \param fd the file
+ * \return Return the value
+ */
+int Tell (OpenFileId fd, int offset);
+
+/*!
+ * \brief Get the file size of a file
+ * \param fd the file
+ * \return Return the file size
+ */
+int Size (OpenFileId fd);
 
 /* Close the file, we're done reading and writing to it. */
 void Close (OpenFileId id);

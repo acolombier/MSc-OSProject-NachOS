@@ -333,43 +333,42 @@ int FileSystem::Create(const char *name, int initialSize, FileHeader::Type type)
 OpenFile *
 FileSystem::Open(const char *name)
 { 
-    OpenFile *openFile = NULL;
+	OpenFile *openFile = NULL;
 
-    char *element_name, *parent_name;
-    basename(name, &parent_name, &element_name);
-    
+	char *element_name, *parent_name;
+	basename(name, &parent_name, &element_name);
+
 	if (walkThrough(&openFile, parent_name)){
 		delete [] element_name;
 		delete [] parent_name;
 		return NULL;
 	}
-    
-    fs_lock->Acquire();
-    
-    int free_block = -1;
-    for (int i = 0; i < MAX_OPEN_FILE; i++){
-		DEBUG('F', "At table %d: %s <?> %s/%s\n", i, files_table[i].pathname, parent_name, element_name);
+
+	fs_lock->Acquire();
+
+	int free_block = -1;
+	for (int i = 0; i < MAX_OPEN_FILE; i++){
+		DEBUG('F', "At table %d: %p <?> %s/%s\n", i, files_table[i].file, parent_name, element_name);
 		
 		if (files_table[i].pathname == nullptr || (files_table[i].file && strncmp(files_table[i].pathname, parent_name, strlen(parent_name)) == 0 && strcmp(files_table[i].pathname + strlen(parent_name) + 2, element_name) == 0)){
 			free_block = i;
 			break;
 		}
 	}
-	
 	if (files_table[free_block].pathname != nullptr){ // if free block actually corresponds to the same file already opened
 		files_table[free_block].spaceid->push_back(currentThread->space ? currentThread->space->pid() : 0);
 		fs_lock->Release();
 		return new OpenFile(files_table[free_block].sector, files_table[free_block].file);
 	}
-	
+
 	if (free_block < 0){
 		fs_lock->Release();
 		DEBUG('F', "No more room to open a file\n");
 		return nullptr;
 	}
-	
+
 	ASSERT(openFile->type() == (int)FileHeader::Directory);
-	
+
 	if (strlen(element_name)){
 		Directory *directory;
 		directory = new Directory;
@@ -378,29 +377,36 @@ FileSystem::Open(const char *name)
 		delete openFile;
 		openFile = nullptr;
 			
-		DEBUG('F', "Opening file %s in %s\n", element_name, parent_name);
 		int sector = directory->Find(element_name); 
-		if (sector >= 0)        
+		if (sector >= 0){
 			openFile = new OpenFile(sector);    // name was found in directory 
+            DEBUG('f', "File object is %p\n", openFile);
+        }
 		else
 			DEBUG('F', "File %s not found\n", name);
 		delete directory;
 	}
 	
-	files_table[free_block].pathname = new char[strlen(parent_name) + strlen(element_name) + 2];
-	strcpy(files_table[free_block].pathname, parent_name);
-	*(files_table[free_block].pathname + strlen(parent_name)) = '/';
-	strcpy(files_table[free_block].pathname + strlen(parent_name) + 1, element_name);
-    delete [] element_name;
-	delete [] parent_name;
-	files_table[free_block].spaceid = new std::vector<int>;
-	files_table[free_block].spaceid->push_back(currentThread->space ? currentThread->space->pid() : 0);
-	files_table[free_block].file = openFile->header();
-	files_table[free_block].sector = openFile->sector();
-	
+	if (openFile){
+		files_table[free_block].pathname = new char[strlen(parent_name) + strlen(element_name) + 2];
+		strcpy(files_table[free_block].pathname, parent_name);
+		*(files_table[free_block].pathname + strlen(parent_name)) = '/';
+		strcpy(files_table[free_block].pathname + strlen(parent_name) + 1, element_name);
+        
+		files_table[free_block].spaceid = new std::vector<SpaceId>;
+		files_table[free_block].spaceid->push_back(currentThread->space ? currentThread->space->pid() : 0);
+		files_table[free_block].file = openFile->header();
+		files_table[free_block].sector = openFile->sector();
+        
+        DEBUG('F', "Opening file %s in %s for %d: vector is at %p\n", element_name, strlen(parent_name) ? parent_name : DELIMITER, currentThread->space ? currentThread->space->pid() : -1, files_table[free_block].spaceid);
+		delete [] element_name;
+		delete [] parent_name;
+		
+	}
+
 	fs_lock->Release();
     
-    return openFile;                // return NULL if not found
+	return openFile;                // return NULL if not found
 }
 
 /*!
@@ -413,23 +419,25 @@ void FileSystem::Close(OpenFile* openFile){
     
     int free_block = -1;
     for (int i = 0; i < MAX_OPEN_FILE; i++){
-		if (files_table[i].file == openFile->header()){		    
-			std::vector<int>::iterator position = std::find(files_table[i].spaceid->begin(), files_table[i].spaceid->end(), currentThread->space ? currentThread->space->pid() : 0);
-			ASSERT(position != files_table[i].spaceid->end())
-			files_table[i].spaceid->erase(position);
-			free_block = i;
-			break;
-		}
-	}
-	if (files_table[free_block].spaceid->size() == 0){
-		delete [] files_table[free_block].pathname;
-		delete files_table[free_block].spaceid;
-		delete openFile;
-		memset(files_table + free_block, 0, sizeof(openfile_t));
-	}
-	
-	fs_lock->Release();
-	
+            if (files_table[i].file == openFile->header()){		    
+                    std::vector<SpaceId>::iterator position = 
+                        std::find(files_table[i].spaceid->begin(), 
+                                  files_table[i].spaceid->end(), 
+                                  currentThread->space ? currentThread->space->pid() : 0);
+                    ASSERT(position != files_table[i].spaceid->end())
+                    files_table[i].spaceid->erase(position);
+                    free_block = i;
+                    break;
+            }
+    }
+    if (free_block != -1 && files_table[free_block].spaceid->size() == 0){
+            delete [] files_table[free_block].pathname;
+            delete files_table[free_block].spaceid;
+            delete openFile;
+            memset(files_table + free_block, 0, sizeof(openfile_t));
+    }
+
+    fs_lock->Release();	
 }
 
 /*!

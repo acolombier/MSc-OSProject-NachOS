@@ -250,6 +250,30 @@ Kill:
     syscall
     j   $31
     .end Kill
+    
+     .globl Seek
+    .ent    Seek
+Seek:
+    addiu $2,$0,SC_Seek
+    syscall
+    j   $31
+    .end Seek
+    
+     .globl Tell
+    .ent    Tell
+Tell:
+    addiu $2,$0,SC_Tell
+    syscall
+    j   $31
+    .end Tell
+    
+     .globl Size
+    .ent    Size
+Size:
+    addiu $2,$0,SC_Size
+    syscall
+    j   $31
+    .end Size
 
 /* dummy function to keep gcc happy */
         .globl  __main

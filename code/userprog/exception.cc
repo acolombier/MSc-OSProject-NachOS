@@ -261,15 +261,17 @@ ExceptionHandler (ExceptionType which)
 				
 				fd_bundle_t* b = new fd_bundle_t;
 				b->pathname = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
-				b->object = fileSystem->Open (b->pathname);
+				b->object = fileSystem->Open(b->pathname);
 
-				if (b->pathname == NULL){
+				if (b->object == NULL){
 					DEBUG('c', "Unable to open file %s\n", b->pathname);
-					delete b->pathname;
+					delete [] b->pathname;
 					delete b;
 					machine->WriteRegister(2, 0);					
 					break;
 				} else {
+					DEBUG('c', "File is %p \n", b->object);
+					delete [] b->pathname;
 					int fd = currentThread->space->store_fd(b);
 					if (fd)
 						machine->WriteRegister(2, fd);	
@@ -281,13 +283,48 @@ ExceptionHandler (ExceptionType which)
 			}
 			
 			case SC_Read: {
-				DEBUG('c', "Read syscall on %p, initiated by user program.\n", reg4);
+				DEBUG('c', "Read syscall on %p, initiated by user program.\n", reg6);
 				/*! \todo Implementation */
+				
+				fd_bundle_t* b = currentThread->space->get_fd(reg6);
+				if (b){
+					char* buffer = new char[reg5];
+					machine->WriteRegister(2, ((OpenFile*)b->object)->Read(buffer, reg5));
+					copyStringToMachine(buffer, reg4, reg5);
+					delete [] buffer;
+				} else
+					machine->WriteRegister(2, 0);
+					
 				break;
 			}
 			
 			case SC_Write: {
 				DEBUG('c', "Write syscall on %p, initiated by user program.\n", reg4);
+				
+				fd_bundle_t* b = currentThread->space->get_fd(reg6);
+				if (b){
+					char* buffer = copyStringFromMachine(reg4, reg5);
+					machine->WriteRegister(2, ((OpenFile*)b->object)->Write(buffer, reg5));
+					delete [] buffer;
+				} else
+					machine->WriteRegister(2, 0);
+				break;
+			}
+			
+			case SC_Tell: {
+				DEBUG('c', "Tell syscall on %p, initiated by user program.\n", reg4);
+				/*! \todo Implementation */
+				break;
+			}
+			
+			case SC_Seek: {
+				DEBUG('c', "Seek syscall on %p, initiated by user program.\n", reg4);
+				/*! \todo Implementation */
+				break;
+			}
+			
+			case SC_Size: {
+				DEBUG('c', "Size syscall on %p, initiated by user program.\n", reg4);
 				/*! \todo Implementation */
 				break;
 			}
@@ -299,7 +336,6 @@ ExceptionHandler (ExceptionType which)
 				if (b){
 					fileSystem->Close((OpenFile*)b->object);
 					currentThread->space->del_fd(reg4);
-					delete b;
 				}
 				/*! \todo Implementation */
 				break;

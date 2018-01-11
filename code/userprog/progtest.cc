@@ -81,11 +81,12 @@ StartProcess (char *filename)
 		return;
 	}
     space = new AddrSpace (executable);
+    
+    fileSystem->Close (executable);		// close file
+    
     space->appendThread(currentThread);
     
     DEBUG('t', "The main thread is #%d\n", currentThread->tid());
-
-    delete executable;		// close file
 
     space->InitRegisters ();	// set the initial register values
     space->RestoreState ();	// load page table register

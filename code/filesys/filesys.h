@@ -130,7 +130,7 @@ extern "C" {
 		char* pathname;
 		FileHeader* file;
 		int sector;
-		std::vector<int>* spaceid;
+		std::vector<SpaceId>* spaceid;
 	} openfile_t;
 }
 
