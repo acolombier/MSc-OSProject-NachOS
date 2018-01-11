@@ -8,7 +8,9 @@
 #define TEMPO 1000
 #define MAXREEMISSIONS 5
 
-#define MaxPacketSize (MaxWireSize - sizeof(struct PacketHeader) - sizeof(struct TransferHeader))
+#define MaxMailSize (MaxWireSize - sizeof(struct PacketHeader) - sizeof(struct MailHeader))
+//  TODO: not good, miss things
+#define MaxMessageSize (MaxWireSize - sizeof(struct PacketHeader) - sizeof(struct TransferHeader))
 
 // The following class defines part of the message header.
 // This is prepended to the message by the RTFM, before the message
@@ -22,7 +24,6 @@ enum {
 
 class TransferHeader {
   public:
-    MailHeader mailHeader;
     char flags;
     int seqNumber;
 };
@@ -38,6 +39,12 @@ class Connection {
     int ReceiveFile(int fd, int fileSize);  // receive a file from a remote machine to a client machine
 
   private:
+    NetworkAddress toMachine;	// Destination machine ID
+    MailBoxAddress toMail;		// Destination mail box
+    PostOffice postOffice;
+    int localSeqNumber;
+    int remoteSeqNumber;
+
     int SendFixedSize(char *data);  // send a message of size == MaxPacketSize
     int ReceiveFixedSize(char *data);  // receive a message of size == MaxPacketSize
 };
