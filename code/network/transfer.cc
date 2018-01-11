@@ -2,7 +2,7 @@
 #include "post.h"
 
 /*
-Connection::Connection() {
+Connection::Connection(NetworkAddress to, MailBoxAddress mailbox) {
 
 }
 
@@ -11,24 +11,36 @@ Connection::~Connection() {
 }
  */
 
-int Connection::SendFixedSize(char *data) {
-    PacketHeader outPktHdr;
-    MailHeader outMailHdr;
+int Connection::SendFixedSize(char *data, char flags) {
+    PacketHeader outPktHdr, inPktHdr;
+    MailHeader outMailHdr, inMailHdr;
     TransferHeader outTrHdr;
-    char buffer[MaxMailSize]
+    char outBuffer[MaxMailSize], inBuffer[MaxMailSize];
+    int attempts = 0;
 
+    /* link + transfer layers */
     outPktHdr.to = toMachine;
 
-    outMailHdr.to = toMail;
+    outMailHdrdecouvert bancaire.to = toMail;
     outMailHdr.from = 1;
-    outMailHdr.length = sizeof(TransferHeader) + strlen(data) + 1;
+    outMailHdr.length = sizeof(struct TransferHeader) + strlen(data) + 1;
 
-    outTrHdr.flags = 0;
-    outTrHdr.seqNumber = ++localSeqNumber;
+    /* application layer */
+    outTrHdr.flags = flags;
 
-    postOffice->Send(outPktHdr, outMailHdr, )
+    /* concatenate TransferHeader and data */
+    memcpy(outBuffer, outTrHdr, sizeof(struct TransferHeader));
+    memcpy(outBuffer + sizeof(struct TransferHeader), data, MAX_MESSAGE_SIZE);
 
-    // recived ack
+    do {
+        postOffice->Send(outPktHdr, outMailHdr, outBuffer);
+
+        /* recieve acknowledgement */
+        postOffice->Receive(toMail, &inPktHdr, &inMailHdr, inBuffer);
+        attempts++;
+    while (!(dynamic_cast<TransferHeader *>(inBuffer)->flags & flags & ACK) &&
+           attemps < MAXREEMISSIONS);
+
 }
 
 /*
