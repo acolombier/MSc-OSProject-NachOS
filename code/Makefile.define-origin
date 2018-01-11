@@ -107,9 +107,6 @@ $(eval $(call define-flavor,threads,thread-test))
 ######### userprog
 $(eval $(call define-flavor,userprog,userprog filesys))
 
-# if file system done first!
-# $(eval $(call define-flavor,userprog,userprog filesys))
-
 ######### filesys
 $(eval $(call define-flavor,filesys,userprog filesys))
 

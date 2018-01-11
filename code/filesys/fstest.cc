@@ -170,7 +170,7 @@ Print(const char *name)
 static void _show_tree_worker(OpenFile* file, int level){
 	ASSERT(file->type() == (int)FileHeader::Directory);
 	
-	Directory* curr = new Directory(NumDirEntries);
+	Directory* curr = new Directory;
 	curr->FetchFrom(file);
 	
 	char* space = new char[level + 1];

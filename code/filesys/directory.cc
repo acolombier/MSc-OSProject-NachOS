@@ -25,6 +25,7 @@
 #include "filehdr.h"
 #include "filesys.h"
 #include "directory.h"
+#include "system.h"
 
 //----------------------------------------------------------------------
 // Directory::Directory
@@ -36,12 +37,9 @@
 //	"size" is the number of entries in the directory
 //----------------------------------------------------------------------
 
-Directory::Directory(int size):
-    parent_sector(0), mItself(nullptr) // By default, no parent, and ghost
+Directory::Directory():
+    tableSize(0), parent_sector(0), table(nullptr), mItself(nullptr)  // By default, no parent, and ghost
 {
-    table = new DirectoryEntry[size];
-    memset(table, 0, sizeof(DirectoryEntry) * size);
-    tableSize = size;
 }
 
 //----------------------------------------------------------------------
@@ -51,6 +49,8 @@ Directory::Directory(int size):
 
 Directory::~Directory()
 { 
+    for (int i = 0; i < tableSize; i++)
+	delete [] table[i].name;
     delete [] table;
 } 
 
@@ -65,9 +65,24 @@ void
 Directory::FetchFrom(OpenFile *file)
 {
     mItself = file;
+    
+    file->Seek(0);
+    (void) file->Read((char *)&tableSize, sizeof (int)); 
+    
+    table = (DirectoryEntry*)malloc(sizeof(DirectoryEntry) * tableSize); // So we can use realloc in a perfect way
+    memset(table, 0, sizeof(DirectoryEntry) * tableSize);
+    
     ASSERT(file->type() == (int)FileHeader::Directory);
-    (void) file->ReadAt((char *)&parent_sector, sizeof (int), 0);
-    (void) file->ReadAt((char *)table, tableSize * sizeof(DirectoryEntry), sizeof (int) + 0);
+    
+    (void) file->Read((char *)&parent_sector, sizeof (int));
+    
+    for (int i = 0; i < tableSize; i++){
+	(void) file->Read((char *)&table[i].sector, sizeof(int));
+	(void) file->Read((char *)&table[i].namelen, sizeof(short));
+	table[i].name = new char[table[i].namelen + 1];
+	(void) file->Read(table[i].name, table[i].namelen);
+	table[i].name[table[i].namelen] = '\0';
+    }
 }
 
 //----------------------------------------------------------------------
@@ -80,8 +95,16 @@ Directory::FetchFrom(OpenFile *file)
 void
 Directory::WriteBack(OpenFile *file)
 {
-    (void) file->WriteAt ((char *) &parent_sector, sizeof (int), 0);
-    (void) file->WriteAt((char *)table, tableSize * sizeof(DirectoryEntry), sizeof (int) + 0);
+    file->Seek(0);
+    (void) file->Write((char *)&tableSize, sizeof (int)); 
+    (void) file->Write((char *) &parent_sector, sizeof (int));
+    
+    for (int i = 0; i < tableSize; i++){
+	(void) file->Write((char *)&table[i].sector, sizeof(int));
+	(void) file->Write((char *)&table[i].namelen, sizeof(short));
+	(void) file->Write(table[i].name, table[i].namelen);
+	DEBUG('F', "Writting entrie %d - %s\n", i, table[i].name);
+    }
 }
 
 //----------------------------------------------------------------------
@@ -96,7 +119,7 @@ int
 Directory::FindIndex(const char *name)
 {
     for (int i = 0; i < tableSize; i++)
-        if (table[i].inUse && !strncmp(table[i].name, name, FileNameMaxLen))
+        if (!strncmp(table[i].name, name, table[i].namelen))
 	    return i;
     return -1;		// name not in directory
 }
@@ -132,21 +155,21 @@ Directory::Find(const char *name)
 //----------------------------------------------------------------------
 
 bool
-Directory::Add(const char *name, int newSector)
+Directory::Add(const char *name, int newSector, BitMap* freeMap)
 { 
-    if (FindIndex(name) != -1)
-	return FALSE;
-
-    for (int i = 0; i < tableSize; i++){
-        if (!table[i].inUse) {
-            table[i].inUse = TRUE;
-            strncpy(table[i].name, name, FileNameMaxLen); 
-            table[i].sector = newSector;
-	    return TRUE;
-	}
-    }
-    
-    return FALSE;	// no space.  Fix when we have extensible files.
+    if (FindIndex(name) == -1){
+	BitMap* bm = freeMap ? freeMap : fileSystem->bitmapTransaction();	
+	if (!mItself->header()->Allocate(bm, mItself->header()->FileLength() + strlen(name) + DirectoryEntryLen))
+	    return false;
+	if (!freeMap) fileSystem->bitmapCommit(bm);
+	
+	table = (DirectoryEntry*)realloc(table, ++tableSize * sizeof(DirectoryEntry));
+	table[tableSize - 1].name = new char[strlen(name) + 1];
+	strcpy(table[tableSize - 1].name, name); 
+	table[tableSize - 1].sector = newSector;
+	return true;
+    } else
+	return false;
 }
 
 //----------------------------------------------------------------------
@@ -158,13 +181,26 @@ Directory::Add(const char *name, int newSector)
 //----------------------------------------------------------------------
 
 bool
-Directory::Remove(const char *name)
+Directory::Remove(const char *name, BitMap* freeMap)
 { 
     int i = FindIndex(name);
 
     if (i == -1)
 	return FALSE; 		// name not in directory
-    table[i].inUse = FALSE;
+	
+    delete [] table[tableSize - 1].name;
+    
+    if (i != tableSize - 1){
+	table[i].name = table[tableSize - 1].name;
+	table[i].namelen = table[tableSize - 1].namelen;
+	table[i].sector = table[tableSize - 1].sector;	
+    }
+    table = (DirectoryEntry*)realloc(table, --tableSize * sizeof(DirectoryEntry));
+    
+    BitMap* bm = freeMap ? freeMap : fileSystem->bitmapTransaction();	
+    ASSERT(mItself->header()->Allocate(bm, mItself->header()->FileLength() - strlen(name) - DirectoryEntryLen));
+    if (!freeMap) fileSystem->bitmapCommit(bm);
+    
     return TRUE;	
 }
 
@@ -177,8 +213,7 @@ void
 Directory::List()
 {
     for (int i = 0; i < tableSize; i++)
-	if (table[i].inUse)
-	    printf("%s\n", table[i].name);
+	printf("%s\n", table[i].name);
 }
 
 //----------------------------------------------------------------------
@@ -193,22 +228,17 @@ Directory::Print()
     FileHeader *hdr = new FileHeader;
 
     printf("Directory contents:\n");
-    for (int i = 0; i < tableSize; i++)
-	if (table[i].inUse) {
-	    printf("Name: %s, Sector: %d\n", table[i].name, table[i].sector);
-	    hdr->FetchFrom(table[i].sector);
-	    hdr->Print();
-	}
+    for (int i = 0; i < tableSize; i++){
+	printf("Name: %s, Sector: %d\n", table[i].name, table[i].sector);
+	hdr->FetchFrom(table[i].sector);
+	hdr->Print();
+    }
     printf("\n");
     hdr->dec_ref();
 }
 
 int Directory::count() const {
-    int c = 2; //(itself + its parent)
-    for (int i = 0; i < tableSize; i++)
-	if (table[i].inUse)
-	    c++;
-    return c;
+    return tableSize + 2;
 }
 
 OpenFile* Directory::get_item(int i) const {
@@ -220,14 +250,7 @@ OpenFile* Directory::get_item(int i) const {
 	case 1:
 	    return parent();
 	default:
-	    int k, item = 0;
-	    i--;
-	    for (k = 0; k < tableSize; k++){
-		if (table[k].inUse)
-		    item++;
-		if (item == i)
-		    return new OpenFile(table[k].sector);
-	    }	    
+	    return new OpenFile(table[i - 2].sector);
     }
     return nullptr;
 }
@@ -241,14 +264,7 @@ char* Directory::get_name(int i) const {
 	case 1:
 	    return FileSystem::PARENT_LABEL;
 	default:
-	    int k, item = 0;
-	    i--;
-	    for (k = 0; k < tableSize; k++){
-		if (table[k].inUse)
-		    item++;
-		if (item == i)
-		    return table[k].name;
-	    }	    
+	    return table[i - 2].name;
     }
     return nullptr;
 }

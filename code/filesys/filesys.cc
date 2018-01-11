@@ -99,7 +99,7 @@ FileSystem::FileSystem(bool format):
     
     if (format) {
         BitMap *freeMap = new BitMap(NumSectors);
-        Directory *directory = new Directory(NumDirEntries);
+        Directory *directory = new Directory;
         FileHeader *mapHdr = new FileHeader;
         FileHeader *dirHdr = new FileHeader(FileHeader::Directory);
 
@@ -114,7 +114,7 @@ FileSystem::FileSystem(bool format):
         // of the directory and bitmap files.  There better be enough space!
 
         ASSERT(mapHdr->Allocate(freeMap, FreeMapFileSize));
-        ASSERT(dirHdr->Allocate(freeMap, DirectoryFileSize));
+        ASSERT(dirHdr->Allocate(freeMap, 2 * sizeof(int)));
 
         // Flush the bitmap and directory FileHeaders back to disk
         // We need to do this before we can "Open" the file, since open
@@ -173,7 +173,7 @@ int FileSystem::walkThrough(int* directory_sector, const char* ro_name){
 	
 	while( element_name != NULL ) {			
 		if (directory) delete directory;	
-		directory = new Directory(NumDirEntries);
+		directory = new Directory;
 		directory->FetchFrom(directory_descriptor);
 		
 		if ((sector = directory->Find(element_name)) == -1){
@@ -185,6 +185,7 @@ int FileSystem::walkThrough(int* directory_sector, const char* ro_name){
 			directory_descriptor = new OpenFile(sector);
 			if (directory_descriptor->type() != (int)FileHeader::Directory){
 				delete directory;
+				DEBUG('F', "The parent is of type %p", directory_descriptor->type());
 				delete directory_descriptor;
 				return E_NOTDIR;
 			} 
@@ -262,7 +263,7 @@ int FileSystem::Create(const char *name, int initialSize, FileHeader::Type type)
     
 	ASSERT(parent_element->type() == (int)FileHeader::Directory);
 	
-	directory = new Directory(NumDirEntries);
+	directory = new Directory;
 	directory->FetchFrom(parent_element);
 	
     DEBUG('F', "filename is %s\n", element_name);
@@ -275,7 +276,7 @@ int FileSystem::Create(const char *name, int initialSize, FileHeader::Type type)
         sector = freeMap->Find();   // find a sector to hold the file header
         if (sector == -1)       
             success = E_BLOCK;        // no free block for file header 
-        else if (!directory->Add(element_name, sector))
+        else if (!directory->Add(element_name, sector, freeMap))
             success = E_DIRECTORY;    // no space in directory
         else {
             hdr = new FileHeader(type);
@@ -286,14 +287,14 @@ int FileSystem::Create(const char *name, int initialSize, FileHeader::Type type)
                 hdr->WriteBack(sector);       
                 if (type == FileHeader::Directory){
 					OpenFile* new_file = new OpenFile(sector);
-					Directory* new_directory = new Directory(NumDirEntries);
+					Directory* new_directory = new Directory;
 					new_directory->FetchFrom(new_file);
 					new_directory->parent(parent_sector);
 					new_directory->WriteBack(new_file);
 					delete new_directory;
 					delete new_file;
 				}
-				directory->Add(element_name, sector);
+				directory->Add(element_name, sector, freeMap);
                 directory->WriteBack(parent_element);
                 freeMap->WriteBack(freeMapFile);
             }
@@ -301,6 +302,8 @@ int FileSystem::Create(const char *name, int initialSize, FileHeader::Type type)
         }
         delete freeMap;
     }
+    
+    DEBUG('F', "filename is %sis now at %d\n", name, sector);
     
     delete directory;
     delete [] parent_name;
@@ -367,7 +370,7 @@ FileSystem::Open(const char *name)
 	
 	if (strlen(element_name)){
 		Directory *directory;
-		directory = new Directory(NumDirEntries);
+		directory = new Directory;
 		directory->FetchFrom(openFile);
 		
 		delete openFile;
@@ -487,7 +490,7 @@ int FileSystem::Move(const char *oldpath, const char *newpath)
 	ASSERT(openFile_1->type() == (int)FileHeader::Directory);
 	ASSERT(openFile_2->type() == (int)FileHeader::Directory);
 	
-	Directory *old_directory = new Directory(NumDirEntries), *new_directory = new Directory(NumDirEntries);
+	Directory *old_directory = new Directory, *new_directory = new Directory;
 	old_directory->FetchFrom(openFile_1);
 	new_directory->FetchFrom(openFile_2);
 	
@@ -535,13 +538,19 @@ int FileSystem::Move(const char *oldpath, const char *newpath)
 	openFile_2 = new OpenFile(new_parent_sector);
 	
 	DEBUG('F', "Comitting new path\n", oldpath, newpath);
-	new_directory->Add(suffix_name_new, sector);
+	fs_lock->Release();
+	if (!new_directory->Add(suffix_name_new, sector))
+		return E_DISK;
+	fs_lock->Acquire();
 	new_directory->WriteBack(openFile_2);
 	openFile_2->header()->WriteBack(new_parent_sector);
 	delete new_directory;
 	
 	DEBUG('F', "Comitting old path\n", oldpath, newpath);
-	old_directory->Remove(suffix_name_old);
+	fs_lock->Release();
+	if (!old_directory->Remove(suffix_name_old))
+		return E_DISK;
+	fs_lock->Acquire();
 	old_directory->WriteBack(openFile_1);
 	openFile_1->header()->WriteBack(old_parent_sector);
 	delete old_directory;
@@ -607,7 +616,7 @@ FileSystem::Remove(const char *name)
 	
 	ASSERT(openFile->type() == (int)FileHeader::Directory);
 	
-	Directory *directory = new Directory(NumDirEntries);
+	Directory *directory = new Directory;
 	directory->FetchFrom(openFile);
 	
 	DEBUG('F', "Deleting file %s in %s\n", element_name, parent_name);
@@ -621,7 +630,7 @@ FileSystem::Remove(const char *name)
 		
 		if (fileHdr->type() == FileHeader::Directory){
 			OpenFile* curr_file = new OpenFile(sector);
-			Directory* curr_dir = new Directory(NumDirEntries);
+			Directory* curr_dir = new Directory;
 			curr_dir->FetchFrom(curr_file);
 			if (curr_dir->count() > 2){	
 				delete [] element_name;
@@ -641,7 +650,7 @@ FileSystem::Remove(const char *name)
 		
 		fileHdr->Deallocate(freeMap);       // remove data blocks
 		freeMap->Clear(sector);         // remove header block
-		directory->Remove(element_name);
+		directory->Remove(element_name, freeMap);
 		freeMap->WriteBack(freeMapFile);        // flush to disk
 		directory->WriteBack(openFile);        // flush to disk
 		
@@ -707,7 +716,7 @@ int FileSystem::freeSector(){
 void
 FileSystem::List()
 {
-    Directory *directory = new Directory(NumDirEntries);
+    Directory *directory = new Directory;
 
     directory->FetchFrom(directoryFile);
     directory->List();
@@ -750,7 +759,7 @@ FileSystem::Print()
     FileHeader *bitHdr = new FileHeader;
     FileHeader *dirHdr = new FileHeader;
     BitMap *freeMap = new BitMap(NumSectors);
-    Directory *directory = new Directory(NumDirEntries);
+    Directory *directory = new Directory;
 
     printf("Bit map file header:\n");
     bitHdr->FetchFrom(FreeMapSector);
