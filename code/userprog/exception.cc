@@ -172,8 +172,10 @@ ExceptionHandler (ExceptionType which)
 				char *buffer = (char *) malloc(sizeof(char) * 11);
 
 				synchconsole->GetString(buffer, 11);
+				DEBUG('c', "String is %s.\n", buffer);
 				sscanf(buffer, "%d", &returnvalue); /*! \todo make a real function if time availbale */
-				machine->WriteMem(reg4, 11, returnvalue);
+				DEBUG('c', "Value is %d.\n", returnvalue);
+				machine->WriteMem(reg4, 4, returnvalue);
 
 				free(buffer);
 				synchconsole->ReleaseInput();
@@ -248,10 +250,11 @@ ExceptionHandler (ExceptionType which)
 			}
 
 			case SC_Sbrk: {
-				DEBUG('c', "Sbrk syscall to move brk of %p, initiated by user program.\n", reg4);
+				DEBUG('c', "Sbrk syscall to move brk of %d pages, initiated by user program.\n", reg4);
 				/*! \todo Implementation */
 				returnvalue = currentThread->space->Sbrk(reg4);
-				machine->WriteMem(reg4, 11, returnvalue);
+				machine->WriteRegister(2, returnvalue);
+				DEBUG('c', "The previous brk was %d and worth now %d.\n", returnvalue, currentThread->space->Sbrk(0));
 				break;
 			}
 
@@ -265,7 +268,27 @@ ExceptionHandler (ExceptionType which)
 		UpdatePC ();
 		// End of addition
 	} else if (which == BusErrorException){
-		DEBUG('i', "SIGBUS on the thread %s. Aborting process\n", currentThread->getName());
+		DEBUG('T', "SIGBUS on the thread %s. Aborting process\n", currentThread->getName());
+
+		/*! \todo error code */
+		do_UserProcessExit(-1);
+	} else if (which == PageFaultException){
+		DEBUG('T', "SIGSEGV on the thread %s. Aborting process\n", currentThread->getName());
+
+		/*! \todo error code */
+		do_UserProcessExit(-1);
+	} else if (which == ReadOnlyException){
+		DEBUG('T', "SIGSEGV for ro access on the thread %s. Aborting process\n", currentThread->getName());
+
+		/*! \todo error code */
+		do_UserProcessExit(-1);
+	} else if (which == OverflowException){
+		DEBUG('T', "SIGABRT Overflowing the stack\n", currentThread->getName());
+
+		/*! \todo error code */
+		do_UserProcessExit(-1);
+	} else if (which == IllegalInstrException){
+		DEBUG('T', "SIGABRT as trying to execute illegal instruction\n", currentThread->getName());
 
 		/*! \todo error code */
 		do_UserProcessExit(-1);

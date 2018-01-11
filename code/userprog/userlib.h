@@ -10,6 +10,10 @@
 
 #define NULL 0
 
+#define PageSize 128
+#define divRoundDown(n,s)  ((n) / (s))
+#define divRoundUp(n,s)    (((n) / (s)) + ((((n) % (s)) > 0) ? 1 : 0))
+
 #include "syscall.h"
 
 //~ typedef struct sema_struct {
@@ -64,8 +68,9 @@ int atoi(char* s){
 
 void *memcpy(void *dest, const void *src, size_t n){
 	char* out_ptr = (char*)dest, *in_ptr = (char*)src;
-	for (int i = 0; i < n; i++)
-		*(out_ptr + i) = *(in_ptr + n);
+	for (int i = 0; i < n; i++){
+		*(out_ptr + i) = *(in_ptr + i);
+	}
 	return dest;
 }
 void *memset(void *s, int c, size_t n){

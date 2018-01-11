@@ -131,7 +131,10 @@ AddrSpace::AddrSpace (OpenFile * executable):
     numPages = ro_code + rw_code;
     size = numPages * PageSize;
 
-    ASSERT (numPages <= NumPhysPages);	// check we're not trying
+    DEBUG ('a', "Page required: %d\n",
+	   numPages);
+	   
+    ASSERT (numPages <= frameprovider->NumAvailFrame());	// check we're not trying
     // to run anything too big --
     // at least until we have
     // virtual memory
@@ -150,7 +153,7 @@ AddrSpace::AddrSpace (OpenFile * executable):
 		pageTable[i].setValid();
 		pageTable[i].physicalPage(frameprovider->GetEmptyFrame());
 	}
-    mBrk = size - 1;
+    mBrk = divRoundUp(size - 1, PageSize) * PageSize;
 
     RestoreState();
 
@@ -513,7 +516,7 @@ Thread* AddrSpace::getThread(unsigned int tid) {
  * \return the address of the previous break value
  *
  * */
-int AddrSpace::Sbrk(unsigned int n){
+int AddrSpace::Sbrk(int n){
 	unsigned int stackNbPages = divRoundUp(UserStackSize, PageSize);
 
 	unsigned int stackStart = (ADDRSPACE_PAGES_SIZE - (stackNbPages * countThread())) * PageSize;
@@ -523,20 +526,34 @@ int AddrSpace::Sbrk(unsigned int n){
 		return 0;
 	}
 
-	if (frameprovider->NumAvailFrame() < n){
+	if ((int)frameprovider->NumAvailFrame() < n){
 		DEBUG('a', "Trying to allocate new pages, but none available in the physical memory.\n");
 		return 0;
 	}
 
 	ASSERT(divRoundDown(mBrk, PageSize) == divRoundUp(mBrk, PageSize));
+	
+	int start_page = n < 0 ? divRoundUp(mBrk, PageSize) + n : divRoundUp(mBrk, PageSize);
+	int end_page = n < 0 ? divRoundUp(mBrk, PageSize) : divRoundUp(mBrk, PageSize) + n;
+	
+	if (start_page < 0) start_page = 0;
+	if (start_page >= end_page) 
+		return mBrk;
 
-	for (unsigned int i = divRoundDown(mBrk, PageSize); i < divRoundDown(mBrk, PageSize) + n; i++){
-		if (pageTable[i].valid()) continue;
-		pageTable[i].setValid();
-		pageTable[i].physicalPage(frameprovider->GetEmptyFrame());
+	for (unsigned int i = start_page; i < (unsigned int)end_page; i++){
+		if (n < 0){
+			pageTable[i].clearValid();
+			frameprovider->ReleaseFrame(pageTable[i].physicalPage());
+			DEBUG('A', "Address from %u to %u are now unavailable.\n", (char*)(pageTable[i].virtualPage() * PageSize), (char*)(pageTable[i].virtualPage() * PageSize + PageSize - 1), n);
+		} else {
+			pageTable[i].setValid();
+			pageTable[i].physicalPage(frameprovider->GetEmptyFrame());
+			DEBUG('A', "Address from %u to %u are now available.\n", (char*)(pageTable[i].virtualPage() * PageSize), (char*)(pageTable[i].virtualPage() * PageSize + PageSize - 1), n);
+		}
 	}
 	int oldBrk = mBrk;
-	mBrk += n * PageSize;
+	DEBUG('A', "Brk has been moved from %u to %u (%d page).\n", (char*)(start_page * PageSize), (char*)(end_page * PageSize), n);
+	mBrk = end_page * PageSize;
 	return oldBrk;
 }
 

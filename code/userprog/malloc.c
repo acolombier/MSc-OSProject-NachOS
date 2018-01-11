@@ -10,7 +10,7 @@
 void *malloc(size_t size){
   if(!__mem_alloc_init_flag){
       __mem_alloc_init_flag = 1;
-      memory_init(defaultSize);
+      memory_init();
       //print_info();
   }
   return (void*)memory_alloc((size_t)size);
@@ -26,7 +26,7 @@ void *calloc(size_t nmemb, size_t size)
 {
     if(!__mem_alloc_init_flag){
         __mem_alloc_init_flag = 1;
-        memory_init(defaultSize);
+        memory_init();
         //print_info();
     }
     
@@ -38,7 +38,7 @@ void *realloc(void *ptr, size_t size){
 
     if(!__mem_alloc_init_flag){
         __mem_alloc_init_flag = 1;
-        memory_init(defaultSize);
+        memory_init();
     }
     
     if(ptr == NULL)

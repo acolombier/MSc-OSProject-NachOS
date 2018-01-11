@@ -220,7 +220,7 @@ void Kill(SpaceId pid, char sig);
 int ForkExec(char *s);
 
 /*! \brief Dynamically allocate n bytes */
-void *Sbrk(size_t size);
+void *Sbrk(int size);
 
 #endif // IN_USER_MODE
 

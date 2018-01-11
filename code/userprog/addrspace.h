@@ -62,7 +62,11 @@ class AddrSpace
     void appendThread(Thread*);
     void removeThread(Thread*, int result_code);
 
-    int Sbrk(unsigned int n);
+    /*!
+     * Modify the number of page allocated between the code and the stack
+     * \param n the number used for the brk shift
+     */
+    int Sbrk(int n);
     
     unsigned int countThread() const;
     
