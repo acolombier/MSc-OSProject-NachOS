@@ -28,8 +28,8 @@
 #include "filehdr.h"
 #include "synch.h"
 
-FileHeader::FileHeader(Type type):
-        flag((unsigned int)type), numBytes(0), numSectors(0), ref_cnt(1), _lock(new Lock("HeaderFile"))
+FileHeader::FileHeader(Type t):
+        flag((unsigned int)t), numBytes(0), numSectors(0), ref_cnt(1), _lock(new Lock("HeaderFile"))
 {
     memset(dataSectors, 0, sizeof(int) * NumDirect);
 }

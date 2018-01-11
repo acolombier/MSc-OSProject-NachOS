@@ -26,12 +26,12 @@
 //	"sector" -- the location on disk of the file header for this file
 //----------------------------------------------------------------------
 
-OpenFile::OpenFile(int sector, FileHeader* h):
-    hdr(h), headerSector(sector)
+OpenFile::OpenFile(int s, FileHeader* h):
+    hdr(h), headerSector(s)
 { 
     if (!h){
         hdr = new FileHeader;
-        hdr->FetchFrom(sector);
+        hdr->FetchFrom(s);
     } else
         hdr->inc_ref();
         
