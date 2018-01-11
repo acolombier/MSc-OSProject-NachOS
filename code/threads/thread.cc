@@ -1,15 +1,15 @@
-// thread.cc 
-//      Routines to manage threads.  There are four main operations:
-//
-//      Fork -- create a thread to run a procedure concurrently
-//              with the caller (this is done in two steps -- first
-//              allocate the Thread object, then call Fork on it)
-//      Finish -- called when the forked procedure finishes, to clean up
-//      Yield -- relinquish control over the CPU to another ready thread
-//      Sleep -- relinquish control over the CPU, but thread is now blocked.
-//              In other words, it will not run again, until explicitly 
-//              put back on the ready queue.
-//
+/*! thread.cc 
+	Routines to manage threads.  There are four main operations:
+ * 
+	Fork -- create a thread to run a procedure concurrently
+			with the caller (this is done in two steps -- first
+			allocate the Thread object, then call Fork on it)
+	Finish -- called when the forked procedure finishes, to clean up
+	Yield -- relinquish control over the CPU to another ready thread
+	Sleep -- relinquish control over the CPU, but thread is now blocked.
+				In other words, it will not run again, until explicitly 
+				put back on the ready queue.
+ */
 // Copyright (c) 1992-1993 The Regents of the University of California.
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
@@ -19,10 +19,12 @@
 #include "switch.h"
 #include "synch.h"
 #include "system.h"
+#include "thread.h"
 
-#define STACK_FENCEPOST 0xdeadbeef	// this is put at the top of the
-					// execution stack, for detecting 
-					// stack overflows
+#ifdef USER_PROGRAM
+#include "addrspace.h"
+#endif
+
 
 //----------------------------------------------------------------------
 // Thread::Thread
@@ -32,7 +34,8 @@
 //      "threadName" is an arbitrary string, useful for debugging.
 //----------------------------------------------------------------------
 
-Thread::Thread (const char *threadName)
+Thread::Thread (const char *threadName):
+	mTid(NULL_TID), mThreadsWaiting(new List)
 {
     name = threadName;
     stackTop = NULL;
@@ -62,6 +65,8 @@ Thread::Thread (const char *threadName)
 
 Thread::~Thread ()
 {
+	delete mThreadsWaiting;
+	
     DEBUG ('t', "Deleting thread \"%s\"\n", name);
 
     ASSERT (this != currentThread);
@@ -105,7 +110,7 @@ Thread::Fork (VoidFunctionPtr func, int arg)
     // an already running program, as in the "fork" Unix system call. 
     
     // LB: Observe that currentThread->space may be NULL at that time.
-    this->space = currentThread->space;
+    //this->space = currentThread->space;
 
 #endif // USER_PROGRAM
 
@@ -141,6 +146,32 @@ Thread::CheckOverflow ()
 #endif
 }
 
+int Thread::join(tid_t t, int result_code_pnt) {
+#ifdef USER_PROGRAM		
+	ASSERT(t != tid());
+	Thread* thread_to_join = space->getThread(t);
+	if (!thread_to_join)
+		return -1; // It does not exit (or not anymore)
+
+
+	thread_bundle_t* t_bundle = thread_to_join->space->inc_ref_thread(t);		
+	thread_to_join->appendToJoin(this); // Will be elected when the thread will finish
+	
+    IntStatus oldLevel = interrupt->SetLevel (IntOff);	// disable interrupts
+	Sleep ();
+    (void) interrupt->SetLevel (oldLevel);	// re-enable interrupts
+
+	if (result_code_pnt)
+		machine->WriteMem(result_code_pnt, 4, t_bundle->result_code);
+	space->dec_ref_thread(t);
+#endif
+	return NULL_TID;
+	
+}
+
+void Thread::appendToJoin(Thread*t) {
+	mThreadsWaiting->Append(t);
+}
 //----------------------------------------------------------------------
 // Thread::Finish
 //      Called by ThreadRoot when a thread is done executing the 
@@ -158,17 +189,33 @@ Thread::CheckOverflow ()
 
 //
 void
-Thread::Finish ()
+Thread::Finish (int result_code)
 {
     (void) interrupt->SetLevel (IntOff);
     ASSERT (this == currentThread);
 
-    DEBUG ('t', "Finishing thread \"%s\"\n", getName ());
+    DEBUG ('t', "Finishing thread #%d:\"%s\" with code %d\n", tid(), getName (), result_code);
 
     // LB: Be careful to guarantee that no thread to be destroyed 
     // is ever lost 
     ASSERT (threadToBeDestroyed == NULL);
     // End of addition 
+    
+    Thread* t;
+    while ((t = (Thread*)mThreadsWaiting->Remove())){
+		scheduler->ReadyToRun(t);
+	}
+
+#ifdef USER_PROGRAM		
+	if (space != nullptr){
+		space->removeThread(this, result_code);
+
+		if (!space->countThread()){
+			DEBUG ('a', "No more thread in this space, deleting...\n");
+			delete space;
+		}
+	}
+#endif
 
     threadToBeDestroyed = currentThread;
     Sleep ();			// invokes SWITCH
@@ -247,6 +294,16 @@ Thread::Sleep ()
 
     scheduler->Run (nextThread);	// returns when we've been signalled
 }
+//~ void Thread::restoreSpace(){
+//~ #ifdef USER_PROGRAM
+	//~ space->RestoreState();
+//~ #endif
+//~ }
+//~ void Thread::saveSpace(){
+//~ #ifdef USER_PROGRAM
+	//~ space->SaveState();
+//~ #endif
+//~ }
 
 //----------------------------------------------------------------------
 // ThreadFinish, InterruptEnable, ThreadPrint

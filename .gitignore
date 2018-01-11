@@ -2,3 +2,10 @@ code/build/*
 code/bin/coff2noff
 code/bin/*.o
 code/bin/.*.d
+nachos.geany
+nachos.tags
+doc/html
+doc/latex
+doc/man
+latex/
+html/

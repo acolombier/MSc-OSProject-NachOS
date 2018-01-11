@@ -144,7 +144,7 @@ GetChar:
 	syscall
 	j	$31
 	.end GetChar
-	
+
 	.globl PutString
 	.ent	PutString
 PutString:
@@ -160,7 +160,7 @@ GetString:
 	syscall
 	j	$31
 	.end GetString
-	
+
 	.globl PutInt
 	.ent	PutInt
 PutInt:
@@ -168,7 +168,7 @@ PutInt:
 	syscall
 	j	$31
 	.end PutInt
-	
+
 	.globl GetInt
 	.ent	GetInt
 GetInt:
@@ -176,6 +176,80 @@ GetInt:
 	syscall
 	j	$31
 	.end GetInt
+
+	.globl UserThreadCreate
+    .ent    UserThreadCreate
+UserThreadCreate:
+    addiu $2,$0,SC_CreateUserThread
+    addiu $6,$0,UserThreadExit
+    syscall
+	j	$31
+    .end UserThreadCreate
+
+	.globl _user_thread_exit_by_return
+    .ent    _user_thread_exit_by_return
+_user_thread_exit_by_return:
+    addiu $2,$0,SC_CreateUserThread
+    addiu $6,$0,UserThreadExit
+    syscall
+	j	$31
+    .end _user_thread_exit_by_return
+
+    .globl UserThreadExit
+    .ent    UserThreadExit
+UserThreadExit:
+    addiu $2,$0,SC_ExitUserThread
+    syscall
+    j   $31
+    .end UserThreadExit
+
+    .globl UserThreadJoin
+    .ent    UserThreadJoin
+UserThreadJoin:
+	move	$4,$2
+	jal	UserThreadExit
+    .end UserThreadJoin
+
+    .globl sem_init
+    .ent    sem_init
+sem_init:
+    addiu $2,$0,SC_SemaInit
+    syscall
+    j   $31
+    .end sem_init
+
+    .globl sem_post
+    .ent    sem_post
+sem_post:
+    addiu $2,$0,SC_SemaPost
+    syscall
+    j   $31
+    .end sem_post
+
+    .globl sem_wait
+    .ent    sem_wait
+sem_wait:
+    addiu $2,$0,SC_SemaWait
+    syscall
+    j   $31
+    .end sem_wait
+    
+     .globl ForkExec
+    .ent    ForkExec
+ForkExec:
+    addiu $2,$0,SC_ForkExec
+    addiu $6,$0,Exit
+    syscall
+    j   $31
+    .end ForkExec
+    
+     .globl Kill
+    .ent    Kill
+Kill:
+    addiu $2,$0,SC_Kill
+    syscall
+    j   $31
+    .end Kill
 
 /* dummy function to keep gcc happy */
         .globl  __main

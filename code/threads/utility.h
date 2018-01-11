@@ -8,6 +8,8 @@
 //
 //      '+' -- turn on all debug messages
 //      't' -- thread system
+//      'l' -- allocation (new, delete)
+//      'c' -- sysCall related message
 //      's' -- semaphores, locks, and conditions
 //      'i' -- interrupt emulation
 //      'm' -- machine emulation (USER_PROGRAM)

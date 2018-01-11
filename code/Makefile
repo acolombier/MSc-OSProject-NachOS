@@ -9,7 +9,10 @@ export DEFAULT_VERBOSITY
 # nachos code still compile
 check:
 
-all: build
+all: build 
+
+doc:
+	cd .. && doxygen -b doc/Doxyfile
 
 build: bin
 	$(MAKE) -C $@
@@ -28,6 +31,7 @@ clean:
 	for i in build bin; do \
 		$(MAKE) -C $$i $@; \
 	done
+	rm -rf ../doc/html ../doc/man ../doc/latex
 
 ## LPR	:=	echo
 LPR	:=	enscript --columns=2  --borders -r --landscape \

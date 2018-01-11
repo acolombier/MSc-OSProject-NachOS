@@ -30,6 +30,7 @@ SynchDisk *synchDisk;
 #ifdef USER_PROGRAM		// requires either FILESYS or FILESYS_STUB
 Machine *machine;		// user program memory and registers
 SynchConsole *synchconsole;
+FrameProvider *frameprovider;
 #endif
 
 #ifdef NETWORK
@@ -150,7 +151,7 @@ Initialize (int argc, char **argv)
     // We didn't explicitly allocate the current thread we are running in.
     // But if it ever tries to give up the CPU, we better have a Thread
     // object to save its state. 
-    currentThread = new Thread ("main");
+    currentThread = new Thread ("systemd");
     currentThread->setStatus (RUNNING);
 
     interrupt->Enable ();
@@ -159,6 +160,7 @@ Initialize (int argc, char **argv)
 #ifdef USER_PROGRAM
     machine = new Machine (debugUserProg);	// this must come first
     synchconsole = new SynchConsole(NULL, NULL);
+    frameprovider = new FrameProvider(NumPhysPages);
 #endif
 
 #ifdef FILESYS

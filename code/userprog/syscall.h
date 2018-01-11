@@ -1,9 +1,10 @@
-/* syscalls.h
+/*! \file syscall.h
  * 	Nachos system call interface.  These are Nachos kernel operations
  * 	that can be invoked from user programs, by trapping to the kernel
  *	via the "syscall" instruction.
- *
- *	This file is included by user programs and by the Nachos kernel.
+ */
+
+/*	This file is included by user programs and by the Nachos kernel.
  *
  * Copyright (c) 1992-1993 The Regents of the University of California.
  * All rights reserved.  See copyright.h for copyright notice and limitation
@@ -35,8 +36,43 @@
 #define SC_GetString	14
 #define SC_PutInt	15
 #define SC_GetInt	16
+#define SC_CreateUserThread 17
+#define SC_ExitUserThread	18
+#define SC_JoinUserThread	19
+#define SC_SemaInit 20
+#define SC_SemaWait	21
+#define SC_SemaPost	22
+#define SC_ForkExec 23
+#define SC_Kill 24
+#define SC_Malloc 25
+#define SC_Free 26
+
+#define ConsoleInput	0
+#define ConsoleOutput	1
+
+#undef EOF
+/*! \def EOF
+    The EOF reprensation on 4 bytes.
+*/
+#define EOF	0xFFFFFFFF
+
+
+/*! \brief Semaphore provided to the user */
+//~ typedef void* sem_t;
+
 
 #ifdef IN_USER_MODE
+
+#define EXIT_SUCCESS 0
+#define EXIT_FAILURE 0xFF
+#define NULL 0
+
+/* when an address space starts up, it has two open files, representing
+ * keyboard input and display output (in UNIX terms, stdin and stdout).
+ * Read and Write can be used directly on these, without first opening
+ * the console device.
+ */
+
 
 // LB: This part is read only on compiling the test/*.c files.
 // It is *not* read on compiling test/start.S
@@ -58,7 +94,8 @@ void Halt () __attribute__((noreturn));
 
 /* Address space control operations: Exit, Exec, and Join */
 
-/* This user program is done (status = 0 means exited normally). */
+/*! This user program is done (status = 0 means exited normally).
+ */
 void Exit (int status) __attribute__((noreturn));
 
 /* A unique identifier for an executing user program (address space) */
@@ -69,10 +106,11 @@ typedef int SpaceId;
  */
 SpaceId Exec (char *name);
 
-/* Only return once the the user program "id" has finished.
- * Return the exit status.
+/*! Only return once the the user program "id" has finished.
+ * \param pointer to store the result code. NULL to ignore it
+ * \return boolean saying if the process has been join
  */
-int Join (SpaceId id);
+int Join (SpaceId id, int* result_code_ptr);
 
 
 /* File system operations: Create, Open, Read, Write, Close
@@ -87,17 +125,6 @@ int Join (SpaceId id);
 /* A unique identifier for an open Nachos file. */
 typedef int OpenFileId;
 
-/* when an address space starts up, it has two open files, representing
- * keyboard input and display output (in UNIX terms, stdin and stdout).
- * Read and Write can be used directly on these, without first opening
- * the console device.
- */
-
-#define ConsoleInput	0
-#define ConsoleOutput	1
-
-#define EOF	0xFFFFFFFF
-
 /* Create a Nachos file, with "name" */
 void Create (char *name);
 
@@ -109,18 +136,20 @@ OpenFileId Open (char *name);
 /* Write "size" bytes from "buffer" to the open file. */
 void Write (char *buffer, int size, OpenFileId id);
 
-/* Read "size" bytes from the open file into "buffer".
- * Return the number of bytes actually read -- if the open file isn't
- * long enough, or if it is an I/O device, and there aren't enough
- * characters to read, return whatever is available (for I/O devices,
- * you should always wait until you can return at least one character).
+/*!
+ * \brief Read "size" bytes from the open file into "buffer".
+ * \param buffer buffer address where data is written
+ * \param size size of data read and write
+ * \param id file descriptor
+ * \return Return the number of bytes actually read -- if the open file isn't \
+  long enough, or if it is an I/O device, and there aren't enough \
+  characters to read, return whatever is available (for I/O devices, \
+  you should always wait until you can return at least one character).
  */
 int Read (char *buffer, int size, OpenFileId id);
 
 /* Close the file, we're done reading and writing to it. */
 void Close (OpenFileId id);
-
-
 
 /* User-level thread operations: Fork and Yield.  To allow multiple
  * threads to run within a user program.
@@ -140,13 +169,60 @@ void PutChar(char ch);
 char GetChar();
 
 void PutString(char *s);
-char GetString(char *s, int n);
+void GetString(char *s, int n);
 
-/* Write a signed integer using the function snprintf to obtain the external
- * decimal write operation
- */
+/*!
+    \brief Write integer in the STDOUT using ascii representation.
+    \param n The integer to put on the NachOS STDOUT.
+*/
 void PutInt(int n);
+/*!
+    \brief Read integer in the STDOUT using ascii representation.
+    \param *n Pointer to an integer where the read int from ascii STDIN will be stored.
+*/
 void GetInt(int *n);
+
+/*! \brief Create a user thread
+ *  \param f User pointer to the user function to execute. The function signature must be  following this signature void* f(void *)
+ * 	\param arg User pointer to the args of the function to execute.
+ */
+int UserThreadCreate(void* f(void *arg), void *arg);
+
+/*! \brief Exit a user thread
+ * \param result_code resolut code to return to any waiting thread.
+ */
+void UserThreadExit(int result_code) __attribute__((noreturn));
+
+/*! Should not be called by the user. Default handler in case of return of a thread function to call exit with a code */
+void _user_thread_exit_by_return() __attribute__((noreturn));
+
+/*! \brief Wait for the specified thread to finish
+ * \param pointer to store the result code. NULL to ignore it
+ * \return booolean saying if there in an error
+ */
+int UserThreadJoin(int tid, void* result_code_ptr);
+
+/*! \brief Semaphore initialiser */
+void sem_init(void* s, int e);
+
+/*! \brief Semaphore post */
+void sem_post(void* s);
+
+/*! \brief Semaphore wait */
+void sem_wait(void* s);
+
+/*! \brief send a signal
+ * \todo signal system */
+void Kill(SpaceId pid, char sig);
+
+/*! \brief Fork and run a process */
+int ForkExec(char *s);
+
+/*! \brief Dynamically allocate n bytes */
+void* malloc(int n);
+
+/*! \brief De-allocate the dynamic block */
+void free(void* block_malloced);
 
 #endif // IN_USER_MODE
 

@@ -1,7 +1,7 @@
-// machine.h 
-//	Data structures for simulating the execution of user programs
-//	running on top of Nachos.
-//
+/*! \file machine.h
+ * 
+ * 		Data structures for simulating the execution of user programs running on top of Nachos.
+ */
 //	User programs are loaded into "mainMemory"; to Nachos,
 //	this looks just like an array of bytes.  Of course, the Nachos
 //	kernel is in memory too -- but as in most machines these days,
@@ -32,23 +32,21 @@
 					// the disk sector size, for
 					// simplicity
 
-#define NumPhysPages    32
+#define NumPhysPages    128
 #define MemorySize 	(NumPhysPages * PageSize)
 #define TLBSize		4		// if there is a TLB, make it small
 
-enum ExceptionType { NoException,           // Everything ok!
-		     SyscallException,      // A program executed a system call.
-		     PageFaultException,    // No valid translation found
-		     ReadOnlyException,     // Write attempted to page marked 
-					    // "read-only"
-		     BusErrorException,     // Translation resulted in an 
-					    // invalid physical address
-		     AddressErrorException, // Unaligned reference or one that
-					    // was beyond the end of the
-					    // address space
-		     OverflowException,     // Integer overflow in add or sub.
-		     IllegalInstrException, // Unimplemented or reserved instr.
-		     
+/** An enum for exception types.
+*/
+ 
+enum ExceptionType { NoException,   /**< Everything ok! */
+		     SyscallException,      /**< A program executed a system call */
+		     PageFaultException,    /**< No valid translation found */
+		     ReadOnlyException,     /**< Write attempted to page marked "read-only" */
+		     BusErrorException,     /**< Translation resulted in an invalid physical address */
+		     AddressErrorException, /**< Unaligned reference or one that was beyond the end of the address space */
+		     OverflowException,     /**< Integer overflow in add or sub. */
+		     IllegalInstrException, /**< Unimplemented or reserved instr. */
 		     NumExceptionTypes
 };
 
