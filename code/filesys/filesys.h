@@ -185,6 +185,12 @@ class FileSystem {
      * \param **sufffix the pointer to an unallocated pointer to store file name. Must be freed after usage.
      */
     void basename(const char* name, char**const  prefix, char**const  suffix);
+    
+    /*!
+     * Get the free size
+     * \return the number of free sector
+     */
+    int freeSector();
 
   private:
    OpenFile* freeMapFile;		// Bit map of free disk blocks,

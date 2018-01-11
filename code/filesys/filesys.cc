@@ -159,14 +159,17 @@ FileSystem::FileSystem(bool format):
     }
 }
 
-int FileSystem::walkThrough(int* directory_sector, const char* name){    
+int FileSystem::walkThrough(int* directory_sector, const char* ro_name){    
     OpenFile* directory_descriptor = directoryFile;
     Directory* directory = nullptr;
     int sector = DirectorySector;
     
+    char* name = new char[strlen(ro_name) + 1];
+    strcpy(name, ro_name);
+    
     *directory_sector = 0; // By default, we did not found the directory
     
-    const char *element_name = strtok((char*)name, DELIMITER);
+    const char *element_name = strtok(name, DELIMITER);
 	
 	while( element_name != NULL ) {			
 		if (directory) delete directory;	
@@ -193,6 +196,8 @@ int FileSystem::walkThrough(int* directory_sector, const char* name){
 	
 	if (directory) delete directory;
 	if (directory_descriptor != directoryFile) delete directory_descriptor;
+	
+	delete [] name;
 	
 	return E_SUCESS;
 }
@@ -575,6 +580,7 @@ FileSystem::Remove(const char *name)
     int parent_sector, sector;
     OpenFile *openFile = NULL;
     
+	DEBUG('F', "Deleting file %s\n", name);
     fs_lock->Acquire();
     
     for (int i = 0; i < MAX_OPEN_FILE; i++){
@@ -585,7 +591,7 @@ FileSystem::Remove(const char *name)
 		}
 	}
 
-    char *element_name, *parent_name;
+    char *element_name = nullptr, *parent_name = nullptr;
     basename(name, &parent_name, &element_name);
     
 	if (walkThrough(&parent_sector, parent_name)){
@@ -603,8 +609,6 @@ FileSystem::Remove(const char *name)
 	
 	Directory *directory = new Directory(NumDirEntries);
 	directory->FetchFrom(openFile);
-	
-	delete openFile;
 	
 	DEBUG('F', "Deleting file %s in %s\n", element_name, parent_name);
 	sector = directory->Find(element_name); 
@@ -634,18 +638,22 @@ FileSystem::Remove(const char *name)
 
 		BitMap* freeMap = new BitMap(NumSectors);
 		freeMap->FetchFrom(freeMapFile);
+		
 		fileHdr->Deallocate(freeMap);       // remove data blocks
 		freeMap->Clear(sector);         // remove header block
 		directory->Remove(element_name);
 		freeMap->WriteBack(freeMapFile);        // flush to disk
-		directory->WriteBack(directoryFile);        // flush to disk
-		fileHdr->dec_ref();
+		directory->WriteBack(openFile);        // flush to disk
+		
+		fileHdr->dec_ref(); //implicit delete
 		delete freeMap;
-		delete directory;
 		success = true;
 	}  
 	else
 		DEBUG('F', "File %s not found\n", name);
+		
+	delete directory;	
+	delete openFile;
 	
 	fs_lock->Release();
     return success;
@@ -681,6 +689,14 @@ void FileSystem::basename(const char* ro_name, char**const  prefix, char**const 
 	}
 	
 	delete [] name;
+}
+
+int FileSystem::freeSector(){
+	int sector = 0;
+	BitMap* bm = bitmapTransaction();
+	sector = bm->NumClear();
+	bitmapCommit(bm);
+	return sector;
 }
 
 //----------------------------------------------------------------------

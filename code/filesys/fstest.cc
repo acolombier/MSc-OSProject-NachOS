@@ -152,10 +152,8 @@ Print(const char *name)
     }
     
     buffer = new char[openFile->Length()];
-    printf("Reading %d bytes\n", openFile->Length());
     
     while ((amountRead = openFile->Read(buffer, openFile->Length())) > 0){
-	printf("Chunk of %d bytes\n", amountRead);
 	for (i = 0; i < amountRead; i++){
 	    printf("%c", buffer[i]);
 	}
@@ -199,6 +197,7 @@ ShowTree()
     
     ASSERT(openFile && openFile->type() == FileHeader::Directory);
     
+    printf("Free space: %d sectors on %d\n", fileSystem->freeSector(), NumSectors);
 	printf("\n");
     _show_tree_worker(openFile, 0);
 	printf("\n");
@@ -234,10 +233,10 @@ QuickTest()
       printf("Perf test: can't move file: %d\n", errorCode);
       return;
     }
-    //~ if ((errorCode = fileSystem->Remove("/" DirName "/" DirName "/test_file_1"))) {
-      //~ printf("Perf test: can't Remove /%s/%s/test_file_1: %d\n", DirName, DirName, errorCode);
-      //~ return;
-    //~ }
+    if (!(errorCode = fileSystem->Remove("/" DirName "/" DirName "/test_file_1"))) {
+      printf("Perf test: can't Remove /%s/%s/test_file_1: %d\n", DirName, DirName, errorCode);
+      return;
+    }
     if ((errorCode = fileSystem->Create("/test_file_1", 10))) {
       printf("Perf test: can't create /test_file_1 again: %d\n", errorCode);
       return;
@@ -247,14 +246,14 @@ QuickTest()
       printf("Perf test: can't Open /test_file_1: %d\n", errorCode);
       return;
     }
-    //~ if (!(errorCode = fileSystem->Move("/test_file_1", "/" DirName ))) {
-      //~ printf("Perf test: can move file, should not\n");
-      //~ return;
-    //~ }
-    //~ if ((errorCode = fileSystem->Remove("/test_file_1"))) {
-      //~ printf("Perf test: can remove file, should not\n");
-      //~ return;
-    //~ }
+    if (!(errorCode = fileSystem->Move("/test_file_1", "/" DirName ))) {
+      printf("Perf test: can move file, should not\n");
+      return;
+    }
+    if ((errorCode = fileSystem->Remove("/test_file_1"))) {
+      printf("Perf test: can remove file, should not\n");
+      return;
+    }
     char* data = new char[1024];
     for (int i = 0; i < 1024; i++)
 	data[i] = 'a' + (char)(i % 26);
@@ -262,6 +261,9 @@ QuickTest()
     
     printf("Trying to display in an other object\n");
     Print("/test_file_1");
+    
+    for (int i = 0; i < 100; i++)
+	file->Write(data, 1024);
     
     fileSystem->Close(file);
     

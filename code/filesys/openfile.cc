@@ -151,7 +151,7 @@ OpenFile::WriteAt(const char *from, int numBytes, int position)
 {
     int fileLength = hdr->FileLength();
     
-    if (numBytes <= 0 || position >= fileLength)
+    if (numBytes <= 0)
         return 0;
     
     int i, firstSector, lastSector, numSectors;
