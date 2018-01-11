@@ -23,6 +23,7 @@
 #include "copyright.h"
 #include "utility.h"
 #include "filehdr.h"
+#include "filesys.h"
 #include "directory.h"
 
 //----------------------------------------------------------------------
@@ -35,12 +36,12 @@
 //	"size" is the number of entries in the directory
 //----------------------------------------------------------------------
 
-Directory::Directory(int size)
+Directory::Directory(int size):
+    parent_sector(0), mItself(nullptr) // By default, no parent, and ghost
 {
     table = new DirectoryEntry[size];
+    memset(table, 0, sizeof(DirectoryEntry) * size);
     tableSize = size;
-    for (int i = 0; i < tableSize; i++)
-	table[i].inUse = FALSE;
 }
 
 //----------------------------------------------------------------------
@@ -63,7 +64,10 @@ Directory::~Directory()
 void
 Directory::FetchFrom(OpenFile *file)
 {
-    (void) file->ReadAt((char *)table, tableSize * sizeof(DirectoryEntry), 0);
+    mItself = file;
+    ASSERT(file->type() == (int)FileHeader::Directory);
+    (void) file->ReadAt((char *)&parent_sector, sizeof (int), 0);
+    (void) file->ReadAt((char *)table, tableSize * sizeof(DirectoryEntry), sizeof (int) + 0);
 }
 
 //----------------------------------------------------------------------
@@ -76,7 +80,8 @@ Directory::FetchFrom(OpenFile *file)
 void
 Directory::WriteBack(OpenFile *file)
 {
-    (void) file->WriteAt((char *)table, tableSize * sizeof(DirectoryEntry), 0);
+    (void) file->WriteAt ((char *) &parent_sector, sizeof (int), 0);
+    (void) file->WriteAt((char *)table, tableSize * sizeof(DirectoryEntry), sizeof (int) + 0);
 }
 
 //----------------------------------------------------------------------
@@ -132,13 +137,15 @@ Directory::Add(const char *name, int newSector)
     if (FindIndex(name) != -1)
 	return FALSE;
 
-    for (int i = 0; i < tableSize; i++)
+    for (int i = 0; i < tableSize; i++){
         if (!table[i].inUse) {
             table[i].inUse = TRUE;
             strncpy(table[i].name, name, FileNameMaxLen); 
             table[i].sector = newSector;
-        return TRUE;
+	    return TRUE;
 	}
+    }
+    
     return FALSE;	// no space.  Fix when we have extensible files.
 }
 
@@ -169,7 +176,7 @@ Directory::Remove(const char *name)
 void
 Directory::List()
 {
-   for (int i = 0; i < tableSize; i++)
+    for (int i = 0; i < tableSize; i++)
 	if (table[i].inUse)
 	    printf("%s\n", table[i].name);
 }
@@ -193,5 +200,56 @@ Directory::Print()
 	    hdr->Print();
 	}
     printf("\n");
-    delete hdr;
+    hdr->dec_ref();
 }
+
+int Directory::count() const {
+    int c = 2; //(itself + its parent)
+    for (int i = 0; i < tableSize; i++)
+	if (table[i].inUse)
+	    c++;
+    return c;
+}
+
+OpenFile* Directory::get_item(int i) const {
+    ASSERT(i >= 0 && i < count());
+    
+    switch (i){
+	case 0:
+	    return itself();
+	case 1:
+	    return parent();
+	default:
+	    int k, item = 0;
+	    i--;
+	    for (k = 0; k < tableSize; k++){
+		if (table[k].inUse)
+		    item++;
+		if (item == i)
+		    return new OpenFile(table[k].sector);
+	    }	    
+    }
+    return nullptr;
+}
+
+char* Directory::get_name(int i) const {
+    ASSERT(i >= 0 && i < count());
+    
+    switch (i){
+	case 0:
+	    return FileSystem::ITSELF_LABEL;
+	case 1:
+	    return FileSystem::PARENT_LABEL;
+	default:
+	    int k, item = 0;
+	    i--;
+	    for (k = 0; k < tableSize; k++){
+		if (table[k].inUse)
+		    item++;
+		if (item == i)
+		    return table[k].name;
+	    }	    
+    }
+    return nullptr;
+}
+

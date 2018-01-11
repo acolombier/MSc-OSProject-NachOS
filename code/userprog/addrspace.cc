@@ -20,6 +20,7 @@
 #include "addrspace.h"
 #include "noff.h"
 #include "openfile.h"
+#include "filesys.h"
 
 #include <strings.h>		/* for bzero */
 
@@ -88,10 +89,13 @@ Lock* AddrSpace::_ADDR_SPACE_LOCK = new Lock("AddrSpace");
 //----------------------------------------------------------------------
 
 AddrSpace::AddrSpace (OpenFile * executable):
-	lastTID(0), mThreadList(new List), mThreadsWaiting(new List)
+	lastTID(0), lastFD(0), mThreadList(new List), mThreadsWaiting(new List)
 {
 	AddrSpace::_ADDR_SPACE_LOCK->Acquire();
 	mPid = ++AddrSpace::_LAST_PID;
+	
+	mFdTable = new fd_bundle_t[MAX_OPEN_FILE];
+	fd_lock = new Lock("AddrSpace FD Lock");
 	
 	addrspace_bundle_t* a_bundle = new addrspace_bundle_t;
 	
@@ -192,6 +196,17 @@ AddrSpace::~AddrSpace ()
 			
 	DEBUG('a', "Deleting pageTable after releasing frame.\n");		
 	delete [] pageTable;
+	
+	for (int i = 0; i < MAX_OPEN_FILE; i++){
+		if (mFdTable[i].object){
+			DEBUG('F', "Process %p has forgot to close a file. Closing now...\n", mPid);
+			fileSystem->Close((OpenFile*)mFdTable[i].object);
+			break;
+		}
+	}
+	
+	delete [] mFdTable;
+	delete fd_lock;
 
 	AddrSpace::_ADDR_SPACE_LOCK->Acquire();
 	DEBUG('a', "Removing process %d of the registered process list\n", pid());
@@ -488,6 +503,43 @@ void AddrSpace::dec_ref_thread(tid_t tid){
 		ASSERT(found == true);
 		delete t_bundle;
 	}
+}
+
+fd_bundle_t* AddrSpace::get_fd(int fd){
+	fd_lock->Acquire();
+	fd_bundle_t* bundle = nullptr;
+	for (int i = 0; i < MAX_OPEN_FILE; i++){
+		if (mFdTable[i].fd == fd){
+			bundle =  mFdTable + i;
+			break;
+		}
+	}
+	fd_lock->Release();
+	return bundle;
+}
+
+int AddrSpace::store_fd(fd_bundle_t*bundle){
+	fd_lock->Acquire();
+	for (int i = 0; i < MAX_OPEN_FILE; i++){
+		if (mFdTable[i].object == nullptr){
+			memcpy(mFdTable + i, bundle, sizeof(fd_bundle_t));
+			mFdTable[i].fd = lastFD++;
+			break;
+		}
+	}
+	fd_lock->Release();
+	return bundle->fd;
+}
+
+void AddrSpace::del_fd(int fd){
+	fd_lock->Acquire();
+	for (int i = 0; i < MAX_OPEN_FILE; i++){
+		if (mFdTable[i].fd == fd){
+			memset(mFdTable + i, 0, sizeof(fd_bundle_t));
+			break;
+		}
+	}
+	fd_lock->Release();
 }
 
 

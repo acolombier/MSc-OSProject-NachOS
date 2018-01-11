@@ -17,7 +17,8 @@
 #include "disk.h"
 #include "bitmap.h"
 
-#define NumDirect 	((SectorSize - 2 * sizeof(int)) / sizeof(int))
+#define NumDirect 	((SectorSize - 3 * sizeof(int)) / sizeof(int))
+#define AllocSector 	(SectorSize / sizeof(int))
 #define MaxFileSize 	(NumDirect * SectorSize)
 
 // The following class defines the Nachos "file header" (in UNIX terms,  
@@ -35,8 +36,16 @@
 // by allocating blocks for the file (if it is a new file), or by
 // reading it from disk.
 
+class Lock;
+
 class FileHeader {
   public:
+    enum Type {File = 0x0, Directory = 0x1/*, Link*/};
+    enum Permission {Read = 0b01, Write = 0b10, Exec = 0b100};
+  
+    FileHeader(Type type = File);
+    ~FileHeader();
+    
     bool Allocate(BitMap *bitMap, int fileSize);// Initialize a file header, 
 						//  including allocating space 
 						//  on disk for the file data
@@ -53,14 +62,32 @@ class FileHeader {
 
     int FileLength();			// Return the length of the file 
 					// in bytes
+    /*!
+     * \return Return the number of bytes in the file.
+     */
+
+    inline Type type() const { return (Type)(flag & 0x3); }    
+    inline Permission permission() const { return (Permission)(flag >> 29 & 0x7); }
+    inline int lastaccess() const { return flag >> 2 & 0xFFFFF7; }
+    
+    inline void setPermission(Permission value) { flag = ((unsigned int)value) << 29 | flag; }
+    inline void clearPermission(Permission value) { flag = ((unsigned int)permission() & ~value) << 29 | flag; }
+    
+    inline void lastaccess(int value) { flag = (value & 0xFFFFF7) << 2 | flag; }
+    
+    inline void inc_ref() { _lock->Acquire(); ref_cnt++; _lock->Release(); }
+    void dec_ref();
 
     void Print();			// Print the contents of the file.
 
   private:
+    unsigned int flag;			// The file flag contains the last acthe the permission (3 bits), the last access time in sec since the 1/01/18 0:00 UTC+1 (27 bits), the type (2 bits)
     int numBytes;			// Number of bytes in the file
     int numSectors;			// Number of data sectors in the file
     int dataSectors[NumDirect];		// Disk sector numbers for each data 
 					// block in the file
+    int ref_cnt;
+    Lock* _lock;
 };
 
 #endif // FILEHDR_H

@@ -40,6 +40,13 @@ extern "C" {
 		SpaceId pid;
 		unsigned int ref_cnt;
 	} addrspace_bundle_t;
+	
+	typedef struct fd_bundle_struct {
+		char* pathname;
+		void* object;
+        /*int type; if we want to handle socket on the same way */
+        int fd;
+    } fd_bundle_t;
 }
 
 class AddrSpace
@@ -101,12 +108,35 @@ class AddrSpace
      * \param t The thread TID
      */
     void dec_ref_thread(tid_t pid);
+    
+    /*!
+     * Return the fd bundle for a given fd. Null if not found
+     * \param fd The thread TID
+     * \return a bundle pointer
+     */
+    fd_bundle_t* get_fd(int fd);
+    
+    /*!
+     * Append a new bundle to the addrspace.
+     * \param bundle the fd bundle
+     * \return the fd. -1 if error
+     */
+    int store_fd(fd_bundle_t*);
+    
+    /*!
+     * Remove a bundle from the addrspace.
+     * Careful! It does not handle the fs close!
+     * 
+     * \param bundle the fd bundle
+     */
+    void del_fd(int fd);
 
   private:
-      TranslationEntry * pageTable;	// Assume linear page table translation
+    TranslationEntry * pageTable;	// Assume linear page table translation
     // for now!
     unsigned int numPages;	// Number of pages in the virtual
     tid_t lastTID;
+    int lastFD;
     List* mThreadList;
 
     unsigned int mBrk;
@@ -114,6 +144,9 @@ class AddrSpace
     SpaceId mPid;
     SpaceId mPpid;
     List* mThreadsWaiting;
+    
+    fd_bundle_t* mFdTable; 
+    Lock* fd_lock;
 
   protected:
     static Lock* _ADDR_SPACE_LOCK;

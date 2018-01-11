@@ -76,13 +76,13 @@ char *memory_alloc(int size){
     
 	//~ fprintf(stdout, "ALLOCATING, %p, %p\n", memory + MEMORY_SIZE, (char*)current_block);
     while (memory + MEMORY_SIZE > (char*)current_block){	
+	if (!check_block(current_block)){
+		fprintf(stderr, "Memory corrupted: Block at %lu doesn't match with the cheksum (current: %#02x)\n", ULONG((char*)current_block - memory), current_block->flag);	
+		exit(EXIT_FAILURE);			
+	}
 #if defined(FIRST_FIT)
 
-/* code specific to first fit strategy can be inserted here */	
-		if (!check_block(current_block)){
-			fprintf(stderr, "Memory corrupted: Block at %lu doesn't match with the cheksum (current: %#02x)\n", ULONG((char*)current_block - memory), current_block->flag);	
-			exit(EXIT_FAILURE);			
-		}		
+/* code specific to first fit strategy can be inserted here */			
 		if (IS_BLOCK_FREE(current_block) && current_block->size >= effective_size){			
 			if (current_block->size - effective_size >  2 * BLOCK_SIZE_WITH_PADDING){
 			/* If there is enought room remaining for writing a free block struct, we do it */			

@@ -26,6 +26,28 @@
 
 #include "system.h"
 #include "filehdr.h"
+#include "synch.h"
+
+FileHeader::FileHeader(Type type):
+        flag((unsigned int)type), numBytes(0), numSectors(0), ref_cnt(1), _lock(new Lock("HeaderFile"))
+{
+    memset(dataSectors, 0, sizeof(int) * NumDirect);
+}
+
+FileHeader::~FileHeader(){
+    ASSERT(ref_cnt == 0);
+    delete _lock;
+}
+
+void FileHeader::dec_ref(){
+    _lock->Acquire();
+    ref_cnt--;
+    if (!ref_cnt){
+	delete this;
+	return;
+    }
+    _lock->Release();
+}
 
 //----------------------------------------------------------------------
 // FileHeader::Allocate
@@ -39,15 +61,63 @@
 //----------------------------------------------------------------------
 
 bool
-FileHeader::Allocate(BitMap *freeMap, int fileSize)
+FileHeader::Allocate(BitMap *freeMap, int allocSize)
 { 
-    numBytes = fileSize;
-    numSectors  = divRoundUp(fileSize, SectorSize);
-    if (freeMap->NumClear() < numSectors)
-	return FALSE;		// not enough space
-
-    for (int i = 0; i < numSectors; i++)
-	dataSectors[i] = freeMap->Find();
+    _lock->Acquire();
+    int data_to__lloc = allocSize - numBytes, sector_to__lloc = divRoundUp(allocSize, SectorSize) - numSectors; // Data which has to be gathered
+    
+    int new_first_sector = sector_to__lloc < 0 ? numSectors + sector_to__lloc : numSectors;
+    int new_last_sector = sector_to__lloc < 0 ? numSectors : numSectors + sector_to__lloc;
+    
+    int _last_extended_sector = divRoundDown(new_first_sector, SectorSize), tot_sector__lloc = divRoundUp(data_to__lloc, SectorSize * AllocSector) + divRoundUp(data_to__lloc, SectorSize);
+    
+    if (freeMap->NumClear() < tot_sector__lloc){
+	_lock->Release();
+	return false;
+    }
+	
+    DEBUG('f', "Allocating %d data sector.\n", tot_sector__lloc);    	
+	
+    int* sector = new int[AllocSector];
+    if (dataSectors[_last_extended_sector]) // If the last extented sector is 0, it means it not allocated although, it is a valid sector
+	synchDisk->ReadSector(dataSectors[_last_extended_sector], (char*)sector);
+    else {
+	dataSectors[_last_extended_sector] = freeMap->Find();
+	DEBUG('f', "Allocate the first extended table sector.\n");  
+	memset(sector, 0, SectorSize);
+    }
+    
+    for (int i = new_first_sector; i < new_last_sector; i++){
+	if (i / SectorSize != _last_extended_sector){
+	    if (sector_to__lloc < 0){ // Free...
+		synchDisk->ReadSector(dataSectors[++_last_extended_sector], (char*)sector);
+		freeMap->Clear(dataSectors[_last_extended_sector]);
+		DEBUG('f', "Free %d a %d-th extended table sector.\n", dataSectors[_last_extended_sector], _last_extended_sector);  
+	    } else { // Alloc...
+		synchDisk->WriteSector(dataSectors[_last_extended_sector], (char*)sector);
+		dataSectors[++_last_extended_sector] = freeMap->Find();
+		memset(sector, 0, SectorSize);
+		DEBUG('f', "Allocate %d a %d-th extended table sector.\n", dataSectors[_last_extended_sector], _last_extended_sector);  
+	    }
+	}
+	
+	if (sector_to__lloc < 0){
+	    freeMap->Clear(sector[i % SectorSize]);
+	    DEBUG('f', "Free %d a data sector %d in the table sector %d.\n", sector[i % SectorSize], i, _last_extended_sector);
+	}
+	else {
+	    sector[i % SectorSize] = freeMap->Find();	
+	    DEBUG('f', "Allocate %d a data sector %d in the table sector %d.\n", sector[i % SectorSize], i, _last_extended_sector);
+	}
+    }
+    synchDisk->WriteSector(dataSectors[_last_extended_sector], (char*)sector);
+    delete [] sector;
+    
+    numBytes = allocSize;
+    numSectors  = new_last_sector;
+    
+    _lock->Release();
+    
     return TRUE;
 }
 
@@ -61,10 +131,7 @@ FileHeader::Allocate(BitMap *freeMap, int fileSize)
 void 
 FileHeader::Deallocate(BitMap *freeMap)
 {
-    for (int i = 0; i < numSectors; i++) {
-	ASSERT(freeMap->Test((int) dataSectors[i]));  // ought to be marked!
-	freeMap->Clear((int) dataSectors[i]);
-    }
+    Allocate(freeMap, 0);
 }
 
 //----------------------------------------------------------------------
@@ -77,7 +144,9 @@ FileHeader::Deallocate(BitMap *freeMap)
 void
 FileHeader::FetchFrom(int sector)
 {
+    _lock->Acquire();
     synchDisk->ReadSector(sector, (char *)this);
+    _lock->Release();
 }
 
 //----------------------------------------------------------------------
@@ -90,7 +159,9 @@ FileHeader::FetchFrom(int sector)
 void
 FileHeader::WriteBack(int sector)
 {
+    _lock->Acquire();
     synchDisk->WriteSector(sector, (char *)this); 
+    _lock->Release();
 }
 
 //----------------------------------------------------------------------
@@ -105,8 +176,17 @@ FileHeader::WriteBack(int sector)
 
 int
 FileHeader::ByteToSector(int offset)
-{
-    return(dataSectors[offset / SectorSize]);
+{    
+    int* sector = new int[AllocSector];    
+    synchDisk->ReadSector(dataSectors[(offset / SectorSize) / AllocSector], (char*)sector);
+    
+    int data_sector = sector[(offset / SectorSize) % SectorSize];
+    delete [] sector;
+    
+    DEBUG('f', "Bytes %d is in the %d sector, in the extented table %d at index %d. its value is %d.\n", 	
+			offset, offset / SectorSize, (offset / SectorSize) / AllocSector, (offset / SectorSize) % SectorSize, data_sector);
+    
+    return data_sector;
 }
 
 //----------------------------------------------------------------------
@@ -119,6 +199,7 @@ FileHeader::FileLength()
 {
     return numBytes;
 }
+
 
 //----------------------------------------------------------------------
 // FileHeader::Print

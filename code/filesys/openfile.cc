@@ -26,10 +26,13 @@
 //	"sector" -- the location on disk of the file header for this file
 //----------------------------------------------------------------------
 
-OpenFile::OpenFile(int sector)
+OpenFile::OpenFile(int sector, FileHeader* h):
+    hdr(h), headerSector(sector)
 { 
-    hdr = new FileHeader;
-    hdr->FetchFrom(sector);
+    if (!h){
+        hdr = new FileHeader;
+        hdr->FetchFrom(sector);
+    }
     seekPosition = 0;
 }
 
@@ -40,7 +43,7 @@ OpenFile::OpenFile(int sector)
 
 OpenFile::~OpenFile()
 {
-    delete hdr;
+    hdr->dec_ref();
 }
 
 //----------------------------------------------------------------------
@@ -137,7 +140,8 @@ OpenFile::ReadAt(char *into, int numBytes, int position)
 					&buf[(i - firstSector) * SectorSize]);
 
     // copy the part we want
-    bcopy(&buf[position - (firstSector * SectorSize)], into, numBytes);
+    memcpy(into, buf + (position - (firstSector * SectorSize)), numBytes);
+    
     delete [] buf;
     return numBytes;
 }
@@ -146,12 +150,27 @@ int
 OpenFile::WriteAt(const char *from, int numBytes, int position)
 {
     int fileLength = hdr->FileLength();
+    
+    if (numBytes <= 0 || position >= fileLength)
+        return 0;
+    
     int i, firstSector, lastSector, numSectors;
     bool firstAligned, lastAligned;
     char *buf;
 
-    if ((numBytes <= 0) || (position >= fileLength))
-	return 0;				// check request
+    if (position + numBytes > fileLength){
+        DEBUG('f', "File need to be grown from %d to %d.\n", fileLength, position + numBytes);
+        BitMap* bm = fileSystem->bitmapTransaction();
+        if (!hdr->Allocate(bm, position + numBytes)){
+            DEBUG('F', "Can't realloc file from %d to %d. Trunking data.\n", fileLength, position + numBytes);
+            numBytes = fileLength - position;
+        }
+        fileSystem->bitmapCommit(bm);
+        hdr->WriteBack(headerSector);
+        fileLength = hdr->FileLength();
+        DEBUG('F', "Header has been written down at %d.\n", headerSector);            
+    }
+    
     if ((position + numBytes) > fileLength)
 	numBytes = fileLength - position;
     DEBUG('f', "Writing %d bytes at %d, from file of length %d.\n", 	
@@ -162,6 +181,7 @@ OpenFile::WriteAt(const char *from, int numBytes, int position)
     numSectors = 1 + lastSector - firstSector;
 
     buf = new char[numSectors * SectorSize];
+    memset(buf, 0, numSectors * SectorSize);
 
     firstAligned = (position == (firstSector * SectorSize));
     lastAligned = ((position + numBytes) == ((lastSector + 1) * SectorSize));
@@ -169,12 +189,12 @@ OpenFile::WriteAt(const char *from, int numBytes, int position)
 // read in first and last sector, if they are to be partially modified
     if (!firstAligned)
         ReadAt(buf, SectorSize, firstSector * SectorSize);	
-    if (!lastAligned && ((firstSector != lastSector) || firstAligned))
+    else if (!lastAligned && ((firstSector != lastSector) || firstAligned))
         ReadAt(&buf[(lastSector - firstSector) * SectorSize], 
 				SectorSize, lastSector * SectorSize);	
 
 // copy in the bytes we want to change 
-    bcopy(from, &buf[position - (firstSector * SectorSize)], numBytes);
+    memcpy(&buf[position - (firstSector * SectorSize)], from, numBytes);
 
 // write modified sectors back
     for (i = firstSector; i <= lastSector; i++)	
@@ -194,3 +214,5 @@ OpenFile::Length()
 { 
     return hdr->FileLength(); 
 }
+
+int OpenFile::type() const { return (int)hdr->type(); }

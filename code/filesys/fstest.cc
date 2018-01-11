@@ -16,6 +16,7 @@
 
 #include "utility.h"
 #include "filesys.h"
+#include "directory.h"
 #include "system.h"
 #include "thread.h"
 #include "disk.h"
@@ -38,8 +39,8 @@ Copy(const char *from, const char *to)
 
 // Open UNIX file
     if ((fp = fopen(from, "r")) == NULL) {	 
-	printf("Copy: couldn't open input file %s\n", from);
-	return;
+		printf("Copy: couldn't open input file %s\n", from);
+		return;
     }
 
 // Figure out length of UNIX file
@@ -48,11 +49,36 @@ Copy(const char *from, const char *to)
     fseek(fp, 0, 0);
 
 // Create a Nachos file of the same length
-    DEBUG('f', "Copying file %s, size %d, to file %s\n", from, fileLength, to);
-    if (!fileSystem->Create(to, fileLength)) {	 // Create Nachos file
-	printf("Copy: couldn't create output file %s\n", to);
-	fclose(fp);
-	return;
+    printf("Copying file %s, size %d, to file %s\n", from, fileLength, to);
+    switch (fileSystem->Create(to, fileLength)) {	 // Create Nachos file
+		case E_BLOCK:		
+			printf("Copy: couldn't create output file %s: no blocks free remaining.\n", to);
+			fclose(fp);
+			return;
+			break;
+		case E_DIRECTORY:		
+			printf("Copy: couldn't create output file %s: directory is full.\n", to);
+			fclose(fp);
+			return;
+			break;
+		case E_DISK:		
+			printf("Copy: couldn't create output file %s: disk is full.\n", to);
+			fclose(fp);
+			return;
+			break;
+		case E_EXIST:		
+			printf("Copy: couldn't create output file %s: file already exists.\n", to);
+			fclose(fp);
+			return;
+			break;
+		case E_SUCESS:		
+			printf("Copy: created output file %s.\n", to);
+			break;
+		default:	
+			printf("Copy: couldn't create output file %s: unknown error.\n", to);
+			fclose(fp);
+			return;
+			break;
     }
     
     openFile = fileSystem->Open(to);
@@ -69,13 +95,52 @@ Copy(const char *from, const char *to)
     fclose(fp);
 }
 
+/*!
+ * Create a new directory to the given path
+ * \param *path full path
+ */
+
+void
+MakeDirectory(const char *path)
+{
+// Create a Nachos file of the same length
+    printf("Creating directory %s\n", path);
+    switch (fileSystem->Create(path, 0, FileHeader::Directory)) {	 // Create Nachos file
+		case E_BLOCK:		
+			printf("Copy: couldn't create output directory %s: no blocks free remaining.\n", path);
+			return;
+			break;
+		case E_DIRECTORY:		
+			printf("Copy: couldn't create output directory %s: directory is full.\n", path);
+			break;
+		case E_DISK:		
+			printf("Copy: couldn't create output directory %s: disk is full.\n", path);
+			return;
+			break;
+		case E_EXIST:		
+			printf("Copy: couldn't create output directory %s: file already exists.\n", path);
+			break;
+		case E_SUCESS:		
+			printf("Copy: created output directory %s.\n", path);
+			break;
+		default:	
+			printf("Copy: couldn't create output directory %s: unknown error.\n", path);
+			return;
+			break;
+    }
+    
+    OpenFile* openFile = fileSystem->Open(path);
+    ASSERT(openFile != NULL);
+    delete openFile;
+}
+
 //----------------------------------------------------------------------
 // Print
 // 	Print the contents of the Nachos file "name".
 //----------------------------------------------------------------------
 
 void
-Print(char *name)
+Print(const char *name)
 {
     OpenFile *openFile;    
     int i, amountRead;
@@ -86,14 +151,57 @@ Print(char *name)
 	return;
     }
     
-    buffer = new char[TransferSize];
-    while ((amountRead = openFile->Read(buffer, TransferSize)) > 0)
-	for (i = 0; i < amountRead; i++)
+    buffer = new char[openFile->Length()];
+    printf("Reading %d bytes\n", openFile->Length());
+    
+    while ((amountRead = openFile->Read(buffer, openFile->Length())) > 0){
+	printf("Chunk of %d bytes\n", amountRead);
+	for (i = 0; i < amountRead; i++){
 	    printf("%c", buffer[i]);
+	}
+    }
+	    
+    printf("\n");
+    
     delete [] buffer;
-
-    delete openFile;		// close the Nachos file
+    
+    fileSystem->Close(openFile);	// close the Nachos file
     return;
+}
+
+static void _show_tree_worker(OpenFile* file, int level){
+	ASSERT(file->type() == (int)FileHeader::Directory);
+	
+	Directory* curr = new Directory(NumDirEntries);
+	curr->FetchFrom(file);
+	
+	char* space = new char[level + 1];
+	for (int i = 0; i < level; i++)
+		space[i] = '\t';
+	space[level] = '\0';
+	
+	printf("directory%s\t.\n", space);
+	printf("directory%s\t..\n", space);
+	for (int i = 2; i < curr->count(); i++){
+		OpenFile* curr_file = curr->get_item(i);		
+		printf("%s\t%s%s\t%d\n", (curr_file->type() == FileHeader::Directory ? "directory" : "file\t"), space, curr->get_name(i), curr_file->Length());
+		if (curr_file->type() == FileHeader::Directory)
+			_show_tree_worker(curr_file, level+1);
+		delete curr_file;
+	}
+	delete curr;
+	delete [] space;
+}
+void 
+ShowTree()
+{
+    OpenFile *openFile = fileSystem->Open("/");
+    
+    ASSERT(openFile && openFile->type() == FileHeader::Directory);
+    
+	printf("\n");
+    _show_tree_worker(openFile, 0);
+	printf("\n");
 }
 
 //----------------------------------------------------------------------
@@ -109,9 +217,86 @@ Print(char *name)
 //----------------------------------------------------------------------
 
 #define FileName 	"TestFile"
+#define DirName 	"TestDir"
 #define Contents 	"1234567890"
 #define ContentSize 	strlen(Contents)
 #define FileSize 	((int)(ContentSize * 5000))
+
+void 
+QuickTest()
+{ 
+    int errorCode;
+    if ((errorCode = fileSystem->Create("/test_file_1", 10))) {
+      printf("Perf test: can't create /test_file_1: %d\n", errorCode);
+      return;
+    }
+    if ((errorCode = fileSystem->Move("/test_file_1", "/" DirName "/" DirName "/"))) {
+      printf("Perf test: can't move file: %d\n", errorCode);
+      return;
+    }
+    //~ if ((errorCode = fileSystem->Remove("/" DirName "/" DirName "/test_file_1"))) {
+      //~ printf("Perf test: can't Remove /%s/%s/test_file_1: %d\n", DirName, DirName, errorCode);
+      //~ return;
+    //~ }
+    if ((errorCode = fileSystem->Create("/test_file_1", 10))) {
+      printf("Perf test: can't create /test_file_1 again: %d\n", errorCode);
+      return;
+    }
+    OpenFile* file = fileSystem->Open("/test_file_1");
+    if (!file) {
+      printf("Perf test: can't Open /test_file_1: %d\n", errorCode);
+      return;
+    }
+    //~ if (!(errorCode = fileSystem->Move("/test_file_1", "/" DirName ))) {
+      //~ printf("Perf test: can move file, should not\n");
+      //~ return;
+    //~ }
+    //~ if ((errorCode = fileSystem->Remove("/test_file_1"))) {
+      //~ printf("Perf test: can remove file, should not\n");
+      //~ return;
+    //~ }
+    char* data = new char[1024];
+    for (int i = 0; i < 1024; i++)
+	data[i] = 'a' + (char)(i % 26);
+    file->WriteAt(data, 1024);
+    
+    printf("Trying to display in an other object\n");
+    Print("/test_file_1");
+    
+    fileSystem->Close(file);
+    
+    //~ if (!(errorCode = fileSystem->Remove("/test_file_1"))) {
+      //~ printf("Perf test: cannot remove the file\n");
+      //~ return;
+    //~ }
+}
+
+void 
+MakeTree()
+{ 
+	int errorCode;
+    printf("Tree structure simulation...\n");
+    if ((errorCode = fileSystem->Create("/" DirName, 0, FileHeader::Directory))) {
+      printf("Perf test: can't create /%s/: %d\n", DirName, errorCode);
+      return;
+    }
+    if ((errorCode = fileSystem->Create("/" DirName "/" DirName, 0, FileHeader::Directory))) {
+      printf("Perf test: can't create /%s/%s/: %d\n", DirName, DirName, errorCode);
+      return;
+    }
+    if ((errorCode = fileSystem->Create(FileName, 0))) {
+      printf("Perf test: can't create /%s: %d\n", FileName, errorCode);
+      return;
+    }
+    if ((errorCode = fileSystem->Create("/" DirName "/" FileName, 0))) {
+      printf("Perf test: can't create /%s/%s: %d\n", DirName, FileName, errorCode);
+      return;
+    }
+    if ((errorCode = fileSystem->Create("/" DirName "/" DirName "/" FileName, 0))) {
+      printf("Perf test: can't create /%s/%s/%s: %d\n", DirName, DirName, FileName, errorCode);
+      return;
+    }	// close file
+}
 
 static void 
 FileWrite()
@@ -121,7 +306,7 @@ FileWrite()
 
     printf("Sequential write of %d byte file, in %zd byte chunks\n", 
 	FileSize, ContentSize);
-    if (!fileSystem->Create(FileName, 0)) {
+    if (fileSystem->Create(FileName, 0)) {
       printf("Perf test: can't create %s\n", FileName);
       return;
     }

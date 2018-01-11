@@ -89,12 +89,12 @@ PrintSector (bool writing, int sector, char *data)
     int *p = (int *) data;
 
     if (writing)
-        printf("Writing sector: %d\n", sector); 
+        DEBUG('d', "Writing sector: %d\n", sector); 
     else
-        printf("Reading sector: %d\n", sector); 
+        DEBUG('d', "Reading sector: %d\n", sector); 
     for (unsigned int i = 0; i < (SectorSize/sizeof(int)); i++)
-	printf("%x ", p[i]);
-    printf("\n"); 
+        DEBUG('d', "%x ", p[i]);
+    DEBUG('d', "\n"); 
 }
 
 //----------------------------------------------------------------------
@@ -118,6 +118,9 @@ Disk::ReadRequest(int sectorNumber, char* data)
     int ticks = ComputeLatency(sectorNumber, FALSE);
 
     ASSERT(!active);				// only one request at a time
+    
+    if (sectorNumber < 0 || sectorNumber >= NumSectors)
+        DEBUG('D', "Sector requested %d is out of the range of sectors 0 to %d\n", sectorNumber, NumSectors);
     ASSERT((sectorNumber >= 0) && (sectorNumber < NumSectors));
     
     DEBUG('d', "Reading from sector %d\n", sectorNumber);

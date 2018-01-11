@@ -17,14 +17,30 @@
 #include "/usr/include/stdarg.h"
 #endif
 
+#define LOWER(c) (IS_UPPER(c) ? c + 32 : c)
+#define IS_UPPER(c) (c < 97)
+
 #define KNRM  "\x1B[0m"
-#define KRED  "\x1B[31m"
-#define KGRN  "\x1B[32m"
-#define KYEL  "\x1B[33m"
-#define KBLU  "\x1B[34m"
-#define KMAG  "\x1B[35m"
-#define KCYN  "\x1B[36m"
-#define KWHT  "\x1B[37m"
+
+// Please, comment next to every const which category correspond
+#define KBLK  "\x1B[90m"
+#define KRED  "\x1B[91m" // Dynamic alloc
+#define KGRN  "\x1B[92m" // Thread
+#define KYEL  "\x1B[93m" // Syscall
+#define KBLU  "\x1B[94m" // Filesys
+#define KMAG  "\x1B[95m" // Disk
+#define KCYN  "\x1B[96m" // Network
+#define KWHT  "\x1B[97m"
+
+#define KBLK_BLD  "\x1B[1;90m"
+#define KRED_BLD  "\x1B[1;91m"
+#define KGRN_BLD  "\x1B[1;92m"
+#define KYEL_BLD  "\x1B[1;93m"
+#define KBLU_BLD  "\x1B[1;94m"
+#define KMAG_BLD  "\x1B[1;95m"
+#define KCYN_BLD  "\x1B[1;96m"
+#define KWHT_BLD  "\x1B[1;97m"
+
 #define EOL   "\033[0m"
 
 
@@ -56,7 +72,7 @@ bool
 DebugIsEnabled (char flag)
 {
     if (enableFlags != NULL)
-	return (strchr (enableFlags, flag) != 0)
+	return (strchr (enableFlags, LOWER(flag)) != 0)
 	    || (strchr (enableFlags, '+') != 0);
     else
 	return FALSE;
@@ -71,31 +87,38 @@ DebugIsEnabled (char flag)
 void
 DEBUG (char flag, const char *format, ...)
 {
-    if (DebugIsEnabled (flag))
-      {
+    if (DebugIsEnabled (flag)){
 	  va_list ap;
 	  // You will get an unused variable message here -- ignore it.
-	  switch (flag){
+	  switch (LOWER(flag)){
 		case 'l':
-		  fprintf(stderr, KRED);
+		  fprintf(stderr, !IS_UPPER(flag) ? KRED : KRED_BLD);
 		  break;
 		case 't':
-		  fprintf(stderr, KGRN);
+		  fprintf(stderr, !IS_UPPER(flag) ? KGRN : KRED_BLD);
 		  break;
 		case 'c':
-		  fprintf(stderr, KYEL);
+		  fprintf(stderr, !IS_UPPER(flag) ? KYEL : KYEL_BLD);
+		  break;
+		case 'd':
+		  fprintf(stderr, !IS_UPPER(flag) ? KMAG : KMAG_BLD);
+		  break;
+		case 'f':
+		  fprintf(stderr, !IS_UPPER(flag) ? KBLU : KBLU_BLD);
 		  break;
 	  }
 	  va_start (ap, format);
 	  vfprintf (stderr, format, ap);
 	  va_end (ap);
-	  switch (flag){
+	  switch (LOWER(flag)){
 		case 't':
 		case 'l':
 		case 'c':
+		case 'd':
+		case 'f':
 		  fprintf(stderr, EOL);
 		  break;
 	  }
 	  fflush (stderr);
-      }
+	}
 }

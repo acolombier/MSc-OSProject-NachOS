@@ -247,14 +247,60 @@ ExceptionHandler (ExceptionType which)
 				break;
 			}
 			
-			case SC_Malloc: {
+			case SC_Create: {
 				DEBUG('c', "Malloc syscall on %p, initiated by user program.\n", reg4);
 				/*! \todo Implementation */
 				break;
 			}
 			
-			case SC_Free: {
-				DEBUG('c', "Free syscall on %p, initiated by user program.\n", reg4);
+			// FS Part
+			case SC_Open: {
+				DEBUG('c', "FileOpen syscall on %p, initiated by user program.\n", reg4);
+				
+				machine->WriteRegister(2, 0);	
+				
+				fd_bundle_t* b = new fd_bundle_t;
+				b->pathname = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
+				b->object = fileSystem->Open (b->pathname);
+
+				if (b->pathname == NULL){
+					DEBUG('c', "Unable to open file %s\n", b->pathname);
+					delete b->pathname;
+					delete b;
+					machine->WriteRegister(2, 0);					
+					break;
+				} else {
+					int fd = currentThread->space->store_fd(b);
+					if (fd)
+						machine->WriteRegister(2, fd);	
+					else
+						delete b;
+				}	
+				
+				break;
+			}
+			
+			case SC_Read: {
+				DEBUG('c', "Read syscall on %p, initiated by user program.\n", reg4);
+				/*! \todo Implementation */
+				break;
+			}
+			
+			case SC_Write: {
+				DEBUG('c', "Write syscall on %p, initiated by user program.\n", reg4);
+				/*! \todo Implementation */
+				break;
+			}
+			
+			case SC_Close: {
+				DEBUG('c', "Close syscall on %p, initiated by user program.\n", reg4);
+				
+				fd_bundle_t* b = currentThread->space->get_fd(reg4);
+				if (b){
+					fileSystem->Close((OpenFile*)b->object);
+					currentThread->space->del_fd(reg4);
+					delete b;
+				}
 				/*! \todo Implementation */
 				break;
 			}

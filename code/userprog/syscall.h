@@ -44,8 +44,6 @@
 #define SC_SemaPost	22
 #define SC_ForkExec 23
 #define SC_Kill 24
-#define SC_Malloc 25
-#define SC_Free 26
 
 #define ConsoleInput	0
 #define ConsoleOutput	1

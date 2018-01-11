@@ -65,7 +65,7 @@ base_INCDIRS=threads machine
 thread-test_CPPFLAGS=-DTHREADS
 
 # userprog feature: add support to load userspace program
-userprog_DEP_ALT=filesys filesys-stub
+#~ userprog_DEP_ALT=filesys filesys-stub
 userprog_SRC=$(USERPROG_SRC)
 userprog_CPPFLAGS=-DUSER_PROGRAM -DFRAME_ALLOC_SEQUENTIAL
 userprog_INCDIRS=bin userprog
@@ -96,7 +96,7 @@ vm_CPPFLAGS=-DUSE_TLB
 # *************************************
 # These flavors are the one initially provided in Nachos.
 # Only a part of all Nachos features is available in each of them.
-ORIG_FLAVORS=threads userprog filesys network vm
+ORIG_FLAVORS=threads userprog filesys network
 
 ###########################################################################
 #            Original flavors
@@ -105,7 +105,7 @@ ORIG_FLAVORS=threads userprog filesys network vm
 $(eval $(call define-flavor,threads,thread-test))
 
 ######### userprog
-$(eval $(call define-flavor,userprog,userprog filesys-stub))
+$(eval $(call define-flavor,userprog,userprog filesys))
 
 # if file system done first!
 # $(eval $(call define-flavor,userprog,userprog filesys))

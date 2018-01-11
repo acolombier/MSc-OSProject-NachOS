@@ -1,16 +1,17 @@
-// directory.h 
-//	Data structures to manage a UNIX-like directory of file names.
-// 
-//      A directory is a table of pairs: <file name, sector #>,
-//	giving the name of each file in the directory, and 
-//	where to find its file header (the data structure describing
-//	where to find the file's data blocks) on disk.
-//
-//      We assume mutual exclusion is provided by the caller.
-//
-// Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
-// of liability and disclaimer of warranty provisions.
+/*! \file directory.h 
+ *	Data structures to manage a UNIX-like directory of file names.
+ * 
+ *      A directory is a table of pairs: <file name, sector #>,
+ *	giving the name of each file in the directory, and 
+ *	where to find its file header (the data structure describing
+ *	where to find the file's data blocks) on disk.
+ *
+ *      We assume mutual exclusion is provided by the caller.
+ *
+ * Copyright (c) 1992-1993 The Regents of the University of California.
+ * All rights reserved.  See copyright.h for copyright notice and limitation 
+ * of liability and disclaimer of warranty provisions.
+ */
 
 #include "copyright.h"
 
@@ -70,11 +71,52 @@ class Directory {
     void Print();			// Verbose print of the contents
 					//  of the directory -- all the file
 					//  names and their contents.
+    
+    /*!
+     * Return the parent (..)
+     */
+    inline OpenFile* parent() const { return (parent_sector ? new OpenFile(parent_sector) : nullptr); }
+    
+    /*!
+     * Return itself (.)
+     */
+    inline OpenFile* itself() const { return mItself; }
+    
+    /*!
+     * Set its parent
+     * \param sect sector of the parent
+     */
+    inline void parent(int sect) { this->parent_sector = sect; }
+    
+    /*!
+     * Count the number of items including its own
+     * \return number of item
+     */
+    int count() const;
+    
+    /*!
+     * Get the n-th item
+     * \param i n
+     * \return n-th item
+     */
+    OpenFile* get_item(int i) const;
+    
+    /*!
+     * Get the n-th name
+     * \param i n
+     * \return n-th name
+     */
+    char* get_name(int i) const;
+    
+    
 
   private:
     int tableSize;			// Number of directory entries
+    int parent_sector;
     DirectoryEntry *table;		// Table of pairs: 
 					// <file name, file header location> 
+                    
+    OpenFile* mItself;
 
     int FindIndex(const char *name);	// Find the index into the directory 
 					//  table corresponding to "name"

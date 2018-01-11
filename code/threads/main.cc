@@ -58,7 +58,7 @@
 // External functions used by this file
 
 extern void ThreadTest (void), Copy (const char *unixFile, const char *nachosFile);
-extern void Print (char *file), PerformanceTest (void);
+extern void Print (const char *file), PerformanceTest (void), MakeTree (void), QuickTest (void), MakeDirectory (const char *file), ShowTree (void);
 extern void StartProcess (char *file), ConsoleTest (char *in, char *out), SynchConsoleTest (char *in, char *out);
 extern void MailTest (int networkID);
 
@@ -143,6 +143,24 @@ main (int argc, char **argv)
 		Print (*(argv + 1));
 		argCount = 2;
 	    }
+	  else if (!strcmp (*argv, "--tree"))
+	    {			// print the whole tree
+		ShowTree();
+	    }
+	  else if (!strcmp (*argv, "--init"))
+	    {			// init test tree
+		MakeTree();
+	    }
+	  else if (!strcmp (*argv, "--test"))
+	    {			// init test tree
+		QuickTest();
+	    }
+	  else if (!strcmp (*argv, "--mkdir"))
+	    {			// init test tree
+		ASSERT (argc > 1);
+		MakeDirectory(*(argv + 1));
+		argCount = 2;
+	    }
 	  else if (!strcmp (*argv, "-r"))
 	    {			// remove Nachos file
 		ASSERT (argc > 1);
@@ -175,6 +193,7 @@ main (int argc, char **argv)
 #endif // NETWORK
       }
 
+	interrupt->Halt();
     currentThread->Finish ();	// NOTE: if the procedure "main" 
     // returns, then the program "nachos"
     // will exit (as any other normal program

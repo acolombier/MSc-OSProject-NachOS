@@ -63,8 +63,7 @@ class FileHeader;
 
 class OpenFile {
   public:
-    OpenFile(int sector);		// Open a file whose header is located
-					// at "sector" on the disk
+    OpenFile(int sector, FileHeader * hdr = nullptr);		// Open a file whose already have an used header
     ~OpenFile();			// Close the file
 
     void Seek(int position); 		// Set the position from which to 
@@ -76,19 +75,24 @@ class OpenFile {
 					// and increment position in file.
     int Write(const char *from, int numBytes);
 
-    int ReadAt(char *into, int numBytes, int position);
+    int ReadAt(char *into, int numBytes, int position = 0);
     					// Read/write bytes from the file,
 					// bypassing the implicit position.
-    int WriteAt(const char *from, int numBytes, int position);
+    int WriteAt(const char *from, int numBytes, int position = 0);
 
     int Length(); 			// Return the number of bytes in the
 					// file (this interface is simpler 
 					// than the UNIX idiom -- lseek to 
 					// end of file, tell, lseek back 
+					
+    int type() const;
+    
+    inline FileHeader* header() const { return hdr; }
     
   private:
     FileHeader *hdr;			// Header for this file 
     int seekPosition;			// Current position within the file
+    int headerSector;
 };
 
 #endif // FILESYS
