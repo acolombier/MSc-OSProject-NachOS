@@ -38,7 +38,6 @@ class Connection {
   private:
     NetworkAddress toMachine;	// Destination machine ID
     MailBoxAddress toMail;		// Destination mail box
-    PostOffice postOffice;
 
     int SendFixedSize(char *data, char flags);  // send a message of size == MaxPacketSize
     int ReceiveFixedSize(char *data);  // receive a message of size == MaxPacketSize
