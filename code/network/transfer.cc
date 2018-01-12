@@ -37,9 +37,9 @@ int Connection::SendFixedSize(char *data, char flags) {
 
 
         /* recieve acknowledgement */
-        postOffice->Receive(toMail, &inPktHdr, &inMailHdr, inBuffer);
+        postOffice->Receive(toMail, &inPktHdr, &inMailHdr, inBuffer, TEMPO);
         attempts++;
-    while (!(dynamic_cast<TransferHeader *>(inBuffer)->flags & flags & ACK) &&
+    while (!(dynamic_cast<TransferHeader *>(inBuffer)->flags & (flags | ACK)) &&
            attemps < MAXREEMISSIONS);
 
 }

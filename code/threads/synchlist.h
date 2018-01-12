@@ -35,6 +35,8 @@ class SynchList
     void Mapcar (VoidFunctionPtr func);
     void Unlock ();		//
 
+    static void TimeoutHandler (int synchL);
+
   private:
     List * list;		// the unsynchronized list
     Lock *lock;			// enforce mutual exclusive access to the list

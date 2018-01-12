@@ -14,6 +14,8 @@
 
 #include "copyright.h"
 #include "synchlist.h"
+#include "interrupt.h"
+#include "system.h"
 
 //----------------------------------------------------------------------
 // SynchList::SynchList
@@ -76,7 +78,7 @@ SynchList::Remove (int timeout)
     lock->Acquire ();		// enforce mutual exclusion
 
     if (timeout > -1)
-        Interrupt::Schedule(this->Unlock(), NULL, timeout, TimerInt);
+        interrupt->Schedule(TimeoutHandler, (int) this, timeout, IntType::TimerInt);
 
     while (list->IsEmpty () && !(timeout == -1 && hasTimeout))
         listEmpty->Wait (lock);	// wait until list isn't empty
@@ -109,17 +111,22 @@ SynchList::Mapcar (VoidFunctionPtr func)
 }
 
 //----------------------------------------------------------------------
-// SynchList::Mapcar
-//      Apply function to every item on the list.  Obey mutual exclusion
-//      constraints.
+// SynchList::Unlock
 //
-//      "func" is the procedure to be applied.
 //----------------------------------------------------------------------
 
 void
 SynchList::Unlock ()
 {
     lock->Acquire ();
-    list->Mapcar (func);
+    hasTimeout = true;
+    listEmpty->Broadcast (lock);
     lock->Release ();
+}
+
+
+void
+SynchList::TimeoutHandler (int synchL)
+{
+    ((SynchList *)synchL)->Unlock ();
 }
