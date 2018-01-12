@@ -44,7 +44,7 @@ SpaceId do_UserProcessCreate(OpenFile* executable/*, int argc, char** argv*/, in
 	Thread* t = new Thread("forkExec");
 	space->appendThread(t);
 
-	delete executable;		// close file
+	fileSystem->Close(executable);		// close file
 
     //~ bundle_t *bundle = 0;
     bundle_t *bundle = new bundle_t;

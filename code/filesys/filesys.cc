@@ -337,6 +337,9 @@ FileSystem::Open(const char *name)
 
 	char *element_name, *parent_name;
 	basename(name, &parent_name, &element_name);
+    
+    name = (const char*)new char[strlen(parent_name) + strlen(element_name) + 2];
+    snprintf((char*)name, strlen(parent_name) + strlen(element_name) + 2, "%s/%s", strlen(parent_name) > 1 ? parent_name : "", element_name);
 
 	if (walkThrough(&openFile, parent_name)){
 		delete [] element_name;
@@ -348,17 +351,18 @@ FileSystem::Open(const char *name)
 
 	int free_block = -1;
 	for (int i = 0; i < MAX_OPEN_FILE; i++){
-		DEBUG('F', "At table %d: %p <?> %s/%s\n", i, files_table[i].file, parent_name, element_name);
+		DEBUG('F', "At table %d: %s <?> %s\n", i, files_table[i].pathname, name);
 		
-		if (files_table[i].pathname == nullptr || (files_table[i].file && strncmp(files_table[i].pathname, parent_name, strlen(parent_name)) == 0 && strcmp(files_table[i].pathname + strlen(parent_name) + 2, element_name) == 0)){
+		if (files_table[i].pathname == nullptr || (files_table[i].file && strcmp(files_table[i].pathname, name) == 0)){
 			free_block = i;
 			break;
 		}
 	}
 	if (files_table[free_block].pathname != nullptr){ // if free block actually corresponds to the same file already opened
 		files_table[free_block].spaceid->push_back(currentThread->space ? currentThread->space->pid() : 0);
+        openFile = new OpenFile(files_table[free_block].sector, files_table[free_block].file);
 		fs_lock->Release();
-		return new OpenFile(files_table[free_block].sector, files_table[free_block].file);
+		return openFile;
 	}
 
 	if (free_block < 0){
@@ -388,21 +392,19 @@ FileSystem::Open(const char *name)
 	}
 	
 	if (openFile){
-		files_table[free_block].pathname = new char[strlen(parent_name) + strlen(element_name) + 2];
-		strcpy(files_table[free_block].pathname, parent_name);
-		*(files_table[free_block].pathname + strlen(parent_name)) = '/';
-		strcpy(files_table[free_block].pathname + strlen(parent_name) + 1, element_name);
+		files_table[free_block].pathname = (char *)name;
         
 		files_table[free_block].spaceid = new std::vector<SpaceId>;
 		files_table[free_block].spaceid->push_back(currentThread->space ? currentThread->space->pid() : 0);
 		files_table[free_block].file = openFile->header();
 		files_table[free_block].sector = openFile->sector();
         
-        DEBUG('F', "Opening file %s in %s for %d: vector is at %p\n", element_name, strlen(parent_name) ? parent_name : DELIMITER, currentThread->space ? currentThread->space->pid() : -1, files_table[free_block].spaceid);
+        DEBUG('F', "Opening file %s in %s for the process %d\n", element_name, strlen(parent_name) ? parent_name : DELIMITER, currentThread->space ? currentThread->space->pid() : -1, files_table[free_block].spaceid);
 		delete [] element_name;
 		delete [] parent_name;
 		
-	}
+	} else
+        delete [] name;
 
 	fs_lock->Release();
     
@@ -431,6 +433,7 @@ void FileSystem::Close(OpenFile* openFile){
             }
     }
     if (free_block != -1 && files_table[free_block].spaceid->size() == 0){
+            DEBUG('F', "The file %s has been closed by every one\n", files_table[free_block].pathname);
             delete [] files_table[free_block].pathname;
             delete files_table[free_block].spaceid;
             delete openFile;
@@ -454,6 +457,16 @@ int FileSystem::Move(const char *oldpath, const char *newpath)
 		return E_SUCESS;
 	
     fs_lock->Acquire();
+		
+    int sector, success;
+    OpenFile *old_parent_file = NULL, *new_parent_file = NULL;
+
+    char *prefix_name_old, *suffix_name_old;
+    char *prefix_name_new, *suffix_name_new;
+    
+    basename(oldpath, &prefix_name_old, &suffix_name_old);    
+    oldpath = (const char *)new char[strlen(prefix_name_old) + strlen(suffix_name_old) + 2];
+    snprintf((char*)oldpath, strlen(prefix_name_old) + strlen(suffix_name_old) + 2, "%s/%s", strlen(prefix_name_old) > 1 ? prefix_name_old : "", suffix_name_old);
     
     for (int i = 0; i < MAX_OPEN_FILE; i++){
 		if (files_table[i].pathname && strcmp(files_table[i].pathname, oldpath) == 0){
@@ -462,14 +475,6 @@ int FileSystem::Move(const char *oldpath, const char *newpath)
 			return E_ISUSED;
 		}
 	}
-		
-    int sector, success;
-    OpenFile *old_parent_file = NULL, *new_parent_file = NULL;
-
-    char *prefix_name_old, *suffix_name_old;
-    char *prefix_name_new, *suffix_name_new;
-    
-    basename(oldpath, &prefix_name_old, &suffix_name_old);
     
     DEBUG('F', "Move: looking for the old prefix %s\n", prefix_name_old);
 	if ((success = walkThrough(&old_parent_file, prefix_name_old))){
@@ -558,6 +563,8 @@ int FileSystem::Move(const char *oldpath, const char *newpath)
 	delete [] prefix_name_new;
 	if (suffix_name_old != suffix_name_new) delete [] suffix_name_old;
 	delete [] suffix_name_new;
+    
+    delete [] oldpath;
 	
 	
 	fs_lock->Release();

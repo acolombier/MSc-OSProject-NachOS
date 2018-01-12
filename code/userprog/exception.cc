@@ -270,13 +270,15 @@ ExceptionHandler (ExceptionType which)
 					machine->WriteRegister(2, 0);					
 					break;
 				} else {
-					DEBUG('c', "File is %p \n", b->object);
 					delete [] b->pathname;
 					int fd = currentThread->space->store_fd(b);
+					DEBUG('c', "File is %p : %d \n", b->object, fd);
 					if (fd)
 						machine->WriteRegister(2, fd);	
-					else
+					else {
+						fileSystem->Close((OpenFile*)b->object);
 						delete b;
+					}
 				}	
 				
 				break;
@@ -452,27 +454,28 @@ ExceptionHandler (ExceptionType which)
 		do_UserProcessExit(-1);
 	} else if (which == PageFaultException){		
 		char *buffer = new char[64];
-		snprintf(buffer, 64, "SIGSEGV on process %d, thread %d: PageFault.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid());
+		snprintf(buffer, 64, "SIGSEGV on process %d, thread %d: Address %p is invalid.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid(), (void*)reg4);
 		
 		synchconsole->AcquireOutput();
 		synchconsole->PutString(buffer);		
 		synchconsole->ReleaseOutput();
 		
 		delete [] buffer;
-		DEBUG('E', "SIGSEGV on the thread %s. Aborting process\n", currentThread->getName());
+		DEBUG('E', "SIGSEGV on process %d, thread %d: Address %p is invalid.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid(), (void*)reg4);
 
 		/*! \todo error code */
 		do_UserProcessExit(-1);
 	} else if (which == ReadOnlyException){
 		char *buffer = new char[64];
-		snprintf(buffer, 64, "SIGSEGV on process %d, thread %d: ReadOnly.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid());
+		snprintf(buffer, 64, "SIGSEGV on process %d, thread %d: Address %p is readOnly.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid(), (void*)reg4);
 		
 		synchconsole->AcquireOutput();
 		synchconsole->PutString(buffer);		
 		synchconsole->ReleaseOutput();
 		
 		delete [] buffer;
-		DEBUG('E', "SIGSEGV for ro access on the thread %s. Aborting process\n", currentThread->getName());
+		
+		DEBUG('E', "SIGSEGV on process %d, thread %d: Address %p is readOnly.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid(), (void*)reg4);
 
 		/*! \todo error code */
 		do_UserProcessExit(-1);

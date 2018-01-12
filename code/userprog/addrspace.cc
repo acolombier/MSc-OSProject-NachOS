@@ -59,12 +59,23 @@ SwapHeader (NoffHeader * noffH)
  */
 static void ReadAtVirtual(OpenFile *executable, int virtualaddr,
 	int numBytes, int position,
-	TranslationEntry *pageTable,unsigned numPages){
+	TranslationEntry *pageTable, unsigned numPages){
     char* buf = new char[numBytes];
     numBytes = executable->ReadAt(buf, numBytes, position);
 
+	
+    
+    TranslationEntry *TempPageTable = machine->pageTable;
+    unsigned int TempTableSize = machine->pageTableSize;
+    
+    machine->pageTable = pageTable;
+    machine->pageTableSize = numPages;
+    
     for (int i = 0; i < numBytes; i++)
 		machine->WriteMem(virtualaddr + i, 1, buf[i]);
+		
+    machine->pageTable = TempPageTable;
+    machine->pageTableSize = TempTableSize;
 
     delete [] buf;
 }
@@ -95,6 +106,7 @@ AddrSpace::AddrSpace (OpenFile * executable):
 	mPid = ++AddrSpace::_LAST_PID;
 	
 	mFdTable = new fd_bundle_t[MAX_OPEN_FILE];
+	memset(mFdTable, 0, sizeof(fd_bundle_t) * MAX_OPEN_FILE);
 	fd_lock = new Lock("AddrSpace FD Lock");
 	
 	addrspace_bundle_t* a_bundle = new addrspace_bundle_t;
@@ -102,17 +114,14 @@ AddrSpace::AddrSpace (OpenFile * executable):
 	a_bundle->object = this;
 	a_bundle->pid = mPid;
 	a_bundle->result_code = 0;
+	a_bundle->ref_cnt = 1;
 
 	AddrSpace::_SPACE_LIST->Append(a_bundle);
-
-	AddrSpace::_ADDR_SPACE_LOCK->Release();
-	INC_REF(pid());
-	AddrSpace::_ADDR_SPACE_LOCK->Acquire();
 
 	ListElement* e = AddrSpace::_SPACE_LIST->getFirst();
 
 	do {
-		DEBUG('c', "ListProcess: current is %d\n", ((addrspace_bundle_t*)e->item)->object->pid());
+		if (((addrspace_bundle_t*)e->item)->object) DEBUG('c', "ListProcess: current is %d\n", ((addrspace_bundle_t*)e->item)->object->pid());
 	} while ((e = e->next));
 	AddrSpace::_ADDR_SPACE_LOCK->Release();
 
@@ -156,8 +165,6 @@ AddrSpace::AddrSpace (OpenFile * executable):
 	}
     mBrk = divRoundUp(size - 1, PageSize) * PageSize;
 
-    RestoreState();
-
 // then, copy in the code and data segments into memory
     if (noffH.code.size > 0) {
 		DEBUG ('a', "Initializing code segment, at 0x%x, size %d\n",
@@ -196,14 +203,17 @@ AddrSpace::~AddrSpace ()
 
 	DEBUG('a', "Deleting pageTable after releasing frame.\n");
 	delete [] pageTable;
-	
+				
+	AddrSpace* spaceThread = currentThread->space; //spoffing the space to explicitely say whom is closing
+	currentThread->space = this;
 	for (int i = 0; i < MAX_OPEN_FILE; i++){
 		if (mFdTable[i].object){
-			DEBUG('F', "Process %p has forgot to close a file. Closing now...\n", mPid);
+			DEBUG('F', "Process %d has forgot to close a file. Closing now...\n", mPid);
 			fileSystem->Close((OpenFile*)mFdTable[i].object);
 			break;
 		}
 	}
+	currentThread->space = spaceThread;
 	
 	delete [] mFdTable;
 	delete fd_lock;
@@ -501,7 +511,7 @@ void AddrSpace::dec_ref_thread(tid_t tid){
 
 	if (t_bundle->ref_cnt <= 0){
 		char found = mThreadList->Remove(t_bundle);
-		DEBUG('t', "Thread bundle #%d has %sbeen deketed\n", t_bundle->tid, (found ? "": "NOT "));
+		DEBUG('t', "Thread bundle #%d has %sbeen deleted\n", t_bundle->tid, (found ? "": "NOT "));
 		ASSERT(found == true);
 		delete t_bundle;
 	}
@@ -576,12 +586,12 @@ int AddrSpace::Sbrk(int n){
 	unsigned int stackStart = (ADDRSPACE_PAGES_SIZE - (stackNbPages * countThread())) * PageSize;
 
 	if (mBrk + (n * PageSize) >= stackStart){
-		DEBUG('a', "Trying to allocate new pages, but none available in the address space.\n");
+		DEBUG('p', "Trying to allocate new pages, but none available in the address space.\n");
 		return 0;
 	}
 
 	if ((int)frameprovider->NumAvailFrame() < n){
-		DEBUG('a', "Trying to allocate new pages, but none available in the physical memory.\n");
+		DEBUG('p', "Trying to allocate new pages, but none available in the physical memory.\n");
 		return 0;
 	}
 
@@ -598,15 +608,15 @@ int AddrSpace::Sbrk(int n){
 		if (n < 0){
 			pageTable[i].clearValid();
 			frameprovider->ReleaseFrame(pageTable[i].physicalPage());
-			DEBUG('A', "Address from %u to %u are now unavailable.\n", (char*)(pageTable[i].virtualPage() * PageSize), (char*)(pageTable[i].virtualPage() * PageSize + PageSize - 1), n);
+			DEBUG('P', "Address from %u to %u are now unavailable.\n", (char*)(pageTable[i].virtualPage() * PageSize), (char*)(pageTable[i].virtualPage() * PageSize + PageSize - 1), n);
 		} else {
 			pageTable[i].setValid();
 			pageTable[i].physicalPage(frameprovider->GetEmptyFrame());
-			DEBUG('A', "Address from %u to %u are now available.\n", (char*)(pageTable[i].virtualPage() * PageSize), (char*)(pageTable[i].virtualPage() * PageSize + PageSize - 1), n);
+			DEBUG('P', "Address from %u to %u are now available.\n", (char*)(pageTable[i].virtualPage() * PageSize), (char*)(pageTable[i].virtualPage() * PageSize + PageSize - 1), n);
 		}
 	}
 	int oldBrk = mBrk;
-	DEBUG('A', "Brk has been moved from %u to %u (%d page).\n", (char*)(start_page * PageSize), (char*)(end_page * PageSize), n);
+	DEBUG('p', "Brk has been moved from %u to %u (%d page).\n", (char*)(start_page * PageSize), (char*)(end_page * PageSize), n);
 	mBrk = end_page * PageSize;
 	return oldBrk;
 }
