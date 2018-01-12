@@ -53,7 +53,8 @@
 /*! \def EOF
     The EOF reprensation on 4 bytes.
 */
-#define EOF	0xFFFFFFFF
+#define EOF			0xFFFFFFFF
+#define NULL_TID	0xFFFFFFFF
 
 
 /*! \brief Semaphore provided to the user */
