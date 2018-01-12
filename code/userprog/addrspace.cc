@@ -112,7 +112,7 @@ AddrSpace::AddrSpace (OpenFile * executable):
 	ListElement* e = AddrSpace::_SPACE_LIST->getFirst();
 	
 	do {
-		DEBUG('c', "ListProcess: current is %d\n", ((AddrSpace*)e->item)->pid());
+		DEBUG('c', "ListProcess: current is %d\n", ((addrspace_bundle_t*)e->item)->object->pid());
 	} while ((e = e->next));
 	AddrSpace::_ADDR_SPACE_LOCK->Release();
 	
@@ -135,7 +135,7 @@ AddrSpace::AddrSpace (OpenFile * executable):
     numPages = ro_code + rw_code;
     size = numPages * PageSize;
 
-    ASSERT (numPages <= NumPhysPages);	// check we're not trying
+    ASSERT (numPages < frameprovider->NumAvailFrame());	// check we're not trying
     // to run anything too big --
     // at least until we have
     // virtual memory

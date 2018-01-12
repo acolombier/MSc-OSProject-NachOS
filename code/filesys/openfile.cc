@@ -67,6 +67,7 @@ void
 OpenFile::Seek(int position)
 {
     seekPosition = position;
+    if (seekPosition > Length()) seekPosition = Length();
 }	
 
 //----------------------------------------------------------------------

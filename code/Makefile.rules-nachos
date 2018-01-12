@@ -44,6 +44,21 @@ CPPFLAGS+=$($(TG)CPPFLAGS)
 LDFLAGS+=$($(TG)LDFLAGS)
 LDLIBS+=$($(TG)LDLIBS)
 
+	
+define deploy_task =
+  if [ ! -e "DISK" ]; then
+      echo "Formating the harddrive" && ./nachos-filesys -f > /dev/null;
+  fi
+  for d in $(ls | grep -v '.o' | grep -v 'DISK' | grep -v "SOCKET_"); do
+    echo ./nachos-filesys -r $d > /dev/null;
+    ./nachos-filesys -cp $d $d | head -n 2 | tail -n 1;
+  done;
+endef
+
+deploy: ; @$(value deploy_task)
+
+.ONESHELL:
+
 ###########################################################################
 
 # Set default make verbosity
@@ -198,6 +213,8 @@ clean::
 	$$(RM) $$(call addprefix-dir,$2,$4)
 	$$(RM) $$(call addprefix-dir,$2,$(4:%.o=%.s))
 	$$(RM) $$(call objs-to-depends,$4,$2)
+	
+
 
 # Add include directories from the list in INCDIRS
 #$$(warning $$(call addprefix-dir,$2,$4): CPPFLAGS += $$(call serie-get-CPPFLAGS,$1))

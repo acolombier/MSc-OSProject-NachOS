@@ -70,6 +70,8 @@ class FileHeader {
     inline Permission permission() const { return (Permission)(flag >> 29 & 0x7); }
     inline int lastaccess() const { return flag >> 2 & 0xFFFFF7; }
     
+    inline void permission(int value) { flag = type() | (lastaccess() << 2) | ((value & 0x7) << 29); }
+    
     inline void setPermission(Permission value) { flag = ((unsigned int)value) << 29 | flag; }
     inline void clearPermission(Permission value) { flag = ((unsigned int)permission() & ~value) << 29 | flag; }
     

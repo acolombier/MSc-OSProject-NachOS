@@ -23,6 +23,7 @@
 #include "userthread.h"
 #include "userprocess.h"
 #include "addrspace.h"
+#include "directory.h"
 
 //----------------------------------------------------------------------
 // UpdatePC : Increments the Program Counter register in order to resume
@@ -314,18 +315,38 @@ ExceptionHandler (ExceptionType which)
 			case SC_Tell: {
 				DEBUG('c', "Tell syscall on %p, initiated by user program.\n", reg4);
 				/*! \todo Implementation */
+				fd_bundle_t* b = currentThread->space->get_fd(reg4);
+				if (b)
+					machine->WriteRegister(2, ((OpenFile*)b->object)->Tell());
+				else
+					machine->WriteRegister(2, -1);
 				break;
 			}
 			
 			case SC_Seek: {
 				DEBUG('c', "Seek syscall on %p, initiated by user program.\n", reg4);
 				/*! \todo Implementation */
+				
+				fd_bundle_t* b = currentThread->space->get_fd(reg4);
+				if (b){
+					((OpenFile*)b->object)->Seek(reg5);
+					machine->WriteRegister(2, ((OpenFile*)b->object)->Tell());
+				}
+				else
+					machine->WriteRegister(2, -1);
+					
 				break;
 			}
 			
 			case SC_Size: {
 				DEBUG('c', "Size syscall on %p, initiated by user program.\n", reg4);
-				/*! \todo Implementation */
+				
+				fd_bundle_t* b = currentThread->space->get_fd(reg4);
+				if (b)
+					machine->WriteRegister(2, ((OpenFile*)b->object)->Length());
+				else
+					machine->WriteRegister(2, -1);
+					
 				break;
 			}
 			
@@ -338,6 +359,71 @@ ExceptionHandler (ExceptionType which)
 					currentThread->space->del_fd(reg4);
 				}
 				/*! \todo Implementation */
+				break;
+			}
+			
+			case SC_Move: {
+				DEBUG('c', "Move syscall on %p, initiated by user program.\n", reg4);
+				
+				char* old = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
+				char* new_ = copyStringFromMachine(reg5, (unsigned int)MAX_STRING_SIZE);
+				
+				machine->WriteRegister(2, fileSystem->Move(old, new_));;
+				
+				delete [] old;
+				delete [] new_;
+				/*! \todo Implementation */
+				break;
+			}
+			
+			case SC_Remove: {
+				DEBUG('c', "Remove syscall on %p, initiated by user program.\n", reg4);
+				
+				char* path = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
+				
+				machine->WriteRegister(2, fileSystem->Remove(path));;
+				
+				delete [] path;
+				break;
+			}
+			
+			case SC_List: {
+				DEBUG('c', "List syscall on %p, initiated by user program.\n", reg4);
+				
+								
+				fd_bundle_t* b = currentThread->space->get_fd(reg6);
+				if (b && ((OpenFile*)b->object)->type() == (int)FileHeader::Directory){
+					int index = ((OpenFile*)b->object)->Tell();
+					Directory* dir = new Directory;
+					dir->FetchFrom((OpenFile*)b->object);
+					
+					if (dir->count() <= index)
+						machine->WriteMem(reg5, 1, 0);
+					else {
+						copyStringToMachine(dir->get_name(index), reg5, MIN(MAX_STRING_SIZE, reg6));
+						((OpenFile*)b->object)->Seek(++index);
+					}
+					delete dir;
+				} else
+					machine->WriteRegister(2, 0);
+				break;
+			}
+			
+			case SC_Changemod: {
+				DEBUG('c', "Changemod syscall on %p, initiated by user program.\n", reg4);
+				
+				char* path = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
+				
+				OpenFile* modObject = fileSystem->Open(path);
+				if (modObject){
+					modObject->header()->permission(reg5);
+					machine->WriteRegister(2, 0);
+					delete modObject;
+				}
+				else
+					machine->WriteRegister(2, -1);
+				
+				delete [] path;
 				break;
 			}
 

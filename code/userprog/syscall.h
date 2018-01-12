@@ -49,6 +49,11 @@
 #define SC_Seek 26
 #define SC_Size 27
 
+#define SC_Move 28
+#define SC_Remove 29
+#define SC_List 30
+#define SC_Changemod 31
+
 #define ConsoleInput	0
 #define ConsoleOutput	1
 
@@ -157,14 +162,14 @@ int Read (char *buffer, int size, OpenFileId id);
  * \param offset the value where the head should be
  * \return Return the value after beeing set. Might be different if there was a range error
  */
-int Seek (OpenFileId fd);
+int Seek (OpenFileId fd, int offset);
 
 /*!
  * \brief Get the reading head position
  * \param fd the file
  * \return Return the value
  */
-int Tell (OpenFileId fd, int offset);
+int Tell (OpenFileId fd);
 
 /*!
  * \brief Get the file size of a file
