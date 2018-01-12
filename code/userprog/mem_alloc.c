@@ -30,8 +30,11 @@ unsigned int memory_size;
 
 static void cleanup(){
 	mem_block *current_block = (mem_block*)memory, *previous_block = NULL;
-	
-	// PutString("Loop\n");
+
+	if(divRoundDown(memory_size, PageSize) == 1)
+	    return;
+
+	    // PutString("Loop\n");
 	while (memory + memory_size > (char*)current_block){
 		previous_block = current_block;
 		current_block = (mem_block*)((char*)current_block + current_block->size + 2 * BLOCK_SIZE_WITH_PADDING);
@@ -326,6 +329,8 @@ void memory_display_state(void){
     PutInt((unsigned int)memory);
     PutString("\nFinishing: ");
     PutInt((unsigned int)memory + memory_size);
+    PutString("\nSize: ");
+    PutInt((unsigned int)memory_size);
     
 	PutString("\nMem. usage: [");
     while (memory + memory_size > (char*)current_block){
