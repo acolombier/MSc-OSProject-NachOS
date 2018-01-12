@@ -233,7 +233,7 @@ sem_wait:
     syscall
     j   $31
     .end sem_wait
-    
+
      .globl ForkExec
     .ent    ForkExec
 ForkExec:
@@ -242,7 +242,7 @@ ForkExec:
     syscall
     j   $31
     .end ForkExec
-    
+
      .globl Kill
     .ent    Kill
 Kill:
@@ -274,6 +274,14 @@ Size:
     syscall
     j   $31
     .end Size
+
+	.globl Sbrk
+	.ent	Sbrk
+Sbrk:
+	addiu $2,$0,SC_Sbrk
+	syscall
+	j	$31
+	.end Sbrk
 
 /* dummy function to keep gcc happy */
         .globl  __main

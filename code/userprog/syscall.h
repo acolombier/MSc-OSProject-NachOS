@@ -54,6 +54,8 @@
 #define SC_List 30
 #define SC_Changemod 31
 
+#define SC_Sbrk 32
+
 #define ConsoleInput	0
 #define ConsoleOutput	1
 
@@ -73,6 +75,8 @@
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 0xFF
 #define NULL 0
+
+typedef unsigned int size_t;
 
 /* when an address space starts up, it has two open files, representing
  * keyboard input and display output (in UNIX terms, stdin and stdout).
@@ -249,10 +253,7 @@ void Kill(SpaceId pid, char sig);
 int ForkExec(char *s);
 
 /*! \brief Dynamically allocate n bytes */
-void* malloc(int n);
-
-/*! \brief De-allocate the dynamic block */
-void free(void* block_malloced);
+void *Sbrk(int size);
 
 #endif // IN_USER_MODE
 

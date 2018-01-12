@@ -140,7 +140,7 @@ $$(foreach source,$$(filter %.cc,$$(call flavor-get-SOURCES,$1)), \
   $$(eval $$(call gen-rules-CC,HOST,$2,$$(source),$4)))
 $$(foreach source,$$(filter %.S,$$(call flavor-get-SOURCES,$1)), \
   $$(eval $$(call gen-rules-S,HOST,$2,$$(source),$4)))
-$$(foreach source,$$(filter-out %.cc %.S,$$(call flavor-get-SOURCES,$1)), \
+$$(foreach source,$$(filter-out %.c %.cc %.S,$$(call flavor-get-SOURCES,$1)), \
   $$(warning Ignoring source $$(source) (no rules to compile it)))
 
 endef

@@ -6,7 +6,7 @@ int main (){
 	int result_code;
 	
     while (1){
-		PutString("nach_shell> ");
+		PutString("\x1B[32mnach_shell\x1B[31m>\033[0m ");
 		GetString(cmd, 128);
 
 		if (strcmp("exit", cmd) == 0)

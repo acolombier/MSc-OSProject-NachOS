@@ -91,7 +91,7 @@ ExceptionHandler (ExceptionType which)
 				// the prog shouldn't exit while the thread is still running
 				// if it has exited before; then nothing happens here
 				// otherwise the halting of the main is made clean
-				
+
 				do_UserHalt();
 				break;
 			}
@@ -135,8 +135,8 @@ ExceptionHandler (ExceptionType which)
 
 			case SC_PutString: {
 				DEBUG('c', "PutString syscall, initiated by user program.\n");
-				synchconsole->AcquireOutput();
 				char* buffer = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
+				synchconsole->AcquireOutput();
 				synchconsole->PutString(buffer);
 				delete [] buffer;
 				synchconsole->ReleaseOutput();
@@ -148,8 +148,8 @@ ExceptionHandler (ExceptionType which)
 				synchconsole->AcquireInput();
 				char *buffer = (char *) malloc(sizeof(char) * MAX_STRING_SIZE);
 				synchconsole->GetString(buffer, reg5);
-				copyStringToMachine(buffer, reg4, MIN(MAX_STRING_SIZE, reg5));
 				synchconsole->ReleaseInput();
+				copyStringToMachine(buffer, reg4, MIN(MAX_STRING_SIZE, reg5));
 				free(buffer);
 				break;
 			}
@@ -159,7 +159,7 @@ ExceptionHandler (ExceptionType which)
 				synchconsole->AcquireOutput();
 				char *buffer = (char *) malloc(sizeof(char) * 11);
 
-				snprintf(buffer, 11, "%d", reg4); /*! \todo make a real function if time availbale */
+				snprintf(buffer, 11, "%d", reg4);
 				synchconsole->PutString(buffer);
 
 				free(buffer);
@@ -173,11 +173,11 @@ ExceptionHandler (ExceptionType which)
 				char *buffer = (char *) malloc(sizeof(char) * 11);
 
 				synchconsole->GetString(buffer, 11);
-				sscanf(buffer, "%d", &returnvalue); /*! \todo make a real function if time availbale */
-				machine->WriteMem(reg4, 11, returnvalue);
+				sscanf(buffer, "%d", &returnvalue);
 
 				free(buffer);
 				synchconsole->ReleaseInput();
+				machine->WriteMem(reg4, 4, returnvalue);
 				break;
 			}
 
@@ -191,10 +191,9 @@ ExceptionHandler (ExceptionType which)
 			case SC_ExitUserThread: {
 				DEBUG('c', "ExitUserThread syscall, initiated by user program. %d thread(s) remaining in this space.\n", currentThread->space->countThread());
 
-				/*! \todo Handle a return code for thread exit  */
 				if (currentThread->space->countThread() > 1)
 					do_UserThreadExit(reg4);
-				else 
+				else
 					do_UserProcessExit(reg4);
 				break;
 			}
@@ -229,7 +228,7 @@ ExceptionHandler (ExceptionType which)
 				/*! \todo Implementation */
 				break;
 			}
-			
+
 			case SC_ForkExec: {
 				DEBUG('c', "ForkExec syscall, initiated by user program.\n");
 
@@ -240,8 +239,8 @@ ExceptionHandler (ExceptionType which)
 					DEBUG('c', "Unable to open file %s\n", filename);
 					machine->WriteRegister(2, 0);
 					break;
-				}	
-				delete [] filename;			
+				}
+				delete [] filename;
 				returnvalue = do_UserProcessCreate(executable, reg6);
 				machine->WriteRegister(2, returnvalue);			
 				
@@ -358,7 +357,17 @@ ExceptionHandler (ExceptionType which)
 					fileSystem->Close((OpenFile*)b->object);
 					currentThread->space->del_fd(reg4);
 				}
+				machine->WriteRegister(2, returnvalue);
+
+				break;
+			}
+
+			case SC_Sbrk: {
+				DEBUG('c', "Sbrk syscall to move brk of %d pages, initiated by user program.\n", reg4);
 				/*! \todo Implementation */
+				returnvalue = currentThread->space->Sbrk(reg4);
+				machine->WriteRegister(2, returnvalue);
+				DEBUG('c', "The previous brk was %d and worth now %d.\n", returnvalue, currentThread->space->Sbrk(0));
 				break;
 			}
 			
@@ -437,7 +446,43 @@ ExceptionHandler (ExceptionType which)
 		UpdatePC ();
 		// End of addition
 	} else if (which == BusErrorException){
-		DEBUG('i', "SIGBUS on the thread %s. Aborting process\n", currentThread->getName());
+		DEBUG('E', "SIGBUS on the thread %s. Aborting process\n", currentThread->getName());
+
+		/*! \todo error code */
+		do_UserProcessExit(-1);
+	} else if (which == PageFaultException){		
+		char *buffer = new char[64];
+		snprintf(buffer, 64, "SIGSEGV on process %d, thread %d: PageFault.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid());
+		
+		synchconsole->AcquireOutput();
+		synchconsole->PutString(buffer);		
+		synchconsole->ReleaseOutput();
+		
+		delete [] buffer;
+		DEBUG('E', "SIGSEGV on the thread %s. Aborting process\n", currentThread->getName());
+
+		/*! \todo error code */
+		do_UserProcessExit(-1);
+	} else if (which == ReadOnlyException){
+		char *buffer = new char[64];
+		snprintf(buffer, 64, "SIGSEGV on process %d, thread %d: ReadOnly.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid());
+		
+		synchconsole->AcquireOutput();
+		synchconsole->PutString(buffer);		
+		synchconsole->ReleaseOutput();
+		
+		delete [] buffer;
+		DEBUG('E', "SIGSEGV for ro access on the thread %s. Aborting process\n", currentThread->getName());
+
+		/*! \todo error code */
+		do_UserProcessExit(-1);
+	} else if (which == OverflowException){
+		DEBUG('E', "SIGABRT Overflowing the stack\n", currentThread->getName());
+
+		/*! \todo error code */
+		do_UserProcessExit(-1);
+	} else if (which == IllegalInstrException){
+		DEBUG('E', "SIGABRT as trying to execute illegal instruction\n", currentThread->getName());
 
 		/*! \todo error code */
 		do_UserProcessExit(-1);

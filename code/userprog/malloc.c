@@ -1,11 +1,11 @@
-#include "mem_alloc.h"
-#include <stdio.h>
-#include <assert.h>
-#include <string.h>
+#include "malloc.h"
+#include "userlib.h"
 
+// should handle dynamic sizing
+#define defaultSize 1024
+
+#include "mem_alloc.c"
 #include "mem_alloc_types.h"
-
-static int __mem_alloc_init_flag=0;
 
 void *malloc(size_t size){
   if(!__mem_alloc_init_flag){
@@ -51,7 +51,7 @@ void *realloc(void *ptr, size_t size){
     
     mem_block *bb = (mem_block *)((char *)ptr - real_block_size);
     
-    fprintf(stderr, "Reallocating %d bytes to %d\n", bb->size , (int)size);
+    //~ fprintf(stderr, "Reallocating %d bytes to %d\n", bb->size , (int)size);
     if(size <= bb->size)
         return ptr;
 
