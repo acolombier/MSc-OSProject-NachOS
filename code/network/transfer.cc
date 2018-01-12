@@ -35,6 +35,7 @@ int Connection::SendFixedSize(char *data, char flags) {
     do {
         postOffice->Send(outPktHdr, outMailHdr, outBuffer);
 
+
         /* recieve acknowledgement */
         postOffice->Receive(toMail, &inPktHdr, &inMailHdr, inBuffer);
         attempts++;

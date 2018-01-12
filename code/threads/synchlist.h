@@ -1,11 +1,11 @@
-// synchlist.h 
+// synchlist.h
 //      Data structures for synchronized access to a list.
 //
 //      Implemented by surrounding the List abstraction
 //      with synchronization routines.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #ifndef SYNCHLIST_H
@@ -29,15 +29,17 @@ class SynchList
 
     void Append (void *item);	// append item to the end of the list,
     // and wake up any thread waiting in remove
-    void *Remove ();		// remove the first item from the front of
+    void *Remove (int timeout = -1);		// remove the first item from the front of
     // the list, waiting if the list is empty
     // apply function to every item in the list
     void Mapcar (VoidFunctionPtr func);
+    void Unlock ();		//
 
   private:
-      List * list;		// the unsynchronized list
+    List * list;		// the unsynchronized list
     Lock *lock;			// enforce mutual exclusive access to the list
     Condition *listEmpty;	// wait in Remove if the list is empty
+    bool hasTimeout;
 };
 
 #endif // SYNCHLIST_H
