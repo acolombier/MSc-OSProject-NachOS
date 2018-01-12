@@ -206,8 +206,9 @@ UserThreadExit:
     .globl UserThreadJoin
     .ent    UserThreadJoin
 UserThreadJoin:
-	move	$4,$2
-	jal	UserThreadExit
+    addiu $2,$0,SC_JoinUserThread
+    syscall
+    j   $31
     .end UserThreadJoin
 
     .globl sem_init

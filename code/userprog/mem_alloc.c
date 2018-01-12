@@ -30,8 +30,11 @@ unsigned int memory_size;
 
 static void cleanup(){
 	mem_block *current_block = (mem_block*)memory, *previous_block = NULL;
-	
-	// PutString("Loop\n");
+
+	if(divRoundDown(memory_size, PageSize) == 1)
+	    return;
+
+	    // PutString("Loop\n");
 	while (memory + memory_size > (char*)current_block){
 		previous_block = current_block;
 		current_block = (mem_block*)((char*)current_block + current_block->size + 2 * BLOCK_SIZE_WITH_PADDING);
@@ -314,11 +317,20 @@ char check_block(mem_block* b){
 		&& ((char*)sibbling_meta[RIGHT_SIBBLING] >= memory + memory_size || computed_sibbling_sum == small_hash_from_right);
 }
 
+void nextColor(int color){
+    switch (color % 3){
+    case 0 : PutString("\x1b[35m"); break;
+    case 1 : PutString("\x1b[92m"); break;
+    case 2 : PutString("\x1b[36m"); break;
+    }
+}
+
 void memory_display_state(void){
 
     mem_block* current_block = (mem_block*)memory;
     unsigned int c = (unsigned int)memory;
     unsigned int increment = memory_size / MEMORY_DISPLAY_SIZE;
+    int color_index = 0;
     
     PutString("Number of page used: ");
     PutInt(memory_size / PageSize);
@@ -326,13 +338,18 @@ void memory_display_state(void){
     PutInt((unsigned int)memory);
     PutString("\nFinishing: ");
     PutInt((unsigned int)memory + memory_size);
-    
-	PutString("\nMem. usage: [");
+    PutString("\nSize: ");
+    PutInt((unsigned int)memory_size);
+   
+    PutString("\nMem. usage: [");
     while (memory + memory_size > (char*)current_block){
-		for (; c < (unsigned int)((char*)current_block + current_block->size + 2 * BLOCK_SIZE_WITH_PADDING); c+= increment)
-			PutChar(IS_BLOCK_FREE(current_block) ? '.' : 'U');
-		current_block = (mem_block*)((char*)current_block + current_block->size + 2 * BLOCK_SIZE_WITH_PADDING);
-	}
-	PutString("]\n");
-    
+	if(!IS_BLOCK_FREE(current_block))
+	    nextColor(color_index++);
+	for (; c < (unsigned int)((char*)current_block + current_block->size + 2 * BLOCK_SIZE_WITH_PADDING); c+= increment)
+	    PutChar(IS_BLOCK_FREE(current_block) ? '.' : 'U');
+	current_block = (mem_block*)((char*)current_block + current_block->size + 2 * BLOCK_SIZE_WITH_PADDING);
+	PutString("\x1b[0m");
+    }
+    PutString("]\n");
+	
 }
