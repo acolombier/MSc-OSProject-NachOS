@@ -40,7 +40,7 @@ class Connection {
     MailBoxAddress toMail;		// Destination mail box
 
     int SendFixedSize(char *data, char flags);  // send a message of size == MaxPacketSize
-    int ReceiveFixedSize(char *data);  // receive a message of size == MaxPacketSize
+    char ReceiveFixedSize(char *data);  // receive a message of size == MaxPacketSize
 };
 
 

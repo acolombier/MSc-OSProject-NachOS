@@ -9,11 +9,9 @@ Connection::Connection(NetworkAddress to, MailBoxAddress mailbox) {
     toMail = mailbox;
 }
 
-/*
 Connection::~Connection() {
 
 }
- */
 
 int Connection::SendFixedSize(char *data, char flags) {
     PacketHeader outPktHdr, inPktHdr;
@@ -55,32 +53,65 @@ int Connection::SendFixedSize(char *data, char flags) {
         return 0;
 }
 
-int Connection::ReceiveFixedSize(char *data) {
-    PacketHeader /* outPktHdr, */ inPktHdr;
-    MailHeader /* outMailHdr, */ inMailHdr;
-    /* TransferHeader outTrHdr, inTrHdr; */
-    char /* outBuffer[MaxMailSize], */ inBuffer[MaxMailSize];
+char Connection::ReceiveFixedSize(char *data) {
+    PacketHeader outPktHdr, inPktHdr;
+    MailHeader outMailHdr, inMailHdr;
+    TransferHeader outTrHdr, inTrHdr;
+    char inBuffer[MaxMailSize];
 
     postOffice->Receive(toMail, &inPktHdr, &inMailHdr, inBuffer);
+    DEBUG('n', "Got \"%s\" from %d, box %d\n", inBuffer + 1, inPktHdr.from, inMailHdr.from);
 
+    memcpy(&inTrHdr, inBuffer, sizeof(TransferHeader));
+    memcpy(data, &inBuffer + sizeof(TransferHeader), inMailHdr.length - sizeof(TransferHeader));
+
+    outPktHdr.to = inPktHdr.from;
+    outMailHdr.to = inMailHdr.from;
+    outMailHdr.length = sizeof(TransferHeader);
+    outTrHdr.flags = 0 | ACK;
+    postOffice->Send(outPktHdr, outMailHdr, (char *) &outTrHdr);
+
+    return inTrHdr.flags;
+}
+
+int Connection::Send(char *data) {
+    unsigned int offset = 0;
+    char chunk[MAX_MESSAGE_SIZE], flags;
+
+    while (offset < strlen(data) + 1) {
+        flags = 0;
+        if (offset == 0)
+            flags = flags | START;
+        if (offset + MAX_MESSAGE_SIZE >= strlen(data) + 1)
+            flags = flags | END;
+        strncpy(chunk, data + offset, MAX_MESSAGE_SIZE);
+
+        if (SendFixedSize(chunk, flags) == -1)
+            return -1;
+
+        offset += MAX_MESSAGE_SIZE;
+    }
 
     return 0;
 }
 
-/*
-int Connection::Send(char *data) {
-
-}
-
 int Connection::Receive(char *data) {
+    unsigned int offset = 0;
+    char chunk[MAX_MESSAGE_SIZE], flags;
 
+    do {
+        flags = ReceiveFixedSize(chunk);
+        memcpy(data + offset, chunk, MAX_MESSAGE_SIZE);
+        offset += MAX_MESSAGE_SIZE;
+    } while (!(flags & END));
+
+    return 0;
 }
 
-int Connection::SendFile(int fd, int fileSize) {
+/* int Connection::SendFile(int fd, int fileSize) {
 
 }
 
 int Connection::ReceiveFile(int fd, int fileSize) {
 
-}
- */
+} */
