@@ -77,10 +77,19 @@ StartProcess (char *filename)
     AddrSpace *space;
 
     if (executable == NULL){
-		printf ("Unable to open file %s\n", filename);
-		return;
-	}
-    space = new AddrSpace (executable);
+	printf ("Unable to open file %s\n", filename);
+	return;
+    }
+    
+    try {
+	space = new AddrSpace (executable);
+    } catch (PermissionException*){
+	printf ("File %s has not execution permission\n", filename);
+	return;
+    } catch (ExecutableException*){
+	printf ("File %s is not a MIPS executable file\n", filename);
+	return;
+    }
     
     fileSystem->Close (executable);		// close file
     

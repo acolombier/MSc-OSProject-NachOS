@@ -5,11 +5,17 @@
 #define NB_MAX_THREAD 16
 
 char thread_running[NB_MAX_THREAD];
+
+sema_t lock;
   
 void* thread_test(void* id){
-	while (thread_running[(int)id])
-		Yield();
-	Yield();
+	while (1){
+	    sem_wait(lock);
+	    if (!thread_running[(int)id]) break;
+	    sem_post(lock);
+	    Yield();
+	}	
+	sem_post(lock);
 	return NULL;
 }
 
@@ -23,6 +29,8 @@ int main() {
   memset(thread_running,0, NB_MAX_THREAD*sizeof(char));        
 
   memory_init();
+  
+  sem_init(&lock, 1);
 
   while (1) {
     PutString("> ");
@@ -40,45 +48,55 @@ int main() {
     }
     case 'f':
       GetInt(&index);
-      memory_free(block_pointer[index]);
+      if (index >= 0 && index < NB_MAX_ALLOC && block_pointer[index]){
+        memory_free(block_pointer[index]);
+        block_pointer[index] = NULL;
+      }
+      else PutString("No block to free\n");  
+      
       break; 
     case 'l': {
-		index = (int)GetChar(); // to get read of the breakline
-		int t = -1;
-		while(thread_running[++t] && t < NB_MAX_THREAD - 1){}
-		if (t == NB_MAX_THREAD)
-          PutString("Can't run thread!\n");  
-		else {
-			thread_running[t] = 1;
-			thread_id[t] = UserThreadCreate(thread_test, (void*)t);
-			if (thread_id[t] == NULL_TID){
-				thread_running[t] = 0;
-				PutString("Error launching thread!\n");  
-			} else {				
-				PutString("Thread #");PutInt(t);
-				PutString(": launch with id "); 
-				PutInt(thread_id[t]);
-				PutString("\n"); 
-			}
-		}
-			
-      break; 
+	sem_wait(lock);
+	index = (int)GetChar(); // to get read of the breakline
+	int t = -1;
+	while(thread_running[++t] && t < NB_MAX_THREAD - 1){}
+	if (t == NB_MAX_THREAD)
+	    PutString("Can't run thread!\n");  
+	else {
+	    thread_running[t] = 1;	
+	    thread_id[t] = UserThreadCreate(thread_test, (void*)t);
+	    if (thread_id[t] == NULL_TID){	
+		    thread_running[t] = 0;
+		    PutString("Error launching thread!\n");  
+	    } else {				
+		    PutString("Thread #");PutInt(t);
+		    PutString(": launch with id "); 
+		    PutInt(thread_id[t]);
+		    PutString("\n"); 
+	    }
 	}
+	sem_post(lock);		
+      break; 
+    }
     case 'j': {
+		sem_wait(lock);
 		int t;
 		GetInt(&t);
 		if (t >= NB_MAX_THREAD || !thread_running[t] || !thread_id[t]){
-          PutString("Can't join thread!\n");  			
-          break;
+		    PutString("Can't join thread!\n");  	
+		    sem_post(lock);		
+		    break;
 		}
 		
 		PutString("Join thread with id ");PutInt(thread_id[t]);
 		PutString("\n");
 		thread_running[t] = 0;
-		if (UserThreadJoin(thread_id[t], NULL))
-			PutString("Thread unjoinable!\n");  			
+		int t_to_join = thread_id[t];
+		sem_post(lock);
+		if (UserThreadJoin(t_to_join, NULL))
+		    PutString("Thread unjoinable!\n");  
       break; 
-	}
+    }
     case 'i': {
 		int i;
 		GetInt(&i);
@@ -107,6 +125,17 @@ int main() {
     case EOF:
     case 'q':
       PutString("Exiting...\n");
+      sem_wait(lock);
+      for (int t = 0; t < NB_MAX_THREAD; t++)
+	if (thread_running[t]){		
+	    thread_running[t] = 0;
+	    int t_to_join = thread_id[t];
+	    sem_post(lock);
+	    if (UserThreadJoin(t_to_join, NULL))
+		PutString("Thread unjoinable!\n"); 
+	    sem_wait(lock); 
+	}
+	sem_post(lock);
       return 0;
       break;
     case 0xa:

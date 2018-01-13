@@ -35,6 +35,10 @@ static void cleanup(){
 	    return;
 
 	    // PutString("Loop\n");
+        
+#ifdef VERBOSE_MALLOC                
+	PutString("Cleaning unused tail pages\n");
+#endif
 	while (memory + memory_size > (char*)current_block){
 		previous_block = current_block;
 		current_block = (mem_block*)((char*)current_block + current_block->size + 2 * BLOCK_SIZE_WITH_PADDING);
@@ -49,8 +53,9 @@ static void cleanup(){
 		int deallocated_pages = divRoundDown(previous_block->size + 2 * BLOCK_SIZE_WITH_PADDING, PageSize);
 		Sbrk(-deallocated_pages);
 		memory_size -= deallocated_pages * PageSize;
+        previous_block->size -= deallocated_pages * PageSize;
+        DUMP_HEADER_TO_FOOTER(previous_block);
 	}
-	// PutString("Finishing cleaning\n");
 }
 
 void memory_init() {	
@@ -96,8 +101,16 @@ char *memory_alloc(int size){
 
 	/* code specific to first fit strategy can be inserted here */
 			if (!check_block(current_block)){
-				//~ fprintf(stderr, "Memory corrupted: Block at %lu doesn't match with the cheksum (current: %#02x)\n", ULONG((char*)current_block - memory), current_block->flag);
+				PutString("Memory corrupted: Block at ");
+                PutInt((int)current_block);
+                PutString(" doesn't match with the cheksum (current: ");
+                PutInt(current_block->flag);
+                PutString(")\n");
+#ifdef MALLOC_EXIT_ON_FAILURE
 				Exit(EXIT_FAILURE);
+#else
+                return NULL;
+#endif
 			}
 
 	#if defined(FIRST_FIT)
@@ -194,11 +207,15 @@ char *memory_alloc(int size){
 			// PutString("\n");
 			mem_block* last_block = PREV_FOOTER_BLOCK(new_area);
 			if (IS_BLOCK_FREE(last_block)){
-				// PutString("Extending previous over\n");
+#ifdef VERBOSE_MALLOC                
+				PutString("Extending previous over\n");
+#endif
 				HEADER_FROM_FOOTER(last_block)->size += additionnal_pages * PageSize;
 				DUMP_HEADER_TO_FOOTER(HEADER_FROM_FOOTER(last_block));
 			} else {
-				// PutString("Extending previous over\n");
+#ifdef VERBOSE_MALLOC                
+				PutString("Creating a new free\n");
+#endif
 				((mem_block*)new_area)->flag = FREE_BLOCK;
 				((mem_block*)new_area)->size = additionnal_pages * PageSize - 2 * BLOCK_SIZE_WITH_PADDING;
 				DUMP_HEADER_TO_FOOTER(((mem_block*)new_area));				
@@ -219,7 +236,16 @@ void memory_free(char *p){
     mem_block* meta_block_to_free = (mem_block*)(p - BLOCK_SIZE_WITH_PADDING), *meta_previous_block = PREV_FOOTER_BLOCK(meta_block_to_free), *meta_next_block = NEXT_HEADER_BLOCK(meta_block_to_free);
 
 	if (!check_block(meta_block_to_free)){
+        PutString("Memory corrupted: Block at ");
+        PutInt((int)meta_block_to_free);
+        PutString(" doesn't match with the cheksum (current: ");
+        PutInt(meta_block_to_free->flag);
+        PutString(")\n");
+#ifdef MALLOC_EXIT_ON_FAILURE
 		Exit(EXIT_FAILURE);
+#else
+                return;
+#endif
 	}
 
 	//~ fprintf(stderr, "Previous: %c\n", meta_previous_block->flag);

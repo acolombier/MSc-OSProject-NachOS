@@ -58,7 +58,7 @@
 // External functions used by this file
 
 extern void ThreadTest (void), Copy (const char *unixFile, const char *nachosFile);
-extern void Print (const char *file), PerformanceTest (void), MakeTree (void), QuickTest (void), MakeDirectory (const char *file), ShowTree (void);
+extern void Print (const char *file), PerformanceTest (void), ChangeMod(char*, const char*), MakeTree (void), QuickTest (void), MakeDirectory (const char *file), ShowTree (void);
 extern void StartProcess (char *file), ConsoleTest (char *in, char *out), SynchConsoleTest (char *in, char *out);
 extern void MailTest (int networkID);
 
@@ -161,9 +161,16 @@ main (int argc, char **argv)
 		MakeDirectory(*(argv + 1));
 		argCount = 2;
 	    }
+	  else if (!strcmp (*argv, "--chmod"))
+	    {			// init test tree
+		ASSERT (argc > 1);
+		ChangeMod(*(argv + 1), *(argv + 2));
+		argCount = 3;
+	    }
 	  else if (!strcmp (*argv, "-r"))
 	    {			// remove Nachos file
 		ASSERT (argc > 1);
+		ChangeMod(*(argv + 1), "rw");
 		fileSystem->Remove (*(argv + 1));
 		argCount = 2;
 	    }

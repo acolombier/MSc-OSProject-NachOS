@@ -67,7 +67,8 @@ thread-test_CPPFLAGS=-DTHREADS
 # userprog feature: add support to load userspace program
 #~ userprog_DEP_ALT=filesys filesys-stub
 userprog_SRC=$(USERPROG_SRC)
-userprog_CPPFLAGS=-DUSER_PROGRAM -DFRAME_ALLOC_SEQUENTIAL -DBEST_FIT
+userprog_CPPFLAGS=-DUSER_PROGRAM -DFRAME_ALLOC_SEQUENTIAL -DBEST_FIT -DVERBOSE_MALLOC
+#-DMALLOC_EXIT_ON_FAILURE
 userprog_INCDIRS=bin userprog
 
 # filesys: add support for filesystem

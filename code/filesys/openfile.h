@@ -20,6 +20,8 @@
 #ifndef OPENFILE_H
 #define OPENFILE_H
 
+#define LocalTS 1514764800
+
 #include "copyright.h"
 #include "utility.h"
 

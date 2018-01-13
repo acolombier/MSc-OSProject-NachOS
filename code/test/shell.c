@@ -26,7 +26,7 @@ int main (){
 				PutChar('\n');
 				Join(process, &result_code);
 				PutString("Command exit with the code ");
-				PutInt(process);
+				PutInt(result_code);
 				PutChar('\n');
 			}
 		}

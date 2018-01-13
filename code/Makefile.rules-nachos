@@ -49,9 +49,9 @@ define deploy_task =
   if [ ! -e "DISK" ]; then
       echo "Formating the harddrive" && ./nachos-filesys -f > /dev/null;
   fi
-  for d in $(ls | grep -v '.o' | grep -v 'DISK' | grep -v "SOCKET_" | grep -v "Makefile"); do    
+  for d in $(ls | grep -v '\.o' | grep -v 'DISK' | grep -v "SOCKET_" | grep -v "Makefile" | grep -v "nachos-"); do    
     if [ ! "$d" = "1" ]; then
-      echo ./nachos-filesys -r "$d" > /dev/null && ./nachos-filesys -cp "$d" "$d" | head -n 2 | tail -n 1;
+      echo ./nachos-filesys -r "$d" > /dev/null && ./nachos-filesys -cp "$d" "$d" | head -n 2 | tail -n 1 && ./nachos-filesys --chmod "$d" rx > /dev/null;
     fi;
   done;
 endef

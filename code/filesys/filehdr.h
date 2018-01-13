@@ -1,9 +1,9 @@
 // filehdr.h 
-//	Data structures for managing a disk file header.  
+//    Data structures for managing a disk file header.  
 //
-//	A file header describes where on disk to find the data in a file,
-//	along with other information about the file (for instance, its
-//	length, owner, etc.)
+//    A file header describes where on disk to find the data in a file,
+//    along with other information about the file (for instance, its
+//    length, owner, etc.)
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
 // All rights reserved.  See copyright.h for copyright notice and limitation 
@@ -17,9 +17,9 @@
 #include "disk.h"
 #include "bitmap.h"
 
-#define NumDirect 	((SectorSize - 3 * sizeof(int)) / sizeof(int))
-#define AllocSector 	(SectorSize / sizeof(int))
-#define MaxFileSize 	(NumDirect * SectorSize)
+#define NumDirect     ((SectorSize - 3 * sizeof(int)) / sizeof(int))
+#define AllocSector     (SectorSize / sizeof(int))
+#define MaxFileSize     (NumDirect * SectorSize)
 
 // The following class defines the Nachos "file header" (in UNIX terms,  
 // the "i-node"), describing where on disk to find all of the data in the file.
@@ -47,47 +47,47 @@ class FileHeader {
     ~FileHeader();
     
     bool Allocate(BitMap *bitMap, int fileSize);// Initialize a file header, 
-						//  including allocating space 
-						//  on disk for the file data
-    void Deallocate(BitMap *bitMap);  		// De-allocate this file's 
-						//  data blocks
+                        //  including allocating space 
+                        //  on disk for the file data
+    void Deallocate(BitMap *bitMap);          // De-allocate this file's 
+                        //  data blocks
 
-    void FetchFrom(int sectorNumber); 	// Initialize file header from disk
-    void WriteBack(int sectorNumber); 	// Write modifications to file header
-					//  back to disk
+    void FetchFrom(int sectorNumber);     // Initialize file header from disk
+    void WriteBack(int sectorNumber);     // Write modifications to file header
+                    //  back to disk
 
-    int ByteToSector(int offset);	// Convert a byte offset into the file
-					// to the disk sector containing
-					// the byte
+    int ByteToSector(int offset);    // Convert a byte offset into the file
+                    // to the disk sector containing
+                    // the byte
 
-    int FileLength();			// Return the length of the file 
-					// in bytes
+    int FileLength();            // Return the length of the file 
+                    // in bytes
     /*!
      * \return Return the number of bytes in the file.
      */
 
     inline Type type() const { return (Type)(flag & 0x3); }    
-    inline Permission permission() const { return (Permission)(flag >> 29 & 0x7); }
-    inline int lastaccess() const { return flag >> 2 & 0xFFFFF7; }
+    inline int permission() const { return ((flag >> 29) & 0x7); }
+    inline int lastaccess() const { return (flag >> 2) & 0x7FFFFF; }
     
     inline void permission(int value) { flag = type() | (lastaccess() << 2) | ((value & 0x7) << 29); }
     
-    inline void setPermission(Permission value) { flag = ((unsigned int)value) << 29 | flag; }
-    inline void clearPermission(Permission value) { flag = ((unsigned int)permission() & ~value) << 29 | flag; }
+    inline void setPermission(Permission value) { flag = ((value) << 29) | flag; }
+    inline void clearPermission(Permission value) { permission(permission() & (~value));}
     
-    inline void lastaccess(int value) { flag = (value & 0xFFFFF7) << 2 | flag; }
+    inline void lastaccess(int value) { flag = (value & 0x7FFFFF) << 2 | flag; }
     
     inline void inc_ref() { _lock->Acquire(); ref_cnt++; _lock->Release(); }
     void dec_ref();
 
-    void Print();			// Print the contents of the file.
+    void Print();            // Print the contents of the file.
 
   private:
-    unsigned int flag;			// The file flag contains the last acthe the permission (3 bits), the last access time in sec since the 1/01/18 0:00 UTC+1 (27 bits), the type (2 bits)
-    int numBytes;			// Number of bytes in the file
-    int numSectors;			// Number of data sectors in the file
-    int dataSectors[NumDirect];		// Disk sector numbers for each data 
-					// block in the file
+    int flag;            // The file flag contains the last acthe the permission (3 bits), the last access time in sec since the 1/01/18 0:00 UTC (27 bits), the type (2 bits)
+    int numBytes;            // Number of bytes in the file
+    int numSectors;            // Number of data sectors in the file
+    int dataSectors[NumDirect];        // Disk sector numbers for each data 
+                    // block in the file
     int ref_cnt;
     Lock* _lock;
 };
