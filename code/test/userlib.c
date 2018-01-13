@@ -1,29 +1,21 @@
-#ifndef USER_LIB
-#define USER_LIB
-
-#define SIGINT 2
-#define SIGKILL 9
-#define SIGTERM 15
-#define SIGCONT 18
-#define SIGSTOP 18
-#define SIGTSTP 20
-
-#define NULL 0
-
-#define PageSize 128
-#define divRoundDown(n,s)  ((n) / (s))
-#define divRoundUp(n,s)    (((n) / (s)) + ((((n) % (s)) > 0) ? 1 : 0))
-
+#include "userlib.h"
 #include "syscall.h"
-
-//~ typedef struct sema_struct {
-	//~ void* internal;
-//~ } sema_t;
 
 int strcmp(char* s1, char* s2){
 	while (*s1 == *s2 && *s1 && *s2){
 		s1++;
 		s2++;
+	}
+	return *s1 < *s2 ? -1 : (*s1 == *s2 ? 0 : 1);
+}
+
+int strncmp(char* s1, char* s2, size_t n){
+    int s = 1;
+    if (n == 0) return 0;
+	while (*s1 == *s2 && *s1 && *s2 && s < n){
+		s1++;
+		s2++;
+        s++;
 	}
 	return *s1 < *s2 ? -1 : (*s1 == *s2 ? 0 : 1);
 }
@@ -54,16 +46,30 @@ const char* getcwd(){
 const char* gethostname(){
 	return "nachos";
 }
+
+int pow(int n, int e){
+    if (e == 0) return 1;
+    
+    int r = n;
+    while (--e)
+        r *= n;
+    
+	return r;
+}
+
 int atoi(char* s){
-	int i = 0, k;
-	for (k = strlen(s) - 1; k >= 1 && (s[k] - '0') < 10; k--)
-		i = (i << 2) + s[k] - '0';
+	int i = 0, k, d = 0;
+    PutString("Size: ");PutString(s);PutInt(strlen(s));PutChar('\n');
+	for (k = strlen(s) - 1; k >= 0 && (s[k] - '0') < 10 && (s[k] - '0') >= 0; k--){
+		i = i + ((s[k] - '0') * pow(10, d++));
+    }
 
 	if (k == 1 && s[k] == '-'){
 		i *= -1;
 		k--;
 	}
-	return k ? -1 : i;
+    PutInt(k);PutChar('\n');
+	return k > 0 ? -1 : i;
 }
 
 void *memcpy(void *dest, const void *src, size_t n){
@@ -79,5 +85,10 @@ void *memset(void *s, int c, size_t n){
 		*(out_ptr + i) = (c >> ((i % sizeof(int) * 8))) & 0xFF;
 	return s;
 }
-
-#endif
+char * strtok (char * str, char * delimiters ){
+    int size = strlen(str), delim = strlen(delimiters);
+    for (int i = 0; i < size; i++)
+        if (strncmp(str + i, delimiters, delim) == 0)
+            return str + i;
+    return NULL;
+}

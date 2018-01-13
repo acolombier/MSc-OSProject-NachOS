@@ -251,15 +251,6 @@ int Size (OpenFileId fd);
 /* Close the file, we're done reading and writing to it. */
 void Close (OpenFileId id);
 
-/* User-level thread operations: Fork and Yield.  To allow multiple
- * threads to run within a user program.
- */
-
-/* Fork a thread to run a procedure ("func") in the *same* address space
- * as the current thread.
- */
-void Fork (void (*func) ());
-
 /* Yield the CPU to another runnable thread, whether in this address space
  * or not.
  */
@@ -315,8 +306,12 @@ void sem_wait(sema_t s);
  * \todo signal system */
 void Kill(SpaceId pid, char sig);
 
-/*! \brief Fork and run a process */
-int ForkExec(char *s);
+/*! \brief Fork and run a process 
+ * \param *s path the executable
+ * \param **args argument to pass to the process. Must finish by a NULL arg
+ * \return the pid of the created process, 0 on error 
+ */
+int ForkExec(char *s, char** args);
 
 /*! \brief Dynamically allocate n bytes */
 void *Sbrk(int size);

@@ -1,32 +1,11 @@
 #include "syscall.h"
 #include "userlib.h"
 #include "mem_alloc.h"
-#include "mem_alloc_types.h"
 
+#define FIRST_FIT
 
-/* memory */
-int BLOCK_SIZE_WITH_PADDING = (sizeof(mem_block) % MEM_ALIGNMENT ? (sizeof(mem_block) / MEM_ALIGNMENT + 1) * MEM_ALIGNMENT : sizeof(mem_block));
-
-char *memory = NULL;
-unsigned int memory_size;
-
-/* Pointer to the first free block in the memory */
-//~ mem_block *first_free;
-
-
-#define ULONG(x)((unsigned int)(x))
-#define max(x,y) (x>y?x:y)
-
-/* Copy the header to the footer */
-#define NEXT_HEADER_BLOCK(b) ((mem_block*)((char*)b + b->size + 2 * BLOCK_SIZE_WITH_PADDING))
-#define PREV_FOOTER_BLOCK(b) ((mem_block*)((char*)b - BLOCK_SIZE_WITH_PADDING))
-
-#define FOOTER_FROM_HEADER(b) ((mem_block*)((char*)b + b->size + BLOCK_SIZE_WITH_PADDING))
-#define HEADER_FROM_FOOTER(b) ((mem_block*)((char*)b - b->size - BLOCK_SIZE_WITH_PADDING))
-
-#define DUMP_HEADER_TO_FOOTER(b) do { memcpy((char*)b + b->size + BLOCK_SIZE_WITH_PADDING, (char*)b, BLOCK_SIZE_WITH_PADDING); compute_checksum(b); } while(0)
-//~ #define DUMP_FOOTER_TO_HEADER(b) memcpy((char*)b - b->size - BLOCK_SIZE_WITH_PADDING, (char*)b, BLOCK_SIZE_WITH_PADDING); compute_checksum(b)
-
+static char *memory = NULL;
+static unsigned int memory_size;
 
 static void cleanup(){
 	mem_block *current_block = (mem_block*)memory, *previous_block = NULL;
@@ -50,11 +29,11 @@ static void cleanup(){
 	// PutString("Cond 3\n");
 	// PutInt((unsigned int)previous_block->size + 2 * BLOCK_SIZE_WITH_PADDING >= PageSize);
 	if (previous_block && IS_BLOCK_FREE(previous_block) && previous_block->size + 2 * BLOCK_SIZE_WITH_PADDING >= PageSize){
-		int deallocated_pages = divRoundDown(previous_block->size + 2 * BLOCK_SIZE_WITH_PADDING, PageSize);
-		Sbrk(-deallocated_pages);
-		memory_size -= deallocated_pages * PageSize;
+		int deallocated_pages = divRoundDown(previous_block->size, PageSize);
         previous_block->size -= deallocated_pages * PageSize;
         DUMP_HEADER_TO_FOOTER(previous_block);
+		Sbrk(-deallocated_pages);
+		memory_size -= deallocated_pages * PageSize;
 	}
 }
 
@@ -198,6 +177,9 @@ char *memory_alloc(int size){
 		} else {
 			int additionnal_pages = divRoundUp(size, PageSize);
 			void* new_area = Sbrk(additionnal_pages);			
+#ifdef VERBOSE_MALLOC                
+				PutString("Heap has been extented\n");
+#endif
 			if (!new_area){
 				cleanup();
 				return NULL;

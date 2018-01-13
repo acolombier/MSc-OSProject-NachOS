@@ -240,8 +240,26 @@ ExceptionHandler (ExceptionType which)
                     machine->WriteRegister(2, 0);
                     break;
                 }
-                delete [] filename;
-                returnvalue = do_UserProcessCreate(executable, reg6);
+                
+                char** argv = nullptr;
+                int argc = 0, arg_ptn;
+                                
+                if (reg5){
+                    machine->ReadMem(reg5, 4, &arg_ptn);
+                
+                    DEBUG('c', "Fork has agument ");
+                    while (arg_ptn){
+                        argv = (char**)realloc(argv, (argc + 1) * sizeof(char*));
+                        DEBUG('c', "%d:", arg_ptn);
+                        argv[argc++] = copyStringFromMachine(arg_ptn, (unsigned int)MAX_STRING_SIZE);
+                        DEBUG('c', "%s, ", argv[argc - 1]);
+                        reg5 += 4;
+                        machine->ReadMem(reg5, 4, &arg_ptn);
+                    }
+                    DEBUG('c', "\n");
+                }
+                
+                returnvalue = do_UserProcessCreate(executable, argc, argv, reg6);
                 machine->WriteRegister(2, returnvalue);            
                 
                 break;

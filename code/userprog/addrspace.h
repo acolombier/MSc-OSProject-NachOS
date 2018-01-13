@@ -23,7 +23,7 @@
 /*!
  * \def UserStackSize Used macro for stack allocation
  */
-#define UserStackSize        512    // increase this as necessary!
+#define UserStackSize        768    // increase this as necessary!
 
 class Thread;
 

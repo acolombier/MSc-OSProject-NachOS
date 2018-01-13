@@ -1,11 +1,10 @@
-#include "malloc.h"
 #include "userlib.h"
-
-// should handle dynamic sizing
-#define defaultSize 1024
-
-#include "mem_alloc.c"
+#include "malloc.h"
+#include "mem_alloc.h"
 #include "mem_alloc_types.h"
+
+
+static int __mem_alloc_init_flag=0;
 
 void *malloc(size_t size){
   if(!__mem_alloc_init_flag){

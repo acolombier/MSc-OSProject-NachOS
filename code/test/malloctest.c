@@ -1,5 +1,6 @@
 #include "syscall.h"
-#include "mem_alloc.c"
+#include "mem_alloc.h"
+#include "userlib.h"
 
 #define NB_MAX_ALLOC 64
 #define NB_MAX_THREAD 16
