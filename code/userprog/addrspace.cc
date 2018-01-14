@@ -138,9 +138,8 @@ AddrSpace::AddrSpace (OpenFile * executable):
     SwapHeader (&noffH);
     
     if (noffH.noffMagic != NOFFMAGIC){
-		AddrSpace::_ADDR_SPACE_LOCK->Release();
-		DEC_REF(pid());
-		AddrSpace::_ADDR_SPACE_LOCK->Acquire();
+		a_bundle->object = nullptr;
+        DEC_REF(pid());
         throw new ExecutableException();
 	}
 
@@ -149,9 +148,9 @@ AddrSpace::AddrSpace (OpenFile * executable):
     // to leave room for the stack
 
     unsigned int ro_code = divRoundUp(noffH.code.size + noffH.initData.size, PageSize),
-        rw_code = divRoundUp(noffH.uninitData.size, PageSize);
+        rw_code = divRoundDown(noffH.uninitData.virtualAddr, PageSize);
 
-    numPages = ro_code + rw_code;
+    numPages = divRoundUp(noffH.code.size + noffH.initData.size + noffH.uninitData.size, PageSize);
     size = numPages * PageSize;
 
     ASSERT (numPages < frameprovider->NumAvailFrame());    // check we're not trying
@@ -169,7 +168,8 @@ AddrSpace::AddrSpace (OpenFile * executable):
     for (i = 0; i < ADDRSPACE_PAGES_SIZE; i++)
         pageTable[i].virtualPage(i);
 
-    for (i = 0; i < ro_code + rw_code; i++){
+    for (i = 0; i < (noffH.uninitData.size ? divRoundUp(noffH.uninitData.virtualAddr + noffH.uninitData.size, PageSize)
+                                        : ro_code); i++){
         pageTable[i].setValid();
         pageTable[i].physicalPage(frameprovider->GetEmptyFrame());
     }
@@ -190,9 +190,11 @@ AddrSpace::AddrSpace (OpenFile * executable):
         ReadAtVirtual(executable, noffH.initData.virtualAddr, noffH.initData.size,
                 noffH.initData.inFileAddr, pageTable, numPages);
     }
-    /*! \todo be able to set up all the RO page in read only without screwing everything  */
-    //~ for (i = 0; i < ro_code; i++)
-        //~ pageTable[i].setReadOnly(true);
+    
+    DEBUG('p', "The read only code goes unitl %d, and the read write start at %d\n", ro_code, rw_code);
+    
+    for (i = 0; i < (noffH.uninitData.size ? rw_code : ro_code); i++)
+        pageTable[i].setReadOnly();
 
 }
 
@@ -367,10 +369,8 @@ void AddrSpace::appendThread (Thread* t){
 
 	int s = 0;
 	while (s < MAX_THREADS && stackUsage[s] != -1 ){s++;}
-	
-	ASSERT(s < MAX_THREADS);
 		
-    if (countThread() < MAX_THREADS && mBrk <= (unsigned int)((numPages * PageSize) - (UserStackSize * (s + 1))) && frameprovider->NumAvailFrame() >= stackNbPages){
+    if (s < MAX_THREADS && mBrk <= (unsigned int)((numPages * PageSize) - (UserStackSize * (s + 1))) && frameprovider->NumAvailFrame() >= stackNbPages){
         t->space = this;
         t->setTID(lastTID++);
 

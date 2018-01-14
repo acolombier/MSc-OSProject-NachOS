@@ -15,55 +15,6 @@
 #include "addrspace.h"
 #include "synch.h"
 
-#ifdef TRACK_ALLOCATION
-typedef struct alloc_history_struct {
-	void* ptr;
-	size_t size;
-	char has_been_deleted;
-} alloc_hist_t;
-
-alloc_hist_t** history = nullptr;
-int history_size = 0;
-
-void* operator new(size_t num)
-{
-    DEBUG('l', "Requesting allocation of %d bytes\n", num);
-	void* ptr = malloc(num);
-    DEBUG('l', "Allocating %d bytes at %p\n", num, ptr);
-    
-    int i;
-    for (i = 0; i < history_size; i++)
-		if (history[i]->ptr == ptr)
-			break;
-	if (i == history_size){
-		history = (alloc_hist_t**)realloc(history, (history_size + 1) * sizeof(alloc_hist_t*));
-		history[history_size] = (alloc_hist_t*)malloc(sizeof(alloc_hist_t));
-		i = history_size++;
-	}
-    history[i]->ptr = ptr;
-    history[i]->size = num;
-    history[i++]->has_been_deleted = 0;
-    return ptr;
-}
- 
-void operator delete(void *ptr)
-{
-    DEBUG('l', "Deallocating %p...\n", ptr);
-    int i;
-    for (i = 0; i < history_size; i++)
-		if (history[i]->ptr == ptr)
-			break;
-
-	ASSERT(i < history_size);
-
-	
-    DEBUG('l', "Record found: %p with size %d\n", history[i]->ptr, history[i]->size);
-	if (history[i]->has_been_deleted)
-		ASSERT(FALSE);
-    free(ptr);
-    history[i]->has_been_deleted = 1;
-}
-#endif
 
 //----------------------------------------------------------------------
 // StartProcess
@@ -77,18 +28,18 @@ StartProcess (char *filename)
     AddrSpace *space;
 
     if (executable == NULL){
-	printf ("Unable to open file %s\n", filename);
-	return;
+        printf ("Unable to open file %s\n", filename);
+        return;
     }
     
     try {
-	space = new AddrSpace (executable);
+        space = new AddrSpace (executable);
     } catch (PermissionException*){
-	printf ("File %s has not execution permission\n", filename);
-	return;
+        printf ("File %s has not execution permission\n", filename);
+        return;
     } catch (ExecutableException*){
-	printf ("File %s is not a MIPS executable file\n", filename);
-	return;
+        printf ("File %s is not a MIPS executable file\n", filename);
+        return;
     }
     
     fileSystem->Close (executable);		// close file
@@ -97,8 +48,8 @@ StartProcess (char *filename)
     
     DEBUG('t', "The main thread is #%d\n", currentThread->tid());
 
-    space->InitRegisters ();	// set the initial register values
     space->RestoreState ();	// load page table register
+    space->InitRegisters ();	// set the initial register values
 
     machine->Run ();		// jump to the user progam
     ASSERT (FALSE);		// machine->Run never returns;

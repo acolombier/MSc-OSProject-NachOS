@@ -1,7 +1,7 @@
 #include "syscall.h"
-#include "mem_alloc.c"
+#include "mem_alloc.h"
 
-int leaking = 1;
+int leaking;
 
 void leaking_fun(int n) {
   void *a,*b,*c;
@@ -17,15 +17,13 @@ void leaking_fun(int n) {
   if(!leaking || (n%2)==0) memory_free(b);
 }
 
-//~ int main(int argc, char** argv) {
-int main() {
-    //~ Should handle dynamic sizing
-    memory_init(1024);
+int main(int argc, char** argv) {
+    memory_init();
     
-  //~ if(argc>1) 
-    //~ leaking = 0;
-  //~ else 
-    //~ leaking = 1;
+  if(argc>1) 
+    leaking = 0;
+  else 
+    leaking = 1;
   leaking_fun(6);
   return 0;
 }

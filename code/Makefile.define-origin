@@ -32,7 +32,7 @@
 
 ###########################################################################
 # List of NachOS user programs initially present
-ORIG_USERPROGS=halt matmult shell sort
+ORIG_USERPROGS=halt matmult sort
 
 ###########################################################################
 # Group of files used to defined initial flavors

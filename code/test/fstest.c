@@ -1,5 +1,5 @@
 #include "syscall.h"
-#include "malloc.c"
+#include "malloc.h"
 //~ #include "userlib.h"
 
 int main(int argc, char** argv)

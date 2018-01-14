@@ -1,8 +1,8 @@
 #include "syscall.h"
-#include "malloc.c"
+#include "malloc.h"
 
 
-int leaking = 1;
+int leaking;
 
 void leaking_fun(int n) {
   void *a,*b,*c;
@@ -17,12 +17,12 @@ void leaking_fun(int n) {
   if(!leaking || (n%2)==0) free(b);
 }
 
-//~ int main(int argc, char** argv) {
-int main() {
-  //~ if(argc>1) 
-    //~ leaking = 0;
-  //~ else 
-    //~ leaking = 1;
+int main(int argc, char** argv) {
+//~ int main() {
+  if(argc>1) 
+    leaking = 0;
+  else 
+    leaking = 1;
   leaking_fun(6);
   return 0;
 }
