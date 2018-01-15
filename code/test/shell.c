@@ -10,13 +10,30 @@ int main (){
     while (1){
 		PutString("\x1B[32mnach_shell\x1B[31m>\033[0m ");
 		GetString(buffer, 512);
+    
+        char forking_mode = 0;
+        result_code = 0;
         
-        argc = 0;        
+        if (buffer[strlen(buffer) - 1] == '&'){
+            forking_mode = 1;
+            buffer[strlen(buffer) - 1] = '\0';
+        }
+        
+        argc = 1;        
         args = (char**)malloc(sizeof(char*) * (argc + 1));
         if (!args){
             PutString("Can't allocate memory. Skipping...\n");
             continue;
         }
+        *args = buffer;
+        
+		if (strcmp("exit", buffer) == 0)
+            break;
+        else if (strcmp("join", buffer) == 0 && argc == 2){
+            if (!Join(atoi(args[1]), &result_code)) PutString("Can't join the process\n");
+            if (result_code) {PutString("Command exit with the code ");PutInt(result_code);PutChar('\n');}
+        }
+        
         
         char *arg = strtok(buffer, " ");
         while (arg){
@@ -32,9 +49,6 @@ int main (){
             arg = strtok(arg + 1, " ");
         }
         args[argc] = NULL;
-        
-		if (strcmp("exit", buffer) == 0)
-		break;
 
 		if (strlen(buffer)){
 			SpaceId process = ForkExec(buffer, args);
@@ -43,14 +57,15 @@ int main (){
 				PutString(buffer);
 				PutChar('\n');
 			} else {
-				PutString("Command ");PutString(buffer);PutString(" called with ");PutInt(argc);PutString(" argument(s) and running with the pid ");PutInt(process);PutChar('\n');
-				Join(process, &result_code);
-				PutString("Command exit with the code ");
-				PutInt(result_code);
-				PutChar('\n');
+                free(args);
+                if (forking_mode){
+                    PutString("Command ");PutString(buffer);PutString(" called with ");PutInt(argc);PutString(" argument(s) and running with the pid ");PutInt(process);PutChar('\n');
+                } else {
+                    Join(process, &result_code);
+                    if (result_code) {PutString("Command exit with the code ");PutInt(result_code);PutChar('\n');}
+                }
 			}
 		}
-        free(args);
     }
     return 0;
 }

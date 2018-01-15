@@ -123,6 +123,21 @@ class FileSystem {
 
 #else // FILESYS
 
+/*! \brief Structure to hold data about a file */
+typedef struct file_info_struct {
+    int date;
+    int perm;
+    int size;
+    int type;
+} file_info_t;
+
+/*! \brief Structure to hold data about a file system */
+typedef struct fs_info_struct {
+    int free_block;
+    int used_block;
+    int block_size;
+} fs_info_t;
+
 typedef int SpaceId;
 
 #include "filehdr.h"

@@ -26,6 +26,7 @@
 #define SC_Create    4
 #define SC_Open        5
 #define SC_OpenDir        33
+#define SC_ParentDir       36
 #define SC_Read        6
 #define SC_Write    7
 #define SC_Close    8
@@ -48,7 +49,8 @@
 
 #define SC_Tell 25
 #define SC_Seek 26
-#define SC_Size 27
+#define SC_FSInfo 27
+#define SC_FileTrunk 35
 
 #define SC_Move 28
 #define SC_Remove 29
@@ -56,7 +58,7 @@
 #define SC_Changemod 31
 
 #define SC_Sbrk 32
-#define SC_Time 34
+#define SC_FileInfo 34
 
 #define ConsoleInput    0
 #define ConsoleOutput    1
@@ -67,11 +69,6 @@
 */
 #define EOF            0xFFFFFFFF
 #define NULL_TID    0xFFFFFFFF
-
-
-/*! \brief Semaphore provided to the user */
-//~ typedef void* sem_t;
-
 
 #ifdef IN_USER_MODE
 
@@ -95,7 +92,41 @@
 #define O_RW (O_R | O_W)
 #define O_RX (O_R | O_X)
 
+/*! The details of those error code are detaild in \ref filesys.h
+ */
+#define E_PERM -8
+#define E_ISUSED -7
+#define E_NOTDIR -6
+#define E_NOTFOUND -5
+#define E_BLOCK -4
+#define E_DIRECTORY -3
+#define E_DISK -2
+#define E_EXIST -1
+#define E_SUCESS 0
+
+/*! \def FILE_TYPE_DIR
+    The directory type reprensented as integer.
+*/
+#define FILE_TYPE_DIR 1
+
+/*! \brief Structure to hold data about a file */
+typedef struct file_info_struct {
+    int date;
+    int perm;
+    int size;
+    int type;
+} file_info_t;
+
+/*! \brief Structure to hold data about a file system */
+typedef struct fs_info_struct {
+    int free_block;
+    int total_block;
+    int block_size;
+} fs_info_t;
+
 typedef unsigned int size_t;
+
+/*! \brief Semaphore provided to the user */
 typedef int sema_t;
 
 /* when an address space starts up, it has two open files, representing
@@ -184,6 +215,12 @@ OpenFileId Open (const char *name);
 OpenFileId OpenDir (const char *name);
 
 /*!
+ *  Open the parent directory of a directory. Return 0 if non (root directory) or if it not a directory.
+ * \param dir The child directory you want to find it parent
+ */
+OpenFileId ParentDir (OpenFileId dir);
+
+/*!
  * \brief Change the permission of an open item.
  * \param perm the new permission in octal. You can use \ref O_R, \ref O_W or \ref O_X to make it easier.
  * \param id file descriptor
@@ -228,11 +265,19 @@ int ReadDir (char *buffer, int size, OpenFileId id);
 int Seek (OpenFileId fd, int offset);
 
 /*!
- * \brief Get the epoch timestamp of the last access to the file
+ * \brief Get a structure containing the epoch timestamp of the last access (date), the permission in octal (perm), the size(size), and is type (file = 0, dir = 1, ...)
+ * \param a pointer to the structure to write
  * \param fd the file
- * \return Return the epoch timestamp in UTC
+ * \return false is no error, anything else if one occur
  */
-int Timestamp (OpenFileId fd);
+int FileInfo (file_info_t*, OpenFileId fd);
+
+/*!
+ * \brief Get a structure containing the number of free block (free_block), the used block (used_block), and the block size(block_size) to the main file system
+ * \param a pointer to the structure to write
+ * \return false is no error, anything else if one occur
+ */
+int FileSystemInfo (fs_info_t*);
 
 /*!
  * \brief Get the reading head position
@@ -242,11 +287,10 @@ int Timestamp (OpenFileId fd);
 int Tell (OpenFileId fd);
 
 /*!
- * \brief Get the file size of a file
+ * \brief Trunk the file to the current head position
  * \param fd the file
- * \return Return the file size
  */
-int Size (OpenFileId fd);
+void Trunk (OpenFileId fd);
 
 /* Close the file, we're done reading and writing to it. */
 void Close (OpenFileId id);

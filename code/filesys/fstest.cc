@@ -37,13 +37,17 @@ Copy(const char *from, const char *to)
     FILE *fp;
     OpenFile* openFile;
     char *buffer;
-    int amountRead;
+    int amountRead, fileLength;
 
 // Open UNIX file
     if ((fp = fopen(from, "r")) == NULL) {     
         printf("Copy: couldn't open input file %s\n", from);
         return;
     }
+    
+    fseek(fp, 0, 2);		
+    fileLength = ftell(fp);
+    fseek(fp, 0, 0);
     
     OpenFile* ofile = fileSystem->Open(from);
     if (ofile){
@@ -56,7 +60,7 @@ Copy(const char *from, const char *to)
 
 // Create a Nachos file of the same length
     printf("Copying file %s, to file %s\n", from, to);
-    switch (fileSystem->Create(to, 0, FileHeader::File, FileHeader::Write)) {     // Create Nachos file
+    switch (fileSystem->Create(to, fileLength, FileHeader::File, FileHeader::Write)) {     // Create Nachos file
     case E_PERM:        
         printf("Copy: couldn't create output file %s: permission denied.\n", to);
         fclose(fp);

@@ -78,7 +78,7 @@ Join:
 Create:
     addiu $2,$0,SC_Create
     sll $5,$5,2
-    and $5, 3
+    and $5, 0xfc
     syscall
     j    $31
     .end Create
@@ -108,6 +108,14 @@ OpenDir:
     syscall
     j    $31
     .end OpenDir
+
+    .globl ParentDir
+    .ent    ParentDir
+ParentDir:
+    addiu $2,$0,SC_ParentDir
+    syscall
+    j    $31
+    .end ParentDir
 
     .globl ChMod
     .ent    ChMod
@@ -305,21 +313,29 @@ Tell:
     j   $31
     .end Tell
     
-     .globl Size
-    .ent    Size
-Size:
-    addiu $2,$0,SC_Size
+     .globl Trunk
+    .ent    Trunk
+Trunk:
+    addiu $2,$0,SC_FileTrunk
     syscall
     j   $31
-    .end Size
+    .end Trunk
     
-     .globl Timestamp
-    .ent    Timestamp
-Timestamp:
-    addiu $2,$0,SC_Time
+     .globl FileSystemInfo
+    .ent    FileSystemInfo
+FileSystemInfo:
+    addiu $2,$0,SC_FSInfo
     syscall
     j   $31
-    .end Timestamp
+    .end FileSystemInfo
+    
+     .globl FileInfo
+    .ent    FileInfo
+FileInfo:
+    addiu $2,$0,SC_FileInfo
+    syscall
+    j   $31
+    .end FileInfo
 
     .globl Sbrk
     .ent    Sbrk

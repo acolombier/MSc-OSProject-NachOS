@@ -44,7 +44,11 @@ int main(int argc, char** argv)
 	}
     
     ChMod(O_NONE, file);
-    PutString("File size ");PutInt(Size(file));PutString(" and read head is at ");PutInt(Tell(file));PutString("\n");
+    
+    file_info_t fileinfo;
+    FileInfo(&fileinfo, file);
+    
+    PutString("File size ");PutInt(fileinfo.size);PutString(" and read head is at ");PutInt(Tell(file));PutString("\n");
     Close(file);
     
     

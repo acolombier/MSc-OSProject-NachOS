@@ -17,6 +17,8 @@
 #include "disk.h"
 #include "bitmap.h"
 
+#define BASE_TIME 1514764800 // 01/01/2018 00:00 UTC
+
 #define NumDirect     ((SectorSize - 3 * sizeof(int)) / sizeof(int))
 #define AllocSector     (SectorSize / sizeof(int))
 #define MaxFileSize     (NumDirect * SectorSize)

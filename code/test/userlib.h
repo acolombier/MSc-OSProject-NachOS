@@ -17,14 +17,19 @@
 #include "syscall.h"
 
 int strcmp(char* s1, char* s2);
-int strlen(char* str);
+int strlen(const char* str);
 char* strrchr (char* str, int character);
 const char* getlogin();
 const char* getcwd();
 const char* gethostname();
 int atoi(char* s);
+char* itoa(int value, char * str, int base);
 void *memcpy(void *dest, const void *src, size_t n);
+void strcpy(char *dest, const char *src);
 void *memset(void *s, int c, size_t n);
 char * strtok (char * str, char * delimiters );
+int simple_strftime(char * str, size_t size, int time);
+char* strpad(char* str, size_t i, char padder);
+char* reverse(char*str);
 
 #endif

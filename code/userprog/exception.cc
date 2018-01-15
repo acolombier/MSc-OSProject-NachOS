@@ -24,6 +24,7 @@
 #include "userprocess.h"
 #include "addrspace.h"
 #include "directory.h"
+#include "bitmap.h"
 
 //----------------------------------------------------------------------
 // UpdatePC : Increments the Program Counter register in order to resume
@@ -270,7 +271,7 @@ ExceptionHandler (ExceptionType which)
                 char* name = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
                 
                 
-                returnvalue = fileSystem->Create(name, 0, (FileHeader::Type)(reg5 >> 2), (reg5 & 0x3));
+                returnvalue = fileSystem->Create(name, 0, (FileHeader::Type)(reg5 & 0x3), (reg5 >> 2) & 0x7);
                 if (!returnvalue){
                     OpenFile* object = fileSystem->Open(name);
                     if (object)
@@ -408,6 +409,23 @@ ExceptionHandler (ExceptionType which)
                 break;
             }
             
+            
+            case SC_FileTrunk: {
+                DEBUG('c', "Tell syscall on %p, initiated by user program.\n", reg4);
+                /*! \todo Implementation */
+                fd_bundle_t* b = currentThread->space->get_fd(reg4);
+                machine->WriteRegister(2, -1);
+                if (b){
+                    if (((OpenFile*)b->object)->type() == FileHeader::Directory)
+                        break;
+                    BitMap* bm = fileSystem->bitmapTransaction();
+                    ((OpenFile*)b->object)->header()->Allocate(bm, ((OpenFile*)b->object)->Tell() + 1);
+                    fileSystem->bitmapCommit(bm);
+                    machine->WriteRegister(2, 0);
+                }
+                break;
+            }
+            
             case SC_Seek: {
                 DEBUG('c', "Seek syscall on %p, initiated by user program.\n", reg4);
                 /*! \todo Implementation */
@@ -423,14 +441,36 @@ ExceptionHandler (ExceptionType which)
                 break;
             }
             
-            case SC_Size: {
-                DEBUG('c', "Size syscall on %p, initiated by user program.\n", reg4);
+            case SC_FileInfo: {
+                DEBUG('c', "FileInfo syscall on %p, initiated by user program.\n", reg5);
                 
-                fd_bundle_t* b = currentThread->space->get_fd(reg4);
-                if (b)
-                    machine->WriteRegister(2, ((OpenFile*)b->object)->Length());
+                fd_bundle_t* b = currentThread->space->get_fd(reg5);
+                if (b){
+                    file_info_t info = {((OpenFile*)b->object)->header()->lastaccess() + BASE_TIME, 
+                                        ((OpenFile*)b->object)->header()->permission(),
+                                        ((OpenFile*)b->object)->Length(),
+                                        ((OpenFile*)b->object)->type()
+                    };
+                    for (unsigned int i = 0; i < sizeof(file_info_t); i++)
+                        machine->WriteMem(reg4 + i, 1, *(((char*)&info) + i));
+                    machine->WriteRegister(2, 0);
+                }
                 else
                     machine->WriteRegister(2, -1);
+                    
+                break;
+            }
+            
+            case SC_FSInfo: {
+                DEBUG('c', "FSInfo syscall on %p, initiated by user program.\n", reg5);                
+                
+                fs_info_t info = {fileSystem->freeSector(), 
+                                  NumSectors,
+                                  SectorSize
+                };
+                for (unsigned int i = 0; i < sizeof(fs_info_t); i++)
+                    machine->WriteMem(reg4 + i, 1, *(((char*)&info) + i));
+                machine->WriteRegister(2, 0);
                     
                 break;
             }
@@ -467,18 +507,6 @@ ExceptionHandler (ExceptionType which)
                 
                 delete [] old;
                 delete [] new_;
-                /*! \todo Implementation */
-                break;
-            }
-            
-            case SC_Time: {
-                DEBUG('c', "Time syscall on %p, initiated by user program.\n", reg4);
-                
-                fd_bundle_t* b = currentThread->space->get_fd(reg4);
-                if (b)
-                    machine->WriteRegister(2, ((OpenFile*)b->object)->header()->lastaccess() + 1514764800);
-                else
-                    machine->WriteRegister(2, -1);
                 /*! \todo Implementation */
                 break;
             }
