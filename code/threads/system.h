@@ -73,6 +73,7 @@ extern SynchDisk *synchDisk;
 
 #ifdef NETWORK
 #include "post.h"
+#include "transfer.h"
 extern PostOffice *postOffice;
 #endif
 

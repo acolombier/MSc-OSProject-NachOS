@@ -134,6 +134,8 @@ MailBox::Get(PacketHeader *pktHdr, MailHeader *mailHdr, char *data, int timeout)
 		printf("Got mail from mailbox: ");
 		PrintHeader(*pktHdr, *mailHdr);
     }
+
+    DEBUG('n', "Copying message data into the callers buffer\n");
     bcopy(mail->data, data, mail->mailHdr.length);
 					// copy the message data into
 					// the caller's buffer

@@ -41,6 +41,7 @@ class Connection {
 
     int SendFixedSize(char *data, char flags);  // send a message of size == MaxPacketSize
     char ReceiveFixedSize(char *data);  // receive a message of size == MaxPacketSize
+    char *flagstostr(char flags);
 };
 
 
