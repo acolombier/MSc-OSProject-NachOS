@@ -4,7 +4,9 @@
 #include "system.h"     // for postOffice member
 
 
-Connection::Connection(NetworkAddress to, MailBoxAddress mailbox) {
+Connection::Connection(MailBoxAddress localbox,
+                       NetworkAddress to, MailBoxAddress mailbox) {
+    fromMail = localbox;
     toMachine = to;
     toMail = mailbox;
 }
@@ -22,35 +24,47 @@ int Connection::SendFixedSize(char *data, char flags) {
     int attempts = 0;
 
     /* link + transfer layers */
+    memset(&inMailHdr, 0, sizeof(MailHeader));
+    memset(&outPktHdr, 0, sizeof(PacketHeader));
     outPktHdr.to = toMachine;
 
     outMailHdr.to = toMail;
-    outMailHdr.from = 1;  // TODO: change that, please
-    outMailHdr.length = sizeof(struct TransferHeader) + strlen(data) + 1;
+    outMailHdr.from = fromMail;
+    outMailHdr.length = sizeof(TransferHeader) + strlen(data) + 1;
     ASSERT(outMailHdr.length <= MaxMailSize);
 
     /* application layer */
     outTrHdr.flags = flags;
 
     /* concatenate TransferHeader and data */
-    memcpy(outBuffer, &outTrHdr, sizeof(struct TransferHeader));
-    memcpy(outBuffer + sizeof(struct TransferHeader), data, MAX_MESSAGE_SIZE); // added '/0' included
+    memcpy(outBuffer, &outTrHdr, sizeof(TransferHeader));
+    memcpy(outBuffer + sizeof(TransferHeader), data, MAX_MESSAGE_SIZE); // added '/0' included
 
     do {
         postOffice->Send(outPktHdr, outMailHdr, outBuffer);
-        DEBUG('n', "Sending fixed \"%s\" to %d, box %d\n", outBuffer, outPktHdr.to, outMailHdr.to);
+        DEBUG('n', "Sending fixed \"%s\" to %d, box %d\n", outBuffer + sizeof(TransferHeader), outPktHdr.to, outMailHdr.to);
 
         /* recieve acknowledgement */
-        postOffice->Receive(toMail, &inPktHdr, &inMailHdr, inBuffer, TEMPO);
-        DEBUG('n', "Sending fixed: got ACK from %d, box %d\n", inPktHdr.from, inMailHdr.from);
+        DEBUG('n', "Sending fixed: waiting for ACK\n");
+        postOffice->Receive(fromMail, &inPktHdr, &inMailHdr, inBuffer, TEMPO);
+        if (inBuffer != NULL) {
+            DEBUG('n', "Sending fixed: got ACK from %d, box %d\n", inPktHdr.from, inMailHdr.from);
+            fflush(stdout);
 
-        /* unpack the data of the mail that gets put into inBuffer
-            which consists of TransferHeader + data */
-        memcpy(&inTrHdr, inBuffer, sizeof(struct TransferHeader));
-        DEBUG('n', "Sending fixed: receive flags %s\n", flagstostr(inTrHdr.flags));
+            /* unpack the data of the mail that gets put into inBuffer
+                which consists of TransferHeader + data */
+            memcpy(&inTrHdr, inBuffer, sizeof(TransferHeader));
+            //DEBUG('n', "Sending fixed: receive flags %s\n", flagstostr(inTrHdr.flags));
+        } else {
+            DEBUG('n', "Sending fixed: did not got ACK\n");
+            fflush(stdout);
+            inTrHdr.flags = 0;
+        }
 
         attempts++;
     } while (!(inTrHdr.flags & (flags | ACK)) && attempts < MAXREEMISSIONS);
+
+    DEBUG('n', "Came out of the sending loop.\n");
 
     if (attempts == MAXREEMISSIONS)
         return -1;
@@ -65,13 +79,15 @@ char Connection::ReceiveFixedSize(char *data) {
     char inBuffer[MaxMailSize];
 
     postOffice->Receive(toMail, &inPktHdr, &inMailHdr, inBuffer);
-    DEBUG('n', "Our receive got \"%s\" from %d, box %d\n", inBuffer+sizeof(TransferHeader), inPktHdr.from, inMailHdr.from);
+    DEBUG('n', "Our receive got \"%s\" from %d, box %d\n",
+               inBuffer + sizeof(TransferHeader), inPktHdr.from, inMailHdr.from);
 
     memcpy(&inTrHdr, inBuffer, sizeof(TransferHeader));
-    memcpy(data, &inBuffer, inMailHdr.length - sizeof(TransferHeader));
+    memcpy(data, inBuffer + sizeof(TransferHeader), inMailHdr.length - sizeof(TransferHeader));
 
     outPktHdr.to = inPktHdr.from;
     outMailHdr.to = inMailHdr.from;
+    outMailHdr.from = fromMail;
     outMailHdr.length = sizeof(TransferHeader);
     outTrHdr.flags = inTrHdr.flags | ACK;
     DEBUG('n', "Our receive sending ACK to %d, box %d\n", outPktHdr.to, outMailHdr.to);
@@ -109,9 +125,9 @@ int Connection::Receive(char *data) {
 
     do {
         flags = ReceiveFixedSize(chunk);
-        DEBUG('n', "Current flags at receive are: %s\n", flagstostr(flags));
+        //DEBUG('n', "Current flags at receive are: %s\n", flagstostr(flags));
         // memcpy: put data to correct place; copy without headers; copy without artificially added '\0'
-        memcpy(data + offset, chunk + sizeof(TransferHeader), MAX_MESSAGE_SIZE - 1);
+        memcpy(data + offset, chunk, MAX_MESSAGE_SIZE - 1);
         offset += MAX_MESSAGE_SIZE - 1;
     } while (!(flags & END));
 

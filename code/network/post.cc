@@ -126,21 +126,27 @@ MailBox::Get(PacketHeader *pktHdr, MailHeader *mailHdr, char *data, int timeout)
     Mail *mail = (Mail *) messages->Remove(timeout);	// remove message from list;
 						// will wait if list is empty
 
-	DEBUG('n', "Took mail in mbox %d from mbox %d\n", mailHdr->to, mailHdr->from);
+    if (mail != NULL) {
+        DEBUG('n', "Took mail in mbox %d from mbox %d\n", mailHdr->to, mailHdr->from);
+        *pktHdr = mail->pktHdr;
+        *mailHdr = mail->mailHdr;
+        if (DebugIsEnabled('n')) {
+            printf("Got mail from mailbox: ");
+            PrintHeader(*pktHdr, *mailHdr);
+        }
 
-    *pktHdr = mail->pktHdr;
-    *mailHdr = mail->mailHdr;
-    if (DebugIsEnabled('n')) {
-		printf("Got mail from mailbox: ");
-		PrintHeader(*pktHdr, *mailHdr);
+        DEBUG('n', "Copying message data into the callers buffer\n");
+        bcopy(mail->data, data, mail->mailHdr.length);
+                        // copy the message data into
+                        // the caller's buffer
+        delete mail;	// we've copied out the stuff we
+                        // need, we can now discard the message
+    } else {
+        DEBUG('n', "mail is NULL, probably timeout\n");
+        pktHdr = NULL;
+        mailHdr = NULL;
+        data = NULL;
     }
-
-    DEBUG('n', "Copying message data into the callers buffer\n");
-    bcopy(mail->data, data, mail->mailHdr.length);
-					// copy the message data into
-					// the caller's buffer
-    delete mail;			// we've copied out the stuff we
-					// need, we can now discard the message
 }
 
 //----------------------------------------------------------------------
@@ -269,16 +275,17 @@ PostOffice::Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data)
     char* buffer = new char[MaxPacketSize];	// space to hold concatenated
 						// mailHdr + data
 
-    if (DebugIsEnabled('n')) {
-		printf("Post send: ");
-		PrintHeader(pktHdr, mailHdr);
-    }
     ASSERT(mailHdr.length <= MaxMailSize);
     ASSERT(0 <= mailHdr.to && mailHdr.to < numBoxes);
 
     // fill in pktHdr, for the Network layer
     pktHdr.from = netAddr;
     pktHdr.length = mailHdr.length + sizeof(MailHeader);
+
+    if (DebugIsEnabled('n')) {
+		printf("Post send: ");
+		PrintHeader(pktHdr, mailHdr);
+    }
 
     // concatenate MailHeader and data
     bcopy(&mailHdr, buffer, sizeof(MailHeader));
@@ -316,8 +323,10 @@ PostOffice::Receive(int box, PacketHeader *pktHdr,
 {
     ASSERT((box >= 0) && (box < numBoxes));
 
+    DEBUG('n', "Post office calling get on box %d\n", box);
     boxes[box].Get(pktHdr, mailHdr, data, timeout);
-    ASSERT(mailHdr->length <= MaxMailSize);
+    if (data != NULL)
+        ASSERT(mailHdr->length <= MaxMailSize);
 }
 
 //----------------------------------------------------------------------

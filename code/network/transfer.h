@@ -5,7 +5,7 @@
 #include "network.h"
 #include "post.h"
 
-#define TEMPO 1000
+#define TEMPO 1000000000
 #define MAXREEMISSIONS 5
 
 #define MAX_MESSAGE_SIZE (MaxWireSize - sizeof(struct PacketHeader) - sizeof(struct MailHeader) - sizeof(struct TransferHeader))
@@ -27,7 +27,7 @@ class TransferHeader {
 
 class Connection {
   public:
-    Connection(NetworkAddress to, MailBoxAddress mailbox);
+    Connection(MailBoxAddress localbox, NetworkAddress to, MailBoxAddress mailbox);
     ~Connection();
 
     int Send(char *data);  // send a message reliably with ack
@@ -36,6 +36,7 @@ class Connection {
     int ReceiveFile(int fd, int fileSize);  // receive a file from a remote machine to a client machine
 
   private:
+    MailBoxAddress fromMail;
     NetworkAddress toMachine;	// Destination machine ID
     MailBoxAddress toMail;		// Destination mail box
 

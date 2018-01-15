@@ -34,7 +34,8 @@
 //	4. wait for an acknowledgement from the other machine to our
 //	    original message
 
-void MailTest(int farAddr)
+void
+MailTest(int farAddr)
 {
     PacketHeader outPktHdr, inPktHdr;
     MailHeader outMailHdr, inMailHdr;
@@ -82,16 +83,14 @@ void MailTest(int farAddr)
 
 void TransferTest(int farAddr, int isSender)
 {
-    char data[] = "Hello world!"; // "My money's in that office, right? If she start giving me some bullshit about it ain't there, and we got to go someplace else and get it, I'm gonna shoot you in the head then and there. Then I'm gonna shoot that bitch in the kneecaps, find out where my goddamn money is. She gonna tell me too. Hey, look at me when I'm talking to you, motherfucker. You listen: we go in there, and that nigga Winston or anybody else is in there, you the first motherfucker to get shot. You understand?";
+    char data[] = "My money's in that office, right? If she start giving me some bullshit about it ain't there, and we got to go someplace else and get it, I'm gonna shoot you in the head then and there. Then I'm gonna shoot that bitch in the kneecaps, find out where my goddamn money is. She gonna tell me too. Hey, look at me when I'm talking to you, motherfucker. You listen: we go in there, and that nigga Winston or anybody else is in there, you the first motherfucker to get shot. You understand?";
     char buffer[500];
 
-    Connection *conn = new Connection(farAddr, 0);
+    Connection *conn = new Connection(2, farAddr, 7);
 
     if (isSender > 0) {
-        // Send the first message
         conn->Send(data);
     } else {
-        // Wait for the first message from the other machine
         conn->Receive(buffer);
         printf("Got \"%s\"\n", buffer);
         fflush(stdout);
