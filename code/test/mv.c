@@ -9,7 +9,7 @@ int main(int argc, char** argv){
     char* dest_path = argv[argc - 1];
      
      
-    for (argc--, *argv++; argc > 1; argc--, argv ++) {
+    for (argc--, argv++; argc > 1; argc--, argv ++) {
 	  switch (Move(*argv, dest_path)) {
         case E_BLOCK:        
             PutString("Can't move ");PutString(*argv);PutString(" to ");PutString(dest_path);PutString(": directory header can't hold more blocks.\n");

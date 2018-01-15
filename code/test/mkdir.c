@@ -6,7 +6,7 @@ int main(int argc, char** argv){
         return -2;
     }
     
-    for (argc--, *argv++; argc > 0; argc--, argv ++) {
+    for (argc--, argv++; argc > 0; argc--, argv ++) {
 	  switch (MakeDir(*argv, O_RW)) {
         case E_BLOCK:        
             PutString("Can't create ");PutString(*argv);PutString(": directory header can't hold more blocks.\n");
