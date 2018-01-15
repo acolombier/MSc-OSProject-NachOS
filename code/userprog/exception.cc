@@ -235,12 +235,15 @@ ExceptionHandler (ExceptionType which)
 
                 char* filename = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
                 OpenFile *executable = fileSystem->Open (filename);
-
+                
                 if (executable == NULL){
                     DEBUG('c', "Unable to open file %s\n", filename);
+                    delete [] filename;
                     machine->WriteRegister(2, 0);
                     break;
-                }
+                } else
+                    delete []filename;
+                
                 
                 char** argv = nullptr;
                 int argc = 0, arg_ptn;
@@ -295,20 +298,19 @@ ExceptionHandler (ExceptionType which)
                 b->pathname = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
                 b->object = fileSystem->Open(b->pathname);
 
-                if (b->object == NULL || ((OpenFile*)b->object)->type() == FileHeader::Directory){
+                if (b->object == NULL){
                     DEBUG('c', "Unable to open file %s\n", b->pathname);
                     delete [] b->pathname;
                     delete b;
                     machine->WriteRegister(2, 0);                    
                     break;
                 } else {
-                    delete [] b->pathname;
                     int fd = currentThread->space->store_fd(b);
-                    DEBUG('c', "File is %p : %d \n", b->object, fd);
                     if (fd)
                         machine->WriteRegister(2, fd);    
                     else {
                         fileSystem->Close((OpenFile*)b->object);
+                        delete [] b->pathname;
                         delete b;
                     }
                 }    
@@ -327,18 +329,16 @@ ExceptionHandler (ExceptionType which)
 
                 if (b->object == NULL || ((OpenFile*)b->object)->type() != FileHeader::Directory){
                     DEBUG('c', "Unable to open directory %s\n", b->pathname);
-                    delete [] b->pathname;
                     delete b;
                     machine->WriteRegister(2, 0);                    
                     break;
                 } else {
-                    delete [] b->pathname;
                     int fd = currentThread->space->store_fd(b);
-                    DEBUG('c', "Directory is %p : %d \n", b->object, fd);
                     if (fd)
                         machine->WriteRegister(2, fd);    
                     else {
                         fileSystem->Close((OpenFile*)b->object);
+                        delete [] b->pathname;
                         delete b;
                     }
                 }    
@@ -503,7 +503,7 @@ ExceptionHandler (ExceptionType which)
                 char* old = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
                 char* new_ = copyStringFromMachine(reg5, (unsigned int)MAX_STRING_SIZE);
                 
-                machine->WriteRegister(2, fileSystem->Move(old, new_));;
+                machine->WriteRegister(2, fileSystem->Move(old, new_));
                 
                 delete [] old;
                 delete [] new_;
@@ -516,22 +516,22 @@ ExceptionHandler (ExceptionType which)
                 
                 char* path = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
                 
-                machine->WriteRegister(2, fileSystem->Remove(path));;
-                
+                machine->WriteRegister(2, !fileSystem->Remove(path));
                 delete [] path;
                 break;
             }
             
             case SC_Changemod: {
-                DEBUG('c', "Changemod syscall on %p, initiated by user program.\n", reg5);
+                DEBUG('c', "Changemod syscall on fd %p with %d, initiated by user program.\n", reg5, reg4);
                 
+                machine->WriteRegister(2, -1);
+                    
                 fd_bundle_t* b = currentThread->space->get_fd(reg5);
                 if (b){
                     ((OpenFile*)b->object)->header()->permission(reg4);
+                    ((OpenFile*)b->object)->SaveHeader();
                     machine->WriteRegister(2, 0);
                 }
-                else
-                    machine->WriteRegister(2, -1);
                 
                 break;
             }

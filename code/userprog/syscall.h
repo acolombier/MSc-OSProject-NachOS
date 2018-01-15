@@ -89,8 +89,8 @@
     The executing permission in bytes.
 */
 #define O_X 0b100
-#define O_RW (O_R | O_W)
-#define O_RX (O_R | O_X)
+#define O_RW 0b11
+#define O_RX 0b101
 
 /*! The details of those error code are detaild in \ref filesys.h
  */
@@ -224,9 +224,24 @@ OpenFileId ParentDir (OpenFileId dir);
  * \brief Change the permission of an open item.
  * \param perm the new permission in octal. You can use \ref O_R, \ref O_W or \ref O_X to make it easier.
  * \param id file descriptor
- * \return Return true if modified
+ * \return Return false if no error and modified with success, anything else otherwise
  */
 int ChMod (int perm, OpenFileId id);
+
+/*!
+ * \brief Delete a file from the filesystem.
+ * \param path file path
+ * \return Return false if no error, anything else otherwise
+ */
+int Remove (char* id);
+
+/*!
+ * \brief Move a file from the filesystem.
+ * \param old the old file path
+ * \param new_ the new file path
+ * \return Return false if no error, anything else otherwise
+ */
+int Move (char* old, char* new_);
 
 /* Write "size" bytes from "buffer" to the open file. */
 int Write (char *buffer, int size, OpenFileId id);

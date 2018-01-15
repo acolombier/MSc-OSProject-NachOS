@@ -321,6 +321,22 @@ Trunk:
     j   $31
     .end Trunk
     
+     .globl Move
+    .ent    Move
+Move:
+    addiu $2,$0,SC_Move
+    syscall
+    j   $31
+    .end Move
+    
+     .globl Remove
+    .ent    Remove
+Remove:
+    addiu $2,$0,SC_Remove
+    syscall
+    j   $31
+    .end Remove
+    
      .globl FileSystemInfo
     .ent    FileSystemInfo
 FileSystemInfo:

@@ -140,6 +140,13 @@ OpenFile::ReadAt(char *into, int numBytes, int position)
     int fileLength = hdr->FileLength();
     int i, firstSector, lastSector, numSectors;
     char *buf;
+     
+    if (headerSector){
+        struct timeval tv;
+        gettimeofday(&tv,NULL);
+        hdr->lastaccess(tv.tv_sec - LocalTS);
+        SaveHeader();
+    }
 
     if ((numBytes <= 0) || (position >= fileLength))
         return 0;                 // check request
@@ -160,13 +167,6 @@ OpenFile::ReadAt(char *into, int numBytes, int position)
 
     // copy the part we want
     memcpy(into, buf + (position - (firstSector * SectorSize)), numBytes);
-     
-    if (headerSector){
-        struct timeval tv;
-        gettimeofday(&tv,NULL);
-        hdr->lastaccess(tv.tv_sec - LocalTS);
-        SaveHeader();
-    }
     
     delete [] buf;
     return numBytes;

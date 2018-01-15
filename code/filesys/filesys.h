@@ -168,6 +168,7 @@ class FileSystem {
                         // If "format", there is nothing on
                     // the disk, so initialize the directory
                         // and the bitmap of free blocks.
+    ~FileSystem();
 
     int Create(const char *name, int initialSize = 0, FileHeader::Type type = FileHeader::File, int perm = 0);      
                     // Create a file (UNIX creat)

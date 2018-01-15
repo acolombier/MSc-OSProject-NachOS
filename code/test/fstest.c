@@ -4,19 +4,11 @@
 
 int main(int argc, char** argv)
 {
-	OpenFileId file, dir;
-	
-	char *buffer = (char*)malloc(512);
-	
-	if (!(dir = OpenDir("/"))){
-		PutString("Can't open dir\n");
-		return -1;
-	}
+	OpenFileId file;
     
-	while (ReadDir(buffer, 512, dir)){
-		PutString(buffer);
-		PutString("\n");
-	}
+	char *buffer = (char*)malloc(512);
+    
+    Remove("/user_dir_test.txt");
 	
 	if ((file = Create("/user_dir_test.txt", O_RW))){
 		PutString("Can't create the file\n");

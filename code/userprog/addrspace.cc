@@ -102,8 +102,11 @@ Lock* AddrSpace::_ADDR_SPACE_LOCK = new Lock("AddrSpace");
 AddrSpace::AddrSpace (OpenFile * executable):
     lastTID(0), lastFD(0), mThreadList(new List), mThreadsWaiting(new List)
 {
-    if (!(executable->header()->permission() & FileHeader::Exec) || !(executable->header()->permission() & FileHeader::Read))
+    if (!(executable->header()->permission() & FileHeader::Exec) || !(executable->header()->permission() & FileHeader::Read)){
+        delete mThreadList;
+        delete mThreadsWaiting;
         throw new PermissionException();
+    }
     AddrSpace::_ADDR_SPACE_LOCK->Acquire();
     mPid = ++AddrSpace::_LAST_PID;
     
@@ -138,6 +141,8 @@ AddrSpace::AddrSpace (OpenFile * executable):
     SwapHeader (&noffH);
     
     if (noffH.noffMagic != NOFFMAGIC){
+        delete mThreadList;
+        delete mThreadsWaiting;
 		a_bundle->object = nullptr;
         DEC_REF(pid());
         throw new ExecutableException();
@@ -222,6 +227,7 @@ AddrSpace::~AddrSpace ()
         if (mFdTable[i].object){
             DEBUG('F', "Process %d has forgot to close a file. Closing now...\n", mPid);
             fileSystem->Close((OpenFile*)mFdTable[i].object);
+            delete [] mFdTable[i].pathname;
             break;
         }
     }
@@ -588,6 +594,7 @@ void AddrSpace::del_fd(int fd){
     fd_lock->Acquire();
     for (int i = 0; i < MAX_OPEN_FILE; i++){
         if (mFdTable[i].fd == fd){
+            delete [] mFdTable[i].pathname;
             memset(mFdTable + i, 0, sizeof(fd_bundle_t));
             break;
         }

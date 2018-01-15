@@ -67,7 +67,7 @@ int atoi(char* s){
 		i *= -1;
 		k--;
 	}
-    PutInt(k);PutChar('\n');
+    PutChar('\n');
 	return k > 0 ? -1 : i;
 }
 
@@ -200,6 +200,7 @@ int simple_strftime(char * str, size_t size, int time){
     size-=3;
     if (size < 2) {*(str) = 0;return 0;}
     strcpy(str, strpad(reverse(itoa(secs, buffer, 10)), 2, '0'));
+    str += 2;
     *(str) = 0;
     return 1;
 }

@@ -44,16 +44,25 @@ CPPFLAGS+=$($(TG)CPPFLAGS)
 LDFLAGS+=$($(TG)LDFLAGS)
 LDLIBS+=$($(TG)LDLIBS)
 
-	
+
 define deploy_task =
+  NACHOS_BIN="cat chmod ls touch rm mv mkdir df"
   if [ ! -e "DISK" ]; then
       echo "Formating the harddrive" && ./nachos-filesys -f > /dev/null;
+      echo "Creating bin directory" && ./nachos-filesys --mkdir bin --chmod bin rw > /dev/null;
   fi
   for d in $(ls | grep -v '\.o' | grep -v 'DISK' | grep -v "SOCKET_" | grep -v "Makefile" | grep -v "nachos-"); do    
     if [ ! "$d" = "1" ]; then
-      echo ./nachos-filesys -r "$d" > /dev/null && ./nachos-filesys -cp "$d" "$d" | head -n 2 | tail -n 1 && ./nachos-filesys --chmod "$d" rx > /dev/null;
+	  path="$d";
+	  perm="rw";
+	  if [ -n "`echo $NACHOS_BIN | xargs -n1 echo | grep -e \"^$path$\"`" ]; then
+		path="/bin/$path";
+	    perm="rx";
+	  fi;
+      echo ./nachos-filesys -r "$path" > /dev/null && ./nachos-filesys -cp "$d" "$path" | head -n 2 | tail -n 1 && ./nachos-filesys --chmod "$path" "$perm" > /dev/null;
     fi;
   done;
+  echo "Setting special permissions" && ./nachos-filesys --chmod shell rx > /dev/null && ./nachos-filesys --chmod bin r > /dev/null;
 endef
 
 deploy: ; @$(value deploy_task)

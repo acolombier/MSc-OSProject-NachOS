@@ -1,6 +1,11 @@
 #include "syscall.h"
 
 int main(int argc, char** argv){    
+    if (argc < 2){
+        PutString("Usage: ");PutString(*argv);PutString(" <directory>\n");
+        return -2;
+    }
+    
     for (argc--, *argv++; argc > 0; argc--, argv ++) {
 	  switch (MakeDir(*argv, O_RW)) {
         case E_BLOCK:        

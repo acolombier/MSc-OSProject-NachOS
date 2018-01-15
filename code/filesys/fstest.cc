@@ -158,7 +158,7 @@ MakeDirectory(const char *path)
     
     OpenFile* openFile = fileSystem->Open(path);
     ASSERT(openFile != NULL);
-    delete openFile;
+    fileSystem->Close(openFile);
 }
 
 //----------------------------------------------------------------------

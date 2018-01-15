@@ -125,13 +125,14 @@ void do_UserHalt(){
 	ListElement*e = currentThread->space->threadList()->getFirst();
 	do {
 		tid_t thread_to_join = ((Thread*)e->item)->tid();	
-		if (thread_to_join != currentThread->tid()){				
+		if (thread_to_join && thread_to_join != currentThread->tid()){				
 			DEBUG('t', "--Halt call: Joining with thread #%d...\n", thread_to_join);
 			currentThread->join(thread_to_join, 0);
 			DEBUG('t', "--Halt call: Thread #%d has joined\n", thread_to_join);
 			e = currentThread->space->threadList()->getFirst(); // To be sure that we don't have a de-allocated 'e'
 		}
 	} while (currentThread->space->countThread() > 1 && (e = e->next));
+    currentThread->space->removeThread(currentThread, 255);
 	interrupt->Halt();
 }
 

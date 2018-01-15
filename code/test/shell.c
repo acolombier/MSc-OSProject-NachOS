@@ -3,11 +3,12 @@
 #include "malloc.h"
 
 int main (){
-	char buffer[512];
-    char **args = NULL;
-	int argc, result_code;
 	
     while (1){
+        char buffer[512];
+        char **args = NULL;
+        int argc, result_code;
+        
 		PutString("\x1B[32mnach_shell\x1B[31m>\033[0m ");
 		GetString(buffer, 512);
     
@@ -51,7 +52,22 @@ int main (){
         args[argc] = NULL;
 
 		if (strlen(buffer)){
-			SpaceId process = ForkExec(buffer, args);
+            char* fullpath = NULL;
+            if (buffer[0] != '/'){
+                fullpath = (char*)malloc(5 + strlen(buffer) + 2);
+        
+                strcpy(fullpath, "/bin/");
+                strcpy(fullpath + 5, buffer);
+                OpenFileId is_in_path = Open(fullpath);
+                if (is_in_path)
+                    Close(is_in_path);
+                else {
+                    free(fullpath);
+                    fullpath = NULL;
+                }
+            }
+            
+			SpaceId process = ForkExec(fullpath ? fullpath : buffer, args);
 			if (!process){
 				PutString("Error! Can't run the command ");
 				PutString(buffer);
@@ -65,6 +81,8 @@ int main (){
                     if (result_code) {PutString("Command exit with the code ");PutInt(result_code);PutChar('\n');}
                 }
 			}
+            if (fullpath)
+                free(fullpath);
 		}
     }
     return 0;

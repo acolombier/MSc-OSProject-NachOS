@@ -2,13 +2,17 @@
 
 int main(int argc, char** argv){
     
-    if (argc < 1)
-        return 0;
+    if (argc < 2){
+        PutString("Usage: ");PutString(*argv);PutString(" <file>\n");
+        return -2;
+    }
     
-    OpenFileId file = Open(*argv);
+    OpenFileId file = Open(argv[1]);
     
-    if (!file)
+    if (!file){
+        PutString("Cannot open ");PutString(argv[1]);PutString("\n");
         return -1;
+    }
     
     int read;  
     

@@ -104,8 +104,8 @@ FileSystem::FileSystem(bool format):
         OpenFile* rootDirectory;
         FileHeader *mapHdr = new FileHeader;
         rootHeader = new FileHeader(FileHeader::Directory);
-	rootHeader->setPermission(FileHeader::Read);
-	rootHeader->setPermission(FileHeader::Write);
+        rootHeader->setPermission(FileHeader::Read);
+        rootHeader->setPermission(FileHeader::Write);
 
         DEBUG('F', "Formatting the file system.\n");
 
@@ -133,8 +133,8 @@ FileSystem::FileSystem(bool format):
         // while Nachos is running.
 
         freeMapFile = new OpenFile(FreeMapSector);
-	freeMapFile->header()->setPermission(FileHeader::Read);
-	freeMapFile->header()->setPermission(FileHeader::Write);
+        freeMapFile->header()->setPermission(FileHeader::Read);
+        freeMapFile->header()->setPermission(FileHeader::Write);
         
         rootDirectory = new OpenFile(rootHeader);
 
@@ -162,11 +162,18 @@ FileSystem::FileSystem(bool format):
     // if we are not formatting the disk, just open the files representing
     // the bitmap and directory; these are left open while Nachos is running
         freeMapFile = new OpenFile(FreeMapSector);
-	freeMapFile->header()->setPermission(FileHeader::Read);
-	freeMapFile->header()->setPermission(FileHeader::Write);
+        freeMapFile->header()->setPermission(FileHeader::Read);
+        freeMapFile->header()->setPermission(FileHeader::Write);
         rootHeader = new FileHeader(FileHeader::Directory);
         rootHeader->FetchFrom(DirectorySector);
     }
+}
+
+FileSystem::~FileSystem(){
+    delete freeMapFile;
+    rootHeader->dec_ref();
+    delete files_table;
+    delete fs_lock;
 }
 
 int FileSystem::walkThrough(OpenFile** directory_file, const char* ro_name){    
@@ -352,7 +359,7 @@ FileSystem::Open(const char *name)
 { 
     OpenFile *openFile = NULL;
 
-    char *element_name, *parent_name;
+    char *element_name = nullptr, *parent_name = nullptr;
     basename(name, &parent_name, &element_name);
     
     name = (const char*)new char[strlen(parent_name) + strlen(element_name) + 2];
@@ -456,11 +463,12 @@ void FileSystem::Close(OpenFile* openFile){
             }
     }
     if (free_block != -1 && files_table[free_block].spaceid->size() == 0){
-	DEBUG('F', "The file %s has been closed by every one\n", files_table[free_block].pathname);
-	delete [] files_table[free_block].pathname;
-	delete files_table[free_block].spaceid;
-	delete openFile;
-	memset(files_table + free_block, 0, sizeof(openfile_t));
+        DEBUG('F', "The file %s has been closed by every one\n", files_table[free_block].pathname);
+        delete [] files_table[free_block].pathname;
+        delete files_table[free_block].spaceid;
+        files_table[free_block].pathname = nullptr;
+        delete openFile;
+        memset(files_table + free_block, 0, sizeof(openfile_t));
     }
 
     fs_lock->Release();    
