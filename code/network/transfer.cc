@@ -4,7 +4,7 @@
 #include "system.h" // for posrmt_adrffice member
 
 Connection::Connection(MailBoxAddress localbox, NetworkAddress to, MailBoxAddress mailbox, Status s):
-    _status(s),_last_local_seq_number(s == CONNECTING ? 1 : 0), _last_remote_seq_number(s == CONNECTING ? 1 : 0)
+    _status(s), _last_local_seq_number(s == CONNECTING ? 1 : 0), _last_remote_seq_number(s == CONNECTING ? 1 : 0)
 {
     lcl_box = localbox;
     rmt_adr = to;
@@ -19,6 +19,9 @@ Connection::~Connection() {
 }
 
 bool Connection::Send(char *data, size_t length) {
+    
+    ASSERT(_status == ESTABLISHED);
+    
     unsigned int attempts = 0, beg_seq_nb = _last_local_seq_number;
     char chunk[MAX_MESSAGE_SIZE], flags;
     size_t chunk_size = MAX_MESSAGE_SIZE;
@@ -55,6 +58,9 @@ bool Connection::Send(char *data, size_t length) {
 }
 
 bool Connection::Receive(char *data, size_t length) {
+    
+    ASSERT(_status == ESTABLISHED);
+    
     unsigned int beg_seq_nb = _last_remote_seq_number;
     char flags, chunk[MAX_MESSAGE_SIZE];
     size_t chunk_size = MAX_MESSAGE_SIZE;
@@ -113,7 +119,40 @@ Connection* Connection::Accept(int timeout){
 
 bool Connection::Connect(int timeout){
     ASSERT(_status == IDLE);
-    /*! \todo implementation */
+
+    unsigned long start_time = stats->totalTicks, shift_time = 0;
+    Connection* new_conn = nullptr;
+    
+    _status = ACCEPTING;
+
+    do {
+        char flags;
+        _last_local_seq_number =  0;
+        _last_remote_seq_number = 0;
+        
+        if ((flags = _read_worker(timeout - shift_time, nullptr, 0,
+                &remoteAddr, &remotePort)) < 0) // Timeout
+            break;
+
+        shift_time += stats->totalTicks - start_time;
+        if (flags != START) //We strongly want only a start flag, otherwise we consider it as flood
+            continue;
+        
+        shift_time += stats->totalTicks - start_time;
+        if (_send_worker(START | ACK, timeout - shift_time) == 0) // Timeout
+            break;
+
+        new_conn = new Connection(postOffice->assignateBox(), remoteAddr,
+            remotePort, CONNECTING);
+
+        if (new_conn->Synch(timeout - shift_time)){ /*! \todo retried if failed */
+            delete new_conn;
+            break;
+        }
+
+        return new_conn; // From now, we assume that the connection as syncronysed
+    } while (timeout < 0 || shift_time < (unsigned int)timeout);
+    
     return false;
 }
 
@@ -127,7 +166,7 @@ bool Connection::Synch(int timeout){
 
 
 bool Connection::Close(int timeout){
-    ASSERT(_status == ESTABLISHED);
+    //~ ASSERT(_status == ESTABLISHED);
     /*! \todo implementation */
     return false;
 }

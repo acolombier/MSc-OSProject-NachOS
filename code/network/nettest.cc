@@ -89,12 +89,16 @@ void TransferTest(int farAddr, int isSender)
     Connection *conn = new Connection(2, farAddr, 7);
 
     if (isSender > 0) {
+        conn->Connect(10000);
         conn->Send(data, 483);
     } else {
+        conn->Accept(1000000);
         conn->Receive(buffer, 500);
         printf("Got \"%s\"\n", buffer);
-        fflush(stdout);
     }
+    conn->Close();
+    delete conn;
+    
     DEBUG('n', "=============== Finished a round ===============\n");
     fflush(stdout);
 
