@@ -47,8 +47,8 @@ int main(int argc, char** argv){
         }
     }
     
-    char trash;
-    Read(&trash, 0, file);
+    int trash;
+    Read((char*)&trash, 4, file);
     
     Close(file);
     

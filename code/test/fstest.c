@@ -8,6 +8,11 @@ int main(int argc, char** argv)
     
 	char *buffer = (char*)malloc(512);
     
+	if ((file = Open("/user_dir_test.txt"))){
+        ChMod(O_W, file);
+        Close(file);
+	}
+    
     Remove("/user_dir_test.txt");
 	
 	if ((file = Create("/user_dir_test.txt", O_RW))){
@@ -49,11 +54,16 @@ int main(int argc, char** argv)
 		return -1;
 	}
 	
-	if (Read(buffer, 100, file)){
-		PutString("File content (100 bytes)\n");
+    int read_size;
+	if ((read_size = Read(buffer, 100, file)) >= 0){
+		PutString("File content (");PutInt(read_size);PutString(" bytes)\n");
+        if (read_size < 100) buffer[read_size] = '\0';
 		PutString(buffer);
 	} else
 		PutString("Nothing to read\n");
+        
+    FileInfo(&fileinfo, file);
+    Seek(file, fileinfo.size - 1);
 	
 	if ((bytes = Write("\nLet's add some in english now", 31, file)) != 31){
 		if (bytes >= 0){

@@ -19,9 +19,22 @@ int main(int argc, char** argv){
     char buffer[100];
     
 	while ((read = Read(buffer, 100, file))){
-		PutString(buffer);
-        if (read < 100)
+        if (read < 0){
+            switch (read) {
+            case E_PERM:              
+                PutString("Can't read ");PutString(argv[1]);PutString(": Permission denied.\n");
+                return E_PERM;
+                break;
+            default:              
+                PutString("Can't read ");PutString(argv[1]);PutString(": unknown error.\n");
+                return E_PERM;
+                break;
+            }
             break;
+        }
+        if (read < 100)
+            buffer[read] = '\0';
+		PutString(buffer);
     }
     
     Close(file);

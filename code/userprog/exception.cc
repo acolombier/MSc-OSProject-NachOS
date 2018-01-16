@@ -348,16 +348,17 @@ ExceptionHandler (ExceptionType which)
             
             case SC_Read: {
                 DEBUG('c', "Read syscall on %p, initiated by user program.\n", reg6);
-                /*! \todo Implementation */
                 
+                machine->WriteRegister(2, 0);
                 fd_bundle_t* b = currentThread->space->get_fd(reg6);
                 if (b){
                     char* buffer = new char[reg5];
-                    machine->WriteRegister(2, ((OpenFile*)b->object)->Read(buffer, reg5));
+                    returnvalue = ((OpenFile*)b->object)->Read(buffer, reg5);
+                    machine->WriteRegister(2, returnvalue);
+
                     copyStringToMachine(buffer, reg4, reg5);
                     delete [] buffer;
-                } else
-                    machine->WriteRegister(2, 0);
+                } 
                     
                 break;
             }
@@ -400,7 +401,6 @@ ExceptionHandler (ExceptionType which)
             
             case SC_Tell: {
                 DEBUG('c', "Tell syscall on %p, initiated by user program.\n", reg4);
-                /*! \todo Implementation */
                 fd_bundle_t* b = currentThread->space->get_fd(reg4);
                 if (b)
                     machine->WriteRegister(2, ((OpenFile*)b->object)->Tell());
@@ -412,7 +412,6 @@ ExceptionHandler (ExceptionType which)
             
             case SC_FileTrunk: {
                 DEBUG('c', "Tell syscall on %p, initiated by user program.\n", reg4);
-                /*! \todo Implementation */
                 fd_bundle_t* b = currentThread->space->get_fd(reg4);
                 machine->WriteRegister(2, -1);
                 if (b){
@@ -428,10 +427,8 @@ ExceptionHandler (ExceptionType which)
             
             case SC_Seek: {
                 DEBUG('c', "Seek syscall on %p, initiated by user program.\n", reg4);
-                /*! \todo Implementation */
-                
                 fd_bundle_t* b = currentThread->space->get_fd(reg4);
-                if (b){
+                if (b && reg5 >= 0){
                     ((OpenFile*)b->object)->Seek(reg5);
                     machine->WriteRegister(2, ((OpenFile*)b->object)->Tell());
                 }
@@ -479,7 +476,7 @@ ExceptionHandler (ExceptionType which)
                 DEBUG('c', "Close syscall on %p, initiated by user program.\n", reg4);
                 
                 fd_bundle_t* b = currentThread->space->get_fd(reg4);
-                if (b){
+                if (b && b->object){
                     fileSystem->Close((OpenFile*)b->object);
                     currentThread->space->del_fd(reg4);
                 }
@@ -584,6 +581,20 @@ ExceptionHandler (ExceptionType which)
         do_UserProcessExit(-1);
     } else if (which == IllegalInstrException){
         DEBUG('E', "SIGABRT as trying to execute illegal instruction\n", currentThread->getName());
+
+        /*! \todo error code */
+        do_UserProcessExit(-1);
+    } else if (which == AddressErrorException){
+        char *buffer = new char[64];
+        snprintf(buffer, 64, "SIGSEGV on process %d, thread %d: Address %p is not aligned on the size requested %d.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid(), (void*)reg4, reg5);
+        
+        synchconsole->AcquireOutput();
+        synchconsole->PutString(buffer);        
+        synchconsole->ReleaseOutput();
+        
+        delete [] buffer;
+        
+        DEBUG('E', "SIGABRT after trying to access to a none aligned area to the size requested %d at %p\n", reg5, (void*)reg4);
 
         /*! \todo error code */
         do_UserProcessExit(-1);

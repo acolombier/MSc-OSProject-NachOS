@@ -351,6 +351,22 @@ QuickTest()
       printf("Perf test: cannot remove the file\n");
       return;
     }
+    if ((errorCode = fileSystem->Create("/test_file_1", 0, FileHeader::File, FileHeader::Read | FileHeader::Write))) {
+      printf("Perf test: can't create /test_file_1 again: %d\n", errorCode);
+      return;
+    }
+    file = fileSystem->Open("/test_file_1");
+    if (!file) {
+      printf("Perf test: can't open /test_file_1 again: %d\n", errorCode);
+      return;
+    }
+    
+    for (int i = 0; i < 1024; i++)
+    data[i] = 'a' + (char)(i % 26);
+    file->WriteAt(data, 1024);
+    delete [] data;
+    
+    fileSystem->Close(file);
     
     if (!(errorCode = fileSystem->Remove("/" DirName "/" DirName "/my_super_long_file_name"))) {
       printf("Perf test: cannot remove the file\n");

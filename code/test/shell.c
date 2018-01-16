@@ -9,6 +9,8 @@ int main (){
         char **args = NULL;
         int argc, result_code;
         
+        memset(buffer, 0, 512);
+        
 		PutString("\x1B[32mnach_shell\x1B[31m>\033[0m ");
 		GetString(buffer, 512);
     
@@ -58,6 +60,7 @@ int main (){
         
                 strcpy(fullpath, "/bin/");
                 strcpy(fullpath + 5, buffer);
+                fullpath[5 + strlen(buffer)] = '\0';
                 OpenFileId is_in_path = Open(fullpath);
                 if (is_in_path)
                     Close(is_in_path);

@@ -66,31 +66,31 @@ FileHeader::Allocate(BitMap *freeMap, int allocSize)
     _lock->Acquire();
     int data_to__lloc = allocSize - numBytes, sector_to__lloc = divRoundUp(allocSize, SectorSize) - numSectors; // Data which has to be gathered
     
-    int new_first_sector = sector_to__lloc < 0 ? numSectors + sector_to__lloc : numSectors;
+    int new_first_sector = sector_to__lloc < 0 ? numSectors + sector_to__lloc: numSectors;
     int new_last_sector = sector_to__lloc < 0 ? numSectors : numSectors + sector_to__lloc;
     
     unsigned int _last_extended_sector = divRoundDown(new_first_sector, AllocSector);
     int tot_sector__lloc = divRoundUp(data_to__lloc, SectorSize * AllocSector) + divRoundUp(data_to__lloc, SectorSize);
-    
+        
     if (divRoundDown(new_last_sector, AllocSector) == _last_extended_sector) // if we won't need an other extented sector, we correct the required value
-    tot_sector__lloc--;
+        tot_sector__lloc--;
     
     if ((sector_to__lloc > 0 && freeMap->NumClear() < tot_sector__lloc) || _last_extended_sector == NumDirect){
-    DEBUG('f', "The file can't be grown.\n"); 
-    numBytes = numSectors * SectorSize; // We give the max of it already has allocated for sector
-    _lock->Release();
-    return false;
+        DEBUG('f', "The file can't be grown.\n"); 
+        numBytes = numSectors * SectorSize; // We give the max of it already has allocated for sector
+        _lock->Release();
+        return false;
     }
     
-    DEBUG('f', "Allocating %d data sector.\n", tot_sector__lloc);        
+    DEBUG('f', "Allocating %d data sector: from %d to %d.\n", tot_sector__lloc, new_first_sector, new_last_sector);        
     
     int* sector = new int[AllocSector];
     if (dataSectors[_last_extended_sector]) // If the last extented sector is 0, it means it not allocated although, it is a valid sector
-    synchDisk->ReadSector(dataSectors[_last_extended_sector], (char*)sector);
+        synchDisk->ReadSector(dataSectors[_last_extended_sector], (char*)sector);
     else {
-    dataSectors[_last_extended_sector] = freeMap->Find();
-    DEBUG('f', "Allocate the %d-th extended table sector.\n", _last_extended_sector);  
-    memset(sector, 0, SectorSize);
+        dataSectors[_last_extended_sector] = freeMap->Find();
+        DEBUG('f', "Allocate the %d-th extended table sector.\n", _last_extended_sector);  
+        memset(sector, 0, SectorSize);
     }
     
     bool is_full = false;
@@ -103,14 +103,14 @@ FileHeader::Allocate(BitMap *freeMap, int allocSize)
         }
         if (divRoundDown(i, AllocSector) > _last_extended_sector){
             if (sector_to__lloc < 0){ // Free...
-            freeMap->Clear(dataSectors[_last_extended_sector]);
-            synchDisk->ReadSector(dataSectors[++_last_extended_sector], (char*)sector);
-            DEBUG('f', "Free %d a %d-th extended table sector.\n", dataSectors[_last_extended_sector], _last_extended_sector);  
+                freeMap->Clear(dataSectors[_last_extended_sector]);
+                synchDisk->ReadSector(dataSectors[--_last_extended_sector], (char*)sector);
+                DEBUG('f', "Free %d a %d-th extended table sector.\n", dataSectors[_last_extended_sector], _last_extended_sector);  
             } else { // Alloc...
-            synchDisk->WriteSector(dataSectors[_last_extended_sector], (char*)sector);
-            dataSectors[++_last_extended_sector] = freeMap->Find();
-            memset(sector, 0, SectorSize);
-            DEBUG('f', "Allocate %d a %d-th extended table sector.\n", dataSectors[_last_extended_sector], _last_extended_sector);  
+                synchDisk->WriteSector(dataSectors[_last_extended_sector], (char*)sector);
+                dataSectors[++_last_extended_sector] = freeMap->Find();
+                memset(sector, 0, SectorSize);
+                DEBUG('f', "Allocate %d a %d-th extended table sector.\n", dataSectors[_last_extended_sector], _last_extended_sector);  
             }
         }
         
@@ -124,7 +124,7 @@ FileHeader::Allocate(BitMap *freeMap, int allocSize)
         }
     }
     
-    if ((divRoundDown(new_last_sector, AllocSector) > _last_extended_sector || new_first_sector / AllocSector == divRoundDown(new_first_sector, AllocSector)) && sector_to__lloc < 0){ // Free...
+    if (divRoundUp(new_first_sector, AllocSector) == _last_extended_sector && sector_to__lloc < 0){ // Free...
         freeMap->Clear(dataSectors[_last_extended_sector]);
         DEBUG('f', "Clearing the unused extended entry %d => %d.\n", dataSectors[_last_extended_sector], _last_extended_sector);  
     } else {
@@ -135,7 +135,7 @@ FileHeader::Allocate(BitMap *freeMap, int allocSize)
     delete [] sector;
     
     numBytes = allocSize;
-    numSectors  = new_last_sector;
+    numSectors  = (sector_to__lloc < 0 ? new_first_sector : new_last_sector);
     
     _lock->Release();
     
@@ -153,7 +153,6 @@ void
 FileHeader::Deallocate(BitMap *freeMap)
 {
     ASSERT(Allocate(freeMap, 0));
-    freeMap->Clear(dataSectors[0]);    
 }
 
 //----------------------------------------------------------------------
@@ -204,9 +203,6 @@ FileHeader::ByteToSector(int offset)
     
     int data_sector = sector[(offset / SectorSize) % AllocSector];
     delete [] sector;
-    
-    DEBUG('f', "Bytes %d is in the %d sector, in the extented table %d at index %d. its value is %d.\n",     
-            offset, offset / SectorSize, (offset / SectorSize) / AllocSector, (offset / SectorSize) % SectorSize, data_sector);
     
     return data_sector;
 }

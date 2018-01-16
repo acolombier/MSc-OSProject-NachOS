@@ -144,8 +144,8 @@ Machine::WriteMem(int addr, int size, int value)
 
     exception = Translate(addr, &physicalAddress, size, TRUE);
     if (exception != NoException) {
-	machine->RaiseException(exception, addr);
-	return FALSE;
+        machine->RaiseException(exception, addr);
+        return FALSE;
     }
     switch (size) {
       case 1:
@@ -195,9 +195,10 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
 
 // check for alignment errors
     if (((size == 4) && (virtAddr & 0x3)) || ((size == 2) && (virtAddr & 0x1))){
-	DEBUG('a', "alignment problem at %d, size %d!\n", virtAddr, size);
-	machine->WriteRegister(4, virtAddr);
-	return AddressErrorException;
+        DEBUG('a', "alignment problem at %d, size %d!\n", virtAddr, size);
+        machine->WriteRegister(4, virtAddr);
+        machine->WriteRegister(5, size);
+        return AddressErrorException;
     }
     
     // we must have either a TLB or a page table, but not both!

@@ -49,7 +49,7 @@ define deploy_task =
   NACHOS_BIN="cat chmod ls touch rm mv mkdir df"
   if [ ! -e "DISK" ]; then
       echo "Formating the harddrive" && ./nachos-filesys -f > /dev/null;
-      echo "Creating bin directory" && ./nachos-filesys --mkdir bin --chmod bin rw > /dev/null;
+      echo "Creating bin directory" && ./nachos-filesys --mkdir bin --chmod bin 7 > /dev/null;
   fi
   for d in $(ls | grep -v '\.o' | grep -v 'DISK' | grep -v "SOCKET_" | grep -v "Makefile" | grep -v "nachos-"); do    
     if [ ! "$d" = "1" ]; then
