@@ -50,12 +50,12 @@ bool Connection::Send(char *data, size_t length) {
 
         _last_local_seq_number++;
     }
-
+    _send_worker(ACK, /*timeout*/-1);
     return true;
 }
 
 bool Connection::Receive(char *data, size_t length) {
-    unsigned int beg_seq_nb = _last_remote_seq_number;
+    unsigned int attempts = 1, beg_seq_nb = _last_remote_seq_number;
     char flags, chunk[MAX_MESSAGE_SIZE];
     size_t chunk_size = MAX_MESSAGE_SIZE;
 
@@ -66,7 +66,6 @@ bool Connection::Receive(char *data, size_t length) {
         if (flags & START)
             beg_seq_nb = _last_remote_seq_number;
         if (flags & END) {
-            /* wait for ACK of our END ACK */
             chunk_size = length - (_last_local_seq_number - beg_seq_nb) * MAX_MESSAGE_SIZE;
             if (chunk_size > MAX_MESSAGE_SIZE) chunk_size = MAX_MESSAGE_SIZE;
         }
@@ -74,6 +73,13 @@ bool Connection::Receive(char *data, size_t length) {
         memcpy(data + (_last_remote_seq_number - beg_seq_nb) * MAX_MESSAGE_SIZE,
                chunk, chunk_size);
     } while (!(flags & END) && length >= (_last_local_seq_number - beg_seq_nb + 1) * MAX_MESSAGE_SIZE);
+
+    do {
+        flags = _read_worker(TEMPO);
+        if (flags & ACK) break;
+        _send_worker(END | ACK, /*timeout*/-1);
+        attempts++;
+    } while (attempts < MAXREEMISSIONS);
     return true;
 }
 
