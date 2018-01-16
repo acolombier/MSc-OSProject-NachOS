@@ -10,9 +10,11 @@ Connection::Connection(MailBoxAddress localbox, NetworkAddress to, MailBoxAddres
 }
 
 Connection::~Connection() {
-
+    if (status() == CLOSED || status() == CLOSING)
+        Close(TEMPO);
 }
 
+/* Depreciated */
 int Connection::SendFixedSize(char *data, size_t length, unsigned int seq_num, char flags) {
     ASSERT(length <= MAX_MESSAGE_SIZE);
     PacketHeader outPktHdr, inPktHdr;
@@ -71,6 +73,7 @@ int Connection::SendFixedSize(char *data, size_t length, unsigned int seq_num, c
     }
 }
 
+/* Depreciated */
 void Connection::ReceiveFixedSize(char *data) {
     PacketHeader outPktHdr, inPktHdr;
     MailHeader outMailHdr, inMailHdr;
@@ -134,26 +137,41 @@ void Connection::Receive(char *data) {
     } while (!(inTrHdr.flags & END));
 }
 
-/* int Connection::SendFile(int fd, int fileSize) {
-
+Connection* Accept(int timeout){
 }
 
-int Connection::ReceiveFile(int fd, int fileSize) {
+bool Connect(int timeout){
+}
 
-} */
+bool Close(int timeout){
+}
 
-char *flagstostr(char flags) {
-    char *str = (char *) malloc(14 * sizeof(char));
-    str[0] = '\0';
+int _send_worker(char flags, int timeout, char* data, size_t lenght){
+}
 
-    if (flags & ACK)
-        strcat(str, "ACK ");
+char _read_worker(int timeout, char* data, size_t lenght){
+}
 
-    if (flags & START)
-        strcat(str, "START ");
+char* Connection::flagstostr(char flags) {
+    int offset = 0;
+    char *str = new char[(flags & ACK ? 4 : 0) + (flags & START ? 6 : 0) + (flags & END ? 4 : 0)];
 
-    if (flags & END)
-        strcat(str, "END ");
+    if (flags & ACK){
+        strcpy(str + offset, "ACK|");
+        offset += 3;
+    }
 
+    if (flags & START){
+        strcpy(str + offset, "START|");
+        offset += 5;
+    }
+
+    if (flags & END){
+        strcpy(str + offset, "END|");
+        offset += 3;
+    }
+    
+    str[offset] = '\0';
+    
     return str;
 }

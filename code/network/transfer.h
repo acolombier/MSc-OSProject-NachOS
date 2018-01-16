@@ -14,12 +14,6 @@
 // This is prepended to the message by the RTFM, before the message
 // is sent to the Network.sizeof(struct PacketHeader)
 
-enum {
-    ACK = 1 << 2,
-    START = 1 << 1,
-    END = 1 << 0
-};
-
 class TransferHeader {
   public:
     unsigned int seq_num;
@@ -28,21 +22,55 @@ class TransferHeader {
 
 class Connection {
   public:
-    Connection(MailBoxAddress localbox, NetworkAddress to, MailBoxAddress mailbox);
+    enum Flag {
+        ACK     = 0b100,
+        START   = 0b010,
+        END     = 0b001
+    };
+    
+    enum Status {
+        IDLE,
+        CONNECTING,
+        ESTABLISHED,
+        CLOSING,
+        CLOSED
+    };
+
+    Connection(MailBoxAddress localbox, NetworkAddress to = -1, MailBoxAddress mailbox = -1);
     ~Connection();
 
     int Send(char *data);  // send a message reliably with ack
     void Receive(char *data);  // receive a message reliably with ack, store it in data
-    int SendFile(int fd, int fileSize);  // send a file from a client machine to remote machine
-    int ReceiveFile(int fd, int fileSize);  // receive a file from a remote machine to a client machine
+    
+    /*!
+     *  \brief Turn the socket in to a server socket, and wait a client to connect
+     */
+    Connection* Accept(int timeout = -1);
+    
+    /*!
+     *  \brief Turn the socket in to a client socket, and try to connect the remote peer
+     */
+    bool Connect(int timeout = -1);
+    
+    inline Status status() const { return _status; }
+    
+    /*!
+     *  \brief Turn the socket in to a client socket, and try to connect the remote peer
+     */
+    bool Close(int timeout = -1);
 
   private:
+    Status _status;
+    unsigned int _last_seq_number;
+    
     MailBoxAddress lcl_box;
     NetworkAddress rmt_adr;	// Destination machine ID
     MailBoxAddress rmt_box;		// Destination mail box
+    
 
-    int SendFixedSize(char *data, size_t length, unsigned int seq_num, char flags);  // send a message of size == MaxPacketSize
-    void ReceiveFixedSize(char *data);  // receive a message of size == MaxPacketSize
+    int _send_worker(char flags, int timeout, char* data = nullptr, size_t lenght = 0);  // send a message of size == MaxPacketSize
+    char _read_worker(int timeout, char* data = nullptr, size_t lenght = 0);  // receive a message of size == MaxPacketSize
+    
     char *flagstostr(char flags);
 };
 
