@@ -30,6 +30,7 @@
 
 #include "network.h"
 #include "synchlist.h"
+#include "bitmap.h"
 
 // Mailbox address -- uniquely identifies a mailbox on a given machine.
 // A mailbox is just a place for temporary storage for messages.
@@ -139,6 +140,16 @@ class PostOffice {
    				// packet has arrived and can be pulled
 				// off of network (i.e., time to call
 				// PostalDelivery)
+       
+    /*!
+     * \todo doc
+     */         
+    MailBoxAddress assignateBox();
+    
+    /*!
+     * \todo doc
+     */         
+    void releaseBox(MailBoxAddress);
 
   private:
     Network *network;		// Physical network connection
@@ -148,6 +159,8 @@ class PostOffice {
     Semaphore *messageAvailable;// V'ed when message has arrived from network
     Semaphore *messageSent;	// V'ed when next message can be sent to network
     Lock *sendLock;		// Only one outgoing message at a time
+    
+    BitMap* _availableBoxes;
 };
 
 #endif

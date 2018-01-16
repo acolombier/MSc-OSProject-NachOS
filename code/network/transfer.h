@@ -13,7 +13,6 @@
 // The following class defines part of the message header.
 // This is prepended to the message by the RTFM, before the message
 // is sent to the Network.sizeof(struct PacketHeader)
-
 class TransferHeader {
   public:
     TransferHeader(char _flags = 0, unsigned int _seq_num = 0):
@@ -32,24 +31,25 @@ class Connection {
     
     enum Status {
         IDLE,
+        ACCEPTING,
         CONNECTING,
         ESTABLISHED,
         CLOSING,
         CLOSED
     };
 
-    Connection(MailBoxAddress localbox, NetworkAddress to = -1, MailBoxAddress mailbox = -1);
+    Connection(MailBoxAddress localbox, NetworkAddress to = -1, MailBoxAddress mailbox = -1, Status s = IDLE);
     ~Connection();
 
     /*!
      * \todo doc
      */
-    bool Send(char *data);
+    bool Send(char *data, size_t length);
     
     /*!
      * \todo doc
      */
-    bool Receive(char *data);
+    bool Receive(char *data, size_t length);
     
     /*!
      *  \brief Turn the socket in to a server socket, and wait a client to connect
@@ -60,6 +60,11 @@ class Connection {
      *  \brief Turn the socket in to a client socket, and try to connect the remote peer
      */
     bool Connect(int timeout = -1);
+    
+    /*!
+     *  \brief This method initialise the last handshake of the syncronisation. It should be called only by the `Accept` factory.
+     */
+    bool Synch(int timeout);
     
     inline Status status() const { return _status; }
     
@@ -79,19 +84,10 @@ class Connection {
     
 
     int _send_worker(char flags, int timeout, char* data = nullptr, size_t length = 0);  // send a message of size == MaxPacketSize
-    char _read_worker(int timeout, char* data = nullptr, size_t length = 0);  // receive a message of size == MaxPacketSize
+    char _read_worker(int timeout, char* data = nullptr, size_t length = 0, NetworkAddress*a = nullptr, MailBoxAddress*p = nullptr);  // receive a message of size == MaxPacketSize
     
     char *flagstostr(char flags);
 };
 
 
 #endif  /* TRANSFER_H */
-
-
-/* usage example:
-
-Connection conn = new Connection(42, 1);
-conn->Send(*data);
-char *data = conn->Recieve();
-delete conn;
-*/

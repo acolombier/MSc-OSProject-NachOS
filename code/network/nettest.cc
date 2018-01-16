@@ -89,9 +89,9 @@ void TransferTest(int farAddr, int isSender)
     Connection *conn = new Connection(2, farAddr, 7);
 
     if (isSender > 0) {
-        conn->Send(data);
+        conn->Send(data, 483);
     } else {
-        conn->Receive(buffer);
+        conn->Receive(buffer, 500);
         printf("Got \"%s\"\n", buffer);
         fflush(stdout);
     }

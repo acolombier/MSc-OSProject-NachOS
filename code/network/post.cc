@@ -183,7 +183,8 @@ static void WriteDone(int arg)
 //	"nBoxes" is the number of mail boxes in this Post Office
 //----------------------------------------------------------------------
 
-PostOffice::PostOffice(NetworkAddress addr, double reliability, int nBoxes)
+PostOffice::PostOffice(NetworkAddress addr, double reliability, int nBoxes):
+    _availableBoxes(new BitMap(nBoxes))
 {
 // First, initialize the synchronization with the interrupt handlers
     messageAvailable = new Semaphore("message available", 0);
@@ -218,6 +219,7 @@ PostOffice::~PostOffice()
     delete messageAvailable;
     delete messageSent;
     delete sendLock;
+    delete _availableBoxes;
 }
 
 //----------------------------------------------------------------------
@@ -362,4 +364,12 @@ void
 PostOffice::PacketSent()
 {
     messageSent->V();
+}
+ 
+MailBoxAddress PostOffice::assignateBox(){
+    return _availableBoxes->Find();
+}
+
+void PostOffice::releaseBox(MailBoxAddress b){
+    _availableBoxes->Clear(b);
 }

@@ -3,7 +3,9 @@
 #include "post.h"
 #include "system.h" // for posrmt_adrffice member
 
-Connection::Connection(MailBoxAddress localbox, NetworkAddress to, MailBoxAddress mailbox) {
+Connection::Connection(MailBoxAddress localbox, NetworkAddress to, MailBoxAddress mailbox, Status s):
+    _status(s),_last_local_seq_number(s == CONNECTING ? 1 : 0), _last_remote_seq_number(s == CONNECTING ? 1 : 0)
+{
     lcl_box = localbox;
     rmt_adr = to;
     rmt_box = mailbox;
@@ -12,9 +14,11 @@ Connection::Connection(MailBoxAddress localbox, NetworkAddress to, MailBoxAddres
 Connection::~Connection() {
     if (status() == CLOSED || status() == CLOSING)
         Close(TEMPO);
+        
+    postOffice->releaseBox(lcl_box);
 }
 
-bool Connection::Send(char *data) {
+bool Connection::Send(char *data, size_t length) {
     unsigned int attempts = 0;
     do {
         /*! \todo implementation */
@@ -28,7 +32,7 @@ bool Connection::Send(char *data) {
         return true;
 }
 
-bool Connection::Receive(char *data) {
+bool Connection::Receive(char *data, size_t length) {
     unsigned int attempts = 0;
     do {
         /*! \todo implementation */
@@ -43,35 +47,56 @@ bool Connection::Receive(char *data) {
 }
 
 Connection* Connection::Accept(int timeout){
+    ASSERT(_status == IDLE);
+    
     unsigned long start_time = stats->totalTicks, shift_time = 0;
+    Connection* new_conn = nullptr;
     
     do {
-        _send_worker(START | ACK, timeout - shift_time);
+        NetworkAddress remoteAddr;
+        MailBoxAddress remotePort;
+        char flags;
+        
         shift_time += stats->totalTicks - start_time;
-        
-        _read_worker();
+        if ((flags = _read_worker(timeout - shift_time, nullptr, 0, 
+                &remoteAddr, &remotePort)) < 0) // Timeout
+            break;
+            
         shift_time += stats->totalTicks - start_time;
+        if (flags != START) //We strongly want only a start flag, otherwise we consider it as flood
+            continue;
         
-        
-        /*! \todo implementation */
-        attempts++;
-    } while (attempts < MAXREEMISSIONS);
+        new_conn = new Connection(postOffice->assignateBox(), remoteAddr, 
+            remotePort, CONNECTING);
+            
+        if (new_conn->Synch(timeout - shift_time)){ /*! \todo retried if failed */
+            delete new_conn;
+            break;
+        }
+            
+        return new_conn; // From now, we assume that the connection as syncronysed
+    } while (timeout < 0 || shift_time < (unsigned int)timeout);
 
-    if (attempts == MAXREEMISSIONS) {
-        DEBUG('N', "Connection::Receive -- too many attempts");
-        return false;
-    } else
-        return true;
-    /*! \todo implementation */
     return nullptr;
 }
 
 bool Connection::Connect(int timeout){
+    ASSERT(_status == IDLE);
     /*! \todo implementation */
     return false;
 }
 
+bool Connection::Synch(int timeout){
+    if (!_read_worker(timeout))
+        return false;
+    _last_remote_seq_number++;
+    _status = ESTABLISHED;
+    return true;
+}
+
+
 bool Connection::Close(int timeout){
+    ASSERT(_status == ESTABLISHED);
     /*! \todo implementation */
     return false;
 }
@@ -91,13 +116,15 @@ int Connection::_send_worker(char flags, int timeout, char* data, size_t length)
     memset(outBuffer, 0, MAX_MESSAGE_SIZE + sizeof(TransferHeader));
 
     postOffice->Send(outPktHdr, outMailHdr, outBuffer);
-    /* timeout handling */
+    
+    /*! \todo timeout handling */
+    
     DEBUG('n', "SendPacket -- Sending \"%s\" to %d, box %d\n", outBuffer + sizeof(TransferHeader), outPktHdr.to, outMailHdr.to);
     
     return 0;
 }
 
-char Connection::_read_worker(int timeout, char* data, size_t length){
+char Connection::_read_worker(int timeout, char* data, size_t length, NetworkAddress* remoteAddr, MailBoxAddress* remotePort){
     
     ASSERT(length <= MAX_MESSAGE_SIZE);
     
@@ -117,6 +144,12 @@ char Connection::_read_worker(int timeout, char* data, size_t length){
             return -1;
         } else
             memcpy(data, inBuffer + sizeof(TransferHeader), length);
+            
+        if (remoteAddr)
+            *remoteAddr = inPktHdr.from;
+        if (remotePort)
+            *remotePort = inMailHdr.from;
+            
         return inTrHdr.flags;
     }
 }
