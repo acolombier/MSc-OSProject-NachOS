@@ -43,6 +43,25 @@ bool Connection::Receive(char *data) {
 }
 
 Connection* Connection::Accept(int timeout){
+    unsigned long start_time = stats->totalTicks, shift_time = 0;
+    
+    do {
+        _send_worker(START | ACK, timeout - shift_time);
+        shift_time += stats->totalTicks - start_time;
+        
+        _read_worker();
+        shift_time += stats->totalTicks - start_time;
+        
+        
+        /*! \todo implementation */
+        attempts++;
+    } while (attempts < MAXREEMISSIONS);
+
+    if (attempts == MAXREEMISSIONS) {
+        DEBUG('N', "Connection::Receive -- too many attempts");
+        return false;
+    } else
+        return true;
     /*! \todo implementation */
     return nullptr;
 }
@@ -95,9 +114,10 @@ char Connection::_read_worker(int timeout, char* data, size_t length){
         memcpy(&inTrHdr, inBuffer, sizeof(TransferHeader));
         if (inTrHdr.seq_num != _last_remote_seq_number){
             /* we probably missed something */
+            return -1;
         } else
             memcpy(data, inBuffer + sizeof(TransferHeader), length);
-        return 0;
+        return inTrHdr.flags;
     }
 }
 
