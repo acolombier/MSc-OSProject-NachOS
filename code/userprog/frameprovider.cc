@@ -28,7 +28,7 @@ unsigned int FrameProvider::GetEmptyFrame(){
 	ASSERT(pnum != -1);
 	
 	allocatedPage.Mark(pnum);
-    DEBUG ('a', "Frame %d is assigned\n", pnum);
+    DEBUG ('p', "Frame %d is assigned\n", pnum);
 	mutex->Release();
 	
 	memset(machine->mainMemory + (pnum * PageSize), 0, PageSize);
@@ -37,7 +37,7 @@ unsigned int FrameProvider::GetEmptyFrame(){
 
 void FrameProvider::ReleaseFrame(int entry){
 	mutex->Acquire();
-    DEBUG ('a', "Frame %d released\n", entry);
+    DEBUG ('p', "Frame %d released\n", entry);
 	allocatedPage.Clear(entry);
 	mutex->Release();
 }

@@ -151,7 +151,7 @@ int Thread::join(tid_t t, int result_code_pnt) {
 	ASSERT(t != tid());
 	Thread* thread_to_join = space->getThread(t);
 	if (!thread_to_join)
-		return -1; // It does not exit (or not anymore)
+		return NULL_TID; // It does not exit (or not anymore)
 
 
 	thread_bundle_t* t_bundle = thread_to_join->space->inc_ref_thread(t);		
@@ -164,6 +164,7 @@ int Thread::join(tid_t t, int result_code_pnt) {
 	if (result_code_pnt)
 		machine->WriteMem(result_code_pnt, 4, t_bundle->result_code);
 	space->dec_ref_thread(t);
+	return 0;
 #endif
 	return NULL_TID;
 	

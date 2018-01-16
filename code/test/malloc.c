@@ -1,9 +1,8 @@
+#include "userlib.h"
+#include "malloc.h"
 #include "mem_alloc.h"
-#include <stdio.h>
-#include <assert.h>
-#include <string.h>
-
 #include "mem_alloc_types.h"
+
 
 static int __mem_alloc_init_flag=0;
 
@@ -51,7 +50,7 @@ void *realloc(void *ptr, size_t size){
     
     mem_block *bb = (mem_block *)((char *)ptr - real_block_size);
     
-    fprintf(stderr, "Reallocating %d bytes to %d\n", bb->size , (int)size);
+    //~ fprintf(stderr, "Reallocating %d bytes to %d\n", bb->size , (int)size);
     if(size <= bb->size)
         return ptr;
 

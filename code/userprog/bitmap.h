@@ -18,6 +18,7 @@
 #include "copyright.h"
 #include "utility.h"
 #include "openfile.h"
+#include "synch.h"
 
 // Definitions helpful for representing a bitmap as an array of integers
 #define BitsInByte 	8
@@ -52,8 +53,14 @@ class BitMap
 
     // These aren't needed until FILESYS, when we will need to read and 
     // write the bitmap to a file
-    void FetchFrom (OpenFile * file);	// fetch contents from disk 
-    void WriteBack (OpenFile * file);	// write contents to disk
+    bool FetchFrom (OpenFile * file);	// fetch contents from disk 
+    bool WriteBack (OpenFile * file);	// write contents to disk
+    
+    /*!
+     * The next two methods are use to do transaction with a bitmap instead than single request
+     */
+    inline void lock() { mLock->Acquire(); }		// Return the number of clear bits
+    bool unlock();
 
   private:
     int numBits;		// number of bits in the bitmap
@@ -62,6 +69,7 @@ class BitMap
     //  multiple of the number of bits in
     //  a word)
     unsigned int *map;		// bit storage
+    Lock* mLock;
 };
 
 #endif // BITMAP_H
