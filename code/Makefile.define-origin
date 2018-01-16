@@ -86,7 +86,7 @@ filesys-stub_INCDIRS=filesys
 # network: add network support
 network_DEP_ALT=thread-test userprog
 network_SRC=$(NETWORK_SRC)
-network_CPPFLAGS=-DNETWORK
+network_CPPFLAGS=-DNETWORK -DFILESYS_NEEDED
 network_INCDIRS=network
 
 # vm: add TLB support
@@ -116,7 +116,7 @@ $(eval $(call define-flavor,filesys,userprog filesys))
 
 ###########################################################################
 ######### network
-$(eval $(call define-flavor,network,thread-test userprog filesys-stub network))
+$(eval $(call define-flavor,network,thread-test userprog filesys network))
 
 # bare bones version
 #$(eval $(call define-flavor,network,thread-test network))
