@@ -256,10 +256,29 @@ void Close (OpenFileId id);
  */
 void Yield ();
 
+/*!
+ * \brief Print a character on the NachOS console.
+ * \param ch a character to be printed
+ */
 void PutChar(char ch);
+
+/*!
+ * \brief Read a character from the NachOS console.
+ * \return Return the next characrer in the console buffer
+ */
 char GetChar();
 
+/*!
+ * \brief Print a string on the NachOS console.
+ * \param *s a string to be printed
+ */
 void PutString(char *s);
+
+/*!
+ * \brief Read a string from the NachOS console.
+ * \param *s a string to be read.
+ * \param n an integer describing the maximum number of characters to read. This number must be lower than MAX_STRING_SIZE.
+ */
 void GetString(char *s, int n);
 
 /*!
