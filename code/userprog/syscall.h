@@ -16,9 +16,7 @@
 
 #include "copyright.h"
 
-/* system call codes -- used by the stubs to tell the kernel which system call
- * is being asked for
- */
+/* Start of SYSCALL Code */
 #define SC_Halt        0
 #define SC_Exit        1
 #define SC_Exec        2
@@ -26,6 +24,7 @@
 #define SC_Create    4
 #define SC_Open        5
 #define SC_OpenDir        33
+#define SC_ParentDir       36
 #define SC_Read        6
 #define SC_Write    7
 #define SC_Close    8
@@ -48,7 +47,8 @@
 
 #define SC_Tell 25
 #define SC_Seek 26
-#define SC_Size 27
+#define SC_FSInfo 27
+#define SC_FileTrunk 35
 
 #define SC_Move 28
 #define SC_Remove 29
@@ -56,29 +56,70 @@
 #define SC_Changemod 31
 
 #define SC_Sbrk 32
-#define SC_Time 34
+#define SC_FileInfo 34
+
+#define SC_Socket 37
+#define SC_Connect 38
+#define SC_Accept 39
 
 #define ConsoleInput    0
 #define ConsoleOutput    1
+
+/* End of SYSCALL Code */
 
 #undef EOF
 /*! \def EOF
     The EOF reprensation on 4 bytes.
 */
 #define EOF            0xFFFFFFFF
+/*! \def NULL_TID
+    The NULL_TID reprensents an error. Any function which is supposed to return a thread ID returning is actually throwing an error
+*/
 #define NULL_TID    0xFFFFFFFF
 
 
-/*! \brief Semaphore provided to the user */
-//~ typedef void* sem_t;
+/* File utils */
+/*! \def FILE_TYPE_DIR
+    The directory type reprensented as integer.
+*/
+#define FILE_TYPE_DIR 1
 
+/*! \brief Structure to hold data about a file */
+typedef struct file_info_struct {
+    int date;
+    int perm;
+    int size;
+    int type;
+} file_info_t;
+
+/*! \brief Structure to hold data about a file system */
+typedef struct fs_info_struct {
+    int free_block;
+    int total_block;
+    int block_size;
+} fs_info_t;
+
+/* Network utils */
+/*! \brief Structure to hold data about a file system */
+typedef int NetworkAddress;
+typedef int MailBoxAddress;
+
+typedef struct remote_peer_struct {
+    NetworkAddress addr;
+    MailBoxAddress port;
+    int attemps; /**< This value holds the number of attemps that have to be done before the conncetion did actually syncronise */
+} remote_peer_t;
 
 #ifdef IN_USER_MODE
 
+/* C standard */
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 0xFF
 #define NULL 0
+typedef unsigned int size_t;
 
+
+/* Permission */
 #define O_NONE 0
 /*! \def O_R
     The reading permission in bytes.
@@ -92,50 +133,40 @@
     The executing permission in bytes.
 */
 #define O_X 0b100
-#define O_RW (O_R | O_W)
-#define O_RX (O_R | O_X)
+#define O_RW 0b11
+#define O_RX 0b101
 
-typedef unsigned int size_t;
+/* Resouces error code */
+/*! 
+ * The details of those error code are detaild in \ref filesys.h
+ * \todo Move error code to \ref system.h
+ */
+#define E_PERM -8
+#define E_ISUSED -7
+#define E_NOTDIR -6
+#define E_NOTFOUND -5
+#define E_BLOCK -4
+#define E_DIRECTORY -3
+#define E_DISK -2
+#define E_EXIST -1
+#define E_SUCESS 0
+
+/* Divers utils */
+/*! \brief Semaphore provided to the user */
 typedef int sema_t;
 
-/* when an address space starts up, it has two open files, representing
- * keyboard input and display output (in UNIX terms, stdin and stdout).
- * Read and Write can be used directly on these, without first opening
- * the console device.
+/* Syscalls definition */
+
+/*!
+ * \brief Stop Nachos machine if last process to be alive, and print out performance stats
  */
-
-
-// LB: This part is read only on compiling the test/*.c files.
-// It is *not* read on compiling test/start.S
-
-
-/* The system call interface.  These are the operations the Nachos
- * kernel needs to support, to be able to run user programs.
- *
- * Each of these is invoked by a user program by simply calling the
- * procedure; an assembly language stub stuffs the system call code
- * into a register, and traps to the kernel.  The kernel procedures
- * are then invoked in the Nachos kernel, after appropriate error checking,
- * from the system call entry point in exception.cc.
- */
-
-/* Stop Nachos, and print out performance stats */
 void Halt () __attribute__((noreturn));
 
-
-/* Address space control operations: Exit, Exec, and Join */
-
-/*! This user program is done (status = 0 means exited normally).
+/*!
+ * \brief This user program is done (status = 0 means exited normally). Alias of `return <code>` in the main function
  */
 void Exit (int status) __attribute__((noreturn));
 
-/* A unique identifier for an executing user program (address space) */
-typedef int SpaceId;
-
-/* Run the executable, stored in the Nachos file "name", and return the
- * address space identifier
- */
-SpaceId Exec (char *name);
 
 /*! Only return once the the user program "id" has finished.
  * \param pointer to store the result code. NULL to ignore it
@@ -143,18 +174,13 @@ SpaceId Exec (char *name);
  */
 int Join (SpaceId id, int* result_code_ptr);
 
-
-/* File system operations: Create, Open, Read, Write, Close
- * These functions are patterned after UNIX -- files represent
- * both files *and* hardware I/O devices.
- *
- * If this assignment is done before doing the file system assignment,
- * note that the Nachos file system has a stub implementation, which
- * will work for the purposes of testing out these routines.
+/*!
+ * Unique identifier for the process. 
  */
-
-/* A unique identifier for an open Nachos file. */
-typedef int OpenFileId;
+typedef int OpenFileId; /**< Used type to describ a open file. */
+typedef int OpenSocketId; /**< Used type to describ a open file. */
+typedef int SpaceId;  /**< Used type to describ a concurrent process on the system. */
+typedef int ThreadId;  /**< Used type to describ a concurrent process on the system. */
 
 
 /*!
@@ -172,8 +198,10 @@ int Create (const char *name, int perm);
 int MakeDir (char *name, int perm);
 
 /*!
- *  Open the Nachos file "name", and return an "OpenFileId" that can
+ * \brief Open the Nachos file "name", and return an "OpenFileId" that can
  * be used to read and write to the file.
+ * \param name the path
+ * \return return an error code, \ref E_SUCCESS if none.
  */
 OpenFileId Open (const char *name);
 
@@ -184,14 +212,41 @@ OpenFileId Open (const char *name);
 OpenFileId OpenDir (const char *name);
 
 /*!
+ *  Open the parent directory of a directory. Return 0 if non (root directory) or if it not a directory.
+ * \param dir The child directory you want to find it parent
+ */
+OpenFileId ParentDir (OpenFileId dir);
+
+/*!
  * \brief Change the permission of an open item.
  * \param perm the new permission in octal. You can use \ref O_R, \ref O_W or \ref O_X to make it easier.
  * \param id file descriptor
- * \return Return true if modified
+ * \return Return false if no error and modified with success, anything else otherwise
  */
 int ChMod (int perm, OpenFileId id);
 
-/* Write "size" bytes from "buffer" to the open file. */
+/*!
+ * \brief Delete a file from the filesystem.
+ * \param path file path
+ * \return Return false if no error, anything else otherwise
+ */
+int Remove (char* id);
+
+/*!
+ * \brief Move a file from the filesystem.
+ * \param old the old file path
+ * \param new_ the new file path
+ * \return Return false if no error, anything else otherwise
+ */
+int Move (char* old, char* new_);
+
+/*!
+ * \brief Write "size" bytes to the open file from "buffer".
+ * \param buffer buffer address where data is written
+ * \param size size of data read and write
+ * \param id file descriptor
+ * \return Return the number of bytes actually written if positive, error code if negative.
+ */
 int Write (char *buffer, int size, OpenFileId id);
 
 /*!
@@ -199,12 +254,21 @@ int Write (char *buffer, int size, OpenFileId id);
  * \param buffer buffer address where data is written
  * \param size size of data read and write
  * \param id file descriptor
+ * \return Return the number of bytes actually read if positive, error code if negative.
+ */
+int Read (char *buffer, int size, OpenFileId id);
+
+/*!
+ * \brief Read at most "size" of next the file name
+ * \param buffer buffer address where next file is written
+ * \param size size of data read and write
+ * \param id file descriptor
  * \return Return the number of bytes actually read -- if the open file isn't \
   long enough, or if it is an I/O device, and there aren't enough \
   characters to read, return whatever is available (for I/O devices, \
   you should always wait until you can return at least one character).
  */
-int Read (char *buffer, int size, OpenFileId id);
+int ReadDir (char *buffer, int size, OpenFileId id);
 
 /*!
  * \brief Read at most "size" of next the file name
@@ -228,11 +292,19 @@ int ReadDir (char *buffer, int size, OpenFileId id);
 int Seek (OpenFileId fd, int offset);
 
 /*!
- * \brief Get the epoch timestamp of the last access to the file
+ * \brief Get a structure containing the epoch timestamp of the last access (date), the permission in octal (perm), the size(size), and is type (file = 0, dir = 1, ...)
+ * \param a pointer to the structure to write
  * \param fd the file
- * \return Return the epoch timestamp in UTC
+ * \return false is no error, anything else if one occur
  */
-int Timestamp (OpenFileId fd);
+int FileInfo (file_info_t*, OpenFileId fd);
+
+/*!
+ * \brief Get a structure containing the number of free block (free_block), the used block (used_block), and the block size(block_size) to the main file system
+ * \param a pointer to the structure to write
+ * \return false is no error, anything else if one occur
+ */
+int FileSystemInfo (fs_info_t*);
 
 /*!
  * \brief Get the reading head position
@@ -242,25 +314,47 @@ int Timestamp (OpenFileId fd);
 int Tell (OpenFileId fd);
 
 /*!
- * \brief Get the file size of a file
+ * \brief Trunk the file to the current head position and deallocate the space already allocated after
  * \param fd the file
- * \return Return the file size
  */
-int Size (OpenFileId fd);
+void Trunk (OpenFileId fd);
 
-/* Close the file, we're done reading and writing to it. */
+/*!
+ * \brief Close the related file if found, and deallocating it from the current address space. The file might still be opened in other address spaces
+ * \param fd the opened file
+ */
 void Close (OpenFileId id);
 
-/* Yield the CPU to another runnable thread, whether in this address space
- * or not.
+/*!
+ * \brief Yield the CPU to another runnable thread, whether in this address space or not.
  */
 void Yield ();
 
+/*!
+ * \brief Write a char to the output console. This function blocks until the char has been written.
+ * \param ch the char to write
+ */
 void PutChar(char ch);
+
+/*!
+ * \brief Read a char to the input console. This function blocks until the char has been read.
+ * \return the char read
+ */
 char GetChar();
 
+/*!
+ * \brief Write a string to the output console. This function blocks until the char has been written.
+ * \param *s the string to write. This one has to be well typed, using the end of stream caracter `\0`
+ */
 void PutString(char *s);
-void GetString(char *s, int n);
+
+/*!
+ * \brief Read a string to the input console. This function blocks until the n char has been read or until either a break line is prompt or a end of file.
+ * \param *s the string to write the read char.
+ * \param n the maximun number of char. This value can't acceed the \ref MAX_STRING_SIZE value
+ * \return the number of char actually read. If < 0, return a code control such as \ref EOF 
+ */
+int GetString(char *s, int n);
 
 /*!
     \brief Write integer in the STDOUT using ascii representation.
@@ -275,25 +369,29 @@ void GetInt(int *n);
 
 /*! \brief Create a user thread
  *  \param f User pointer to the user function to execute. The function signature must be  following this signature void* f(void *)
- *     \param arg User pointer to the args of the function to execute.
+ *  \param arg User pointer to the args of the function to execute.
+ *  \return the tid of the created thread if success, \ref NULL_TID if an error ocurred.
  */
-int UserThreadCreate(void* f(void *arg), void *arg);
+ThreadId UserThreadCreate(void* f(void *arg), void *arg);
 
 /*! \brief Exit a user thread
- * \param result_code resolut code to return to any waiting thread.
+ *  \param result_code result code to return to any waiting thread.
  */
-void UserThreadExit(int result_code) __attribute__((noreturn));
+void UserThreadExit(void* result_code) __attribute__((noreturn));
 
 /*! Should not be called by the user. Default handler in case of return of a thread function to call exit with a code */
 void _user_thread_exit_by_return() __attribute__((noreturn));
 
 /*! \brief Wait for the specified thread to finish
- * \param pointer to store the result code. NULL to ignore it
- * \return booolean saying if there in an error
+ *  \param pointer to store the result code. NULL to ignore it
+ *  \return \ref E_SUCCESS if no error, anything else otherwise
  */
-int UserThreadJoin(int tid, void* result_code_ptr);
+int UserThreadJoin(ThreadId tid, void* result_code_ptr);
 
-/*! \brief Semaphore initialiser */
+/*! \brief Semaphore initialiser. Must be called before any call on this semaphore
+ *  \todo implemente a system wrapper to handle a none initialise semaphore, and avoid the system crash
+ *  \param * s the pointer to the semapore
+ */
 void sem_init(sema_t* s, int e);
 
 /*! \brief Semaphore post */
@@ -302,19 +400,47 @@ void sem_post(sema_t s);
 /*! \brief Semaphore wait */
 void sem_wait(sema_t s);
 
-/*! \brief send a signal
- * \todo signal system */
+/*! \brief send a signal to a given process
+ *  \param pid the process identifier that will receive the signal
+ *  \param sig the signal to send
+ *  \todo /!\ NOT IMPLEMENTED /!\
+ */
 void Kill(SpaceId pid, char sig);
 
 /*! \brief Fork and run a process 
- * \param *s path the executable
- * \param **args argument to pass to the process. Must finish by a NULL arg
- * \return the pid of the created process, 0 on error 
+ *  \param *s path the executable
+ *  \param **args argument to pass to the process. Must finish by a NULL arg. Can be NULL if no arguments
+ *  \return the pid of the created process, 0 on error 
  */
 int ForkExec(char *s, char** args);
 
-/*! \brief Dynamically allocate n bytes */
+/*! \brief Move the break value of n pages
+ *  \param size the number of page to allocate if positive, or to free if negative
+ *  \return the pointer the first byte now available if size positive, or unavailable. If positive size and no more memory available, NULL is returned
+ */
 void *Sbrk(int size);
+
+/*! \brief Create a socket object and return its stream descriptor 
+ *  \param NetworkAddress the address of the remote machine
+ *  \param MailBoxAddress the port of the remote machine
+ *  \return the stream descriptor, 0 on error 
+ */
+OpenSocketId Soket(NetworkAddress to, MailBoxAddress);
+
+/*! \brief Block the socket until a client has procceded to synchronisation with the given socket (by calling \ref Connect)
+ *  \param *client the structure to store information about the client
+ *  \param timeout the maximun time to wait for (in msec ?). 0 to be none blocking
+ *  \param sd the socket descriptor
+ *  \return \ref E_SUCCESS if a peerr has syncronised, \ref E_NOTFOUND if timeout
+ */
+int Accept(remote_peer_t* client, unsigned int timeout, OpenSocketId sd);
+
+/*! \brief Block the socket until a server has procceded to synchronisation with the given socket (by calling \ref Accept)
+ *  \param timeout the maximun time to wait for (in msec ?). 0 to be none blocking
+ *  \param sd the socket descriptor
+ *  \return \ref E_SUCCESS if a peerr has syncronised, \ref E_NOTFOUND if timeout
+ */
+int Connect(unsigned int timeout, OpenSocketId);
 
 #endif // IN_USER_MODE
 

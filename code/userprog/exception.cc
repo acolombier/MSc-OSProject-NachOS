@@ -24,6 +24,7 @@
 #include "userprocess.h"
 #include "addrspace.h"
 #include "directory.h"
+#include "bitmap.h"
 
 //----------------------------------------------------------------------
 // UpdatePC : Increments the Program Counter register in order to resume
@@ -234,12 +235,15 @@ ExceptionHandler (ExceptionType which)
 
                 char* filename = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
                 OpenFile *executable = fileSystem->Open (filename);
-
+                
                 if (executable == NULL){
                     DEBUG('c', "Unable to open file %s\n", filename);
+                    delete [] filename;
                     machine->WriteRegister(2, 0);
                     break;
-                }
+                } else
+                    delete []filename;
+                
                 
                 char** argv = nullptr;
                 int argc = 0, arg_ptn;
@@ -270,7 +274,7 @@ ExceptionHandler (ExceptionType which)
                 char* name = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
                 
                 
-                returnvalue = fileSystem->Create(name, 0, (FileHeader::Type)(reg5 >> 2), (reg5 & 0x3));
+                returnvalue = fileSystem->Create(name, 0, (FileHeader::Type)(reg5 & 0x3), (reg5 >> 2) & 0x7);
                 if (!returnvalue){
                     OpenFile* object = fileSystem->Open(name);
                     if (object)
@@ -294,20 +298,19 @@ ExceptionHandler (ExceptionType which)
                 b->pathname = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
                 b->object = fileSystem->Open(b->pathname);
 
-                if (b->object == NULL || ((OpenFile*)b->object)->type() == FileHeader::Directory){
+                if (b->object == NULL){
                     DEBUG('c', "Unable to open file %s\n", b->pathname);
                     delete [] b->pathname;
                     delete b;
                     machine->WriteRegister(2, 0);                    
                     break;
                 } else {
-                    delete [] b->pathname;
                     int fd = currentThread->space->store_fd(b);
-                    DEBUG('c', "File is %p : %d \n", b->object, fd);
                     if (fd)
                         machine->WriteRegister(2, fd);    
                     else {
                         fileSystem->Close((OpenFile*)b->object);
+                        delete [] b->pathname;
                         delete b;
                     }
                 }    
@@ -326,18 +329,16 @@ ExceptionHandler (ExceptionType which)
 
                 if (b->object == NULL || ((OpenFile*)b->object)->type() != FileHeader::Directory){
                     DEBUG('c', "Unable to open directory %s\n", b->pathname);
-                    delete [] b->pathname;
                     delete b;
                     machine->WriteRegister(2, 0);                    
                     break;
                 } else {
-                    delete [] b->pathname;
                     int fd = currentThread->space->store_fd(b);
-                    DEBUG('c', "Directory is %p : %d \n", b->object, fd);
                     if (fd)
                         machine->WriteRegister(2, fd);    
                     else {
                         fileSystem->Close((OpenFile*)b->object);
+                        delete [] b->pathname;
                         delete b;
                     }
                 }    
@@ -347,16 +348,17 @@ ExceptionHandler (ExceptionType which)
             
             case SC_Read: {
                 DEBUG('c', "Read syscall on %p, initiated by user program.\n", reg6);
-                /*! \todo Implementation */
                 
+                machine->WriteRegister(2, 0);
                 fd_bundle_t* b = currentThread->space->get_fd(reg6);
                 if (b){
                     char* buffer = new char[reg5];
-                    machine->WriteRegister(2, ((OpenFile*)b->object)->Read(buffer, reg5));
+                    returnvalue = ((OpenFile*)b->object)->Read(buffer, reg5);
+                    machine->WriteRegister(2, returnvalue);
+
                     copyStringToMachine(buffer, reg4, reg5);
                     delete [] buffer;
-                } else
-                    machine->WriteRegister(2, 0);
+                } 
                     
                 break;
             }
@@ -399,7 +401,6 @@ ExceptionHandler (ExceptionType which)
             
             case SC_Tell: {
                 DEBUG('c', "Tell syscall on %p, initiated by user program.\n", reg4);
-                /*! \todo Implementation */
                 fd_bundle_t* b = currentThread->space->get_fd(reg4);
                 if (b)
                     machine->WriteRegister(2, ((OpenFile*)b->object)->Tell());
@@ -408,12 +409,26 @@ ExceptionHandler (ExceptionType which)
                 break;
             }
             
+            
+            case SC_FileTrunk: {
+                DEBUG('c', "Tell syscall on %p, initiated by user program.\n", reg4);
+                fd_bundle_t* b = currentThread->space->get_fd(reg4);
+                machine->WriteRegister(2, -1);
+                if (b){
+                    if (((OpenFile*)b->object)->type() == FileHeader::Directory)
+                        break;
+                    BitMap* bm = fileSystem->bitmapTransaction();
+                    ((OpenFile*)b->object)->header()->Allocate(bm, ((OpenFile*)b->object)->Tell() + 1);
+                    fileSystem->bitmapCommit(bm);
+                    machine->WriteRegister(2, 0);
+                }
+                break;
+            }
+            
             case SC_Seek: {
                 DEBUG('c', "Seek syscall on %p, initiated by user program.\n", reg4);
-                /*! \todo Implementation */
-                
                 fd_bundle_t* b = currentThread->space->get_fd(reg4);
-                if (b){
+                if (b && reg5 >= 0){
                     ((OpenFile*)b->object)->Seek(reg5);
                     machine->WriteRegister(2, ((OpenFile*)b->object)->Tell());
                 }
@@ -423,14 +438,36 @@ ExceptionHandler (ExceptionType which)
                 break;
             }
             
-            case SC_Size: {
-                DEBUG('c', "Size syscall on %p, initiated by user program.\n", reg4);
+            case SC_FileInfo: {
+                DEBUG('c', "FileInfo syscall on %p, initiated by user program.\n", reg5);
                 
-                fd_bundle_t* b = currentThread->space->get_fd(reg4);
-                if (b)
-                    machine->WriteRegister(2, ((OpenFile*)b->object)->Length());
+                fd_bundle_t* b = currentThread->space->get_fd(reg5);
+                if (b){
+                    file_info_t info = {((OpenFile*)b->object)->header()->lastaccess() + BASE_TIME, 
+                                        ((OpenFile*)b->object)->header()->permission(),
+                                        ((OpenFile*)b->object)->Length(),
+                                        ((OpenFile*)b->object)->type()
+                    };
+                    for (unsigned int i = 0; i < sizeof(file_info_t); i++)
+                        machine->WriteMem(reg4 + i, 1, *(((char*)&info) + i));
+                    machine->WriteRegister(2, 0);
+                }
                 else
                     machine->WriteRegister(2, -1);
+                    
+                break;
+            }
+            
+            case SC_FSInfo: {
+                DEBUG('c', "FSInfo syscall on %p, initiated by user program.\n", reg5);                
+                
+                fs_info_t info = {fileSystem->freeSector(), 
+                                  NumSectors,
+                                  SectorSize
+                };
+                for (unsigned int i = 0; i < sizeof(fs_info_t); i++)
+                    machine->WriteMem(reg4 + i, 1, *(((char*)&info) + i));
+                machine->WriteRegister(2, 0);
                     
                 break;
             }
@@ -439,7 +476,7 @@ ExceptionHandler (ExceptionType which)
                 DEBUG('c', "Close syscall on %p, initiated by user program.\n", reg4);
                 
                 fd_bundle_t* b = currentThread->space->get_fd(reg4);
-                if (b){
+                if (b && b->object){
                     fileSystem->Close((OpenFile*)b->object);
                     currentThread->space->del_fd(reg4);
                 }
@@ -463,22 +500,10 @@ ExceptionHandler (ExceptionType which)
                 char* old = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
                 char* new_ = copyStringFromMachine(reg5, (unsigned int)MAX_STRING_SIZE);
                 
-                machine->WriteRegister(2, fileSystem->Move(old, new_));;
+                machine->WriteRegister(2, fileSystem->Move(old, new_));
                 
                 delete [] old;
                 delete [] new_;
-                /*! \todo Implementation */
-                break;
-            }
-            
-            case SC_Time: {
-                DEBUG('c', "Time syscall on %p, initiated by user program.\n", reg4);
-                
-                fd_bundle_t* b = currentThread->space->get_fd(reg4);
-                if (b)
-                    machine->WriteRegister(2, ((OpenFile*)b->object)->header()->lastaccess() + 1514764800);
-                else
-                    machine->WriteRegister(2, -1);
                 /*! \todo Implementation */
                 break;
             }
@@ -488,22 +513,22 @@ ExceptionHandler (ExceptionType which)
                 
                 char* path = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
                 
-                machine->WriteRegister(2, fileSystem->Remove(path));;
-                
+                machine->WriteRegister(2, !fileSystem->Remove(path));
                 delete [] path;
                 break;
             }
             
             case SC_Changemod: {
-                DEBUG('c', "Changemod syscall on %p, initiated by user program.\n", reg5);
+                DEBUG('c', "Changemod syscall on fd %p with %d, initiated by user program.\n", reg5, reg4);
                 
+                machine->WriteRegister(2, -1);
+                    
                 fd_bundle_t* b = currentThread->space->get_fd(reg5);
                 if (b){
                     ((OpenFile*)b->object)->header()->permission(reg4);
+                    ((OpenFile*)b->object)->SaveHeader();
                     machine->WriteRegister(2, 0);
                 }
-                else
-                    machine->WriteRegister(2, -1);
                 
                 break;
             }
@@ -556,6 +581,20 @@ ExceptionHandler (ExceptionType which)
         do_UserProcessExit(-1);
     } else if (which == IllegalInstrException){
         DEBUG('E', "SIGABRT as trying to execute illegal instruction\n", currentThread->getName());
+
+        /*! \todo error code */
+        do_UserProcessExit(-1);
+    } else if (which == AddressErrorException){
+        char *buffer = new char[64];
+        snprintf(buffer, 64, "SIGSEGV on process %d, thread %d: Address %p is not aligned on the size requested %d.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid(), (void*)reg4, reg5);
+        
+        synchconsole->AcquireOutput();
+        synchconsole->PutString(buffer);        
+        synchconsole->ReleaseOutput();
+        
+        delete [] buffer;
+        
+        DEBUG('E', "SIGABRT after trying to access to a none aligned area to the size requested %d at %p\n", reg5, (void*)reg4);
 
         /*! \todo error code */
         do_UserProcessExit(-1);
