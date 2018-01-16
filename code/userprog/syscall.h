@@ -241,36 +241,25 @@ int Remove (char* id);
 int Move (char* old, char* new_);
 
 /*!
- * \brief Write "size" bytes to the open file from "buffer".
- * \param buffer buffer address where data is written
- * \param size size of data read and write
+ * \brief Write "size" bytes from "buffer" to a file.
+ * \param buffer address of the buffer where data is written
+ * \param size of data to read from the buffer and write to the file
  * \param id file descriptor
- * \return Return the number of bytes actually written if positive, error code if negative.
+ * \return If the return value was positive it corresponds to the number of bytes that were copied. If it is negative it is an error code.
  */
 int Write (char *buffer, int size, OpenFileId id);
 
 /*!
- * \brief Read "size" bytes from the open file into "buffer".
- * \param buffer buffer address where data is written
- * \param size size of data read and write
+ * \brief Read "size" bytes from the a opened file into "buffer".
+ * \param buffer address of the buffer where data is written
+ * \param size of data to read from the file and write to the buffer
  * \param id file descriptor
- * \return Return the number of bytes actually read if positive, error code if negative.
+ * \return If the return value was positive it corresponds to the number of bytes that were copied. If it is negative it is an error code.
  */
 int Read (char *buffer, int size, OpenFileId id);
 
 /*!
- * \brief Read at most "size" of next the file name
- * \param buffer buffer address where next file is written
- * \param size size of data read and write
- * \param id file descriptor
- * \return Return the number of bytes actually read -- if the open file isn't \
-  long enough, or if it is an I/O device, and there aren't enough \
-  characters to read, return whatever is available (for I/O devices, \
-  you should always wait until you can return at least one character).
- */
-int ReadDir (char *buffer, int size, OpenFileId id);
-
-/*!
+ * \todo fix description see man of ReadDir
  * \brief Read at most "size" of next the file name
  * \param buffer buffer address where next file is written
  * \param size size of data read and write
@@ -292,14 +281,16 @@ int ReadDir (char *buffer, int size, OpenFileId id);
 int Seek (OpenFileId fd, int offset);
 
 /*!
+ * \toto fix parameters
  * \brief Get a structure containing the epoch timestamp of the last access (date), the permission in octal (perm), the size(size), and is type (file = 0, dir = 1, ...)
- * \param a pointer to the structure to write
+ * \param *info pointer to the structure to write
  * \param fd the file
  * \return false is no error, anything else if one occur
  */
-int FileInfo (file_info_t*, OpenFileId fd);
+int FileInfo (file_info_t* info, OpenFileId fd);
 
 /*!
+ * \todo fix parameters
  * \brief Get a structure containing the number of free block (free_block), the used block (used_block), and the block size(block_size) to the main file system
  * \param a pointer to the structure to write
  * \return false is no error, anything else if one occur
@@ -307,7 +298,7 @@ int FileInfo (file_info_t*, OpenFileId fd);
 int FileSystemInfo (fs_info_t*);
 
 /*!
- * \brief Get the reading head position
+ * \brief Get the readixng head position
  * \param fd the file
  * \return Return the value
  */
@@ -331,73 +322,81 @@ void Close (OpenFileId id);
 void Yield ();
 
 /*!
- * \brief Write a char to the output console. This function blocks until the char has been written.
+ * \brief Write a char to the NachOS console. This function acquires a lock on the nachOS console until the char has been written.
  * \param ch the char to write
  */
 void PutChar(char ch);
 
 /*!
- * \brief Read a char to the input console. This function blocks until the char has been read.
+ * \todo define "blocks"
+ * \brief Reads a character in the NachOS input console. This function blocks until the char has been read.
  * \return the char read
  */
 char GetChar();
 
 /*!
- * \brief Write a string to the output console. This function blocks until the char has been written.
- * \param *s the string to write. This one has to be well typed, using the end of stream caracter `\0`
+ * \brief Write a string to the NachOS output console. This function blocks until the char has been written.
+ * \param *s the string to write. It has to be well typed, using the end of stream character `\0`. If the string exceeds in length \ref MAX_STRING_SIZE then the string is concatenated to be valid. 
  */
 void PutString(char *s);
 
 /*!
- * \brief Read a string to the input console. This function blocks until the n char has been read or until either a break line is prompt or a end of file.
- * \param *s the string to write the read char.
- * \param n the maximun number of char. This value can't acceed the \ref MAX_STRING_SIZE value
- * \return the number of char actually read. If < 0, return a code control such as \ref EOF 
+ * \todo define "blocks"
+ * \brief Read a string in NachOS input console. This function blocks until the n charracters has been read, or until either a line break or a end of file.
+ * \param *s the string to write.
+ * \param n the maximun number of characters. This value can't excceed \ref MAX_STRING_SIZE
+ * \return the number of charactes that were read. If negative, return a code control such as \ref EOF 
  */
 int GetString(char *s, int n);
 
 /*!
-    \brief Write integer in the STDOUT using ascii representation.
-    \param n The integer to put on the NachOS STDOUT.
+    \brief Write an integer to the NachOS ouput console using ascii representation.
+    \param n the integer to put on the NachOS output console.
 */
 void PutInt(int n);
 /*!
-    \brief Read integer in the STDOUT using ascii representation.
-    \param *n Pointer to an integer where the read int from ascii STDIN will be stored.
+    \brief Reads an integer in the NachOS input console as a string using ascii representation and converts it to an actual integer.
+    \param *n Pointer to an integer for storing the read value.
 */
 void GetInt(int *n);
 
 /*! \brief Create a user thread
- *  \param f User pointer to the user function to execute. The function signature must be  following this signature void* f(void *)
+ *  \param f User pointer to the user function to execute. The function signature must have signature void* f(void *)
  *  \param arg User pointer to the args of the function to execute.
- *  \return the tid of the created thread if success, \ref NULL_TID if an error ocurred.
+ *  \return If the creation succeeded return the tid (thread id) of the new thread. If the creation failed return \ref NULL_TID .
  */
 ThreadId UserThreadCreate(void* f(void *arg), void *arg);
 
 /*! \brief Exit a user thread
- *  \param result_code result code to return to any waiting thread.
+ *  \param result_code result code to return to any waiting thread
  */
 void UserThreadExit(void* result_code) __attribute__((noreturn));
 
 /*! Should not be called by the user. Default handler in case of return of a thread function to call exit with a code */
 void _user_thread_exit_by_return() __attribute__((noreturn));
 
-/*! \brief Wait for the specified thread to finish
- *  \param pointer to store the result code. NULL to ignore it
+/*! \brief Wait for the specified thread to finish.
+ *  \param tid the thread identifier
+ *  \param pointer to store the result code. Can be NULL to ignore it.
  *  \return \ref E_SUCCESS if no error, anything else otherwise
  */
 int UserThreadJoin(ThreadId tid, void* result_code_ptr);
 
-/*! \brief Semaphore initialiser. Must be called before any call on this semaphore
- *  \todo implemente a system wrapper to handle a none initialise semaphore, and avoid the system crash
+/*! 
+ *  \brief User semaphore initialiser. This function must be called before any calls on this semaphore.
+ *  \todo implemente a system wrapper to handle a none initialised semaphore, and avoid the system crash
  *  \param * s the pointer to the semapore
  */
 void sem_init(sema_t* s, int e);
 
-/*! \brief Semaphore post */
+/*! \brief User semaphore post.
+ *  \param s semaphore to post on
+ */
 void sem_post(sema_t s);
 
-/*! \brief Semaphore wait */
+/*! \brief User semaphore to wait.
+ *  \param s semaphore to wait on
+ */
 void sem_wait(sema_t s);
 
 /*! \brief send a signal to a given process
@@ -408,7 +407,7 @@ void sem_wait(sema_t s);
 void Kill(SpaceId pid, char sig);
 
 /*! \brief Fork and run a process 
- *  \param *s path the executable
+ *  \param *s path to the executable
  *  \param **args argument to pass to the process. Must finish by a NULL arg. Can be NULL if no arguments
  *  \return the pid of the created process, 0 on error 
  */
