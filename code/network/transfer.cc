@@ -113,7 +113,7 @@ int Connection::Send(char *data) {
             flags = flags | END;
         memcpy(chunk, data + (seq_num * MAX_MESSAGE_SIZE), MAX_MESSAGE_SIZE);
 
-        DEBUG('n', "Connection::Send -- Send packet %D of %d\n", seq_num, (strlen(data) + 1) / MAX_MESSAGE_SIZE);
+        DEBUG('n', "Connection::Send -- Send packet %d of %d\n", seq_num, (strlen(data) + 1) / MAX_MESSAGE_SIZE);
         if (SendFixedSize(chunk, MAX_MESSAGE_SIZE, seq_num, flags) == -1)
             return -1;
         seq_num++;
@@ -122,7 +122,7 @@ int Connection::Send(char *data) {
 }
 
 void Connection::Receive(char *data) {
-    char chunk[MAX_MESSAGE_SIZE];
+    char chunk[MaxMailSize];
     TransferHeader inTrHdr;
 
     do {

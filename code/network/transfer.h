@@ -5,7 +5,7 @@
 #include "network.h"
 #include "post.h"
 
-#define TEMPO 1000000000
+#define TEMPO 100000000
 #define MAXREEMISSIONS 5
 
 #define MAX_MESSAGE_SIZE (MaxWireSize - sizeof(struct PacketHeader) - sizeof(struct MailHeader) - sizeof(struct TransferHeader))
