@@ -130,7 +130,7 @@ void Connection::Receive(char *data) {
         //DEBUG('n', "Current flags at receive are: %s\n", flagstostr(flags));
         memset(&inTrHdr, 0, sizeof(TransferHeader));
         memcpy(&inTrHdr, chunk, sizeof(TransferHeader));
-        strncpy(data + (inTrHdr.seq_num * MAX_MESSAGE_SIZE), chunk + sizeof(TransferHeader), MAX_MESSAGE_SIZE);
+        memcpy(data + (inTrHdr.seq_num * MAX_MESSAGE_SIZE), chunk + sizeof(TransferHeader), MAX_MESSAGE_SIZE);
     } while (!(inTrHdr.flags & END));
 }
 
