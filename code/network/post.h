@@ -41,6 +41,9 @@ typedef int MailBoxAddress;
 
 class MailHeader {
   public:
+    MailHeader(MailBoxAddress _to = -1, MailBoxAddress _from = -1, unsigned _l = 0):
+        to(_to), from(_from), length(_l){}
+        
     MailBoxAddress to;		// Destination mail box
     MailBoxAddress from;	// Mail box to reply to
     unsigned length;		// Bytes of message data (excluding the
@@ -79,10 +82,13 @@ class MailBox {
   public:
     MailBox();			// Allocate and initialize mail box
     ~MailBox();			// De-allocate mail box
-
+    
     void Put(PacketHeader pktHdr, MailHeader mailHdr, char *data);
    				// Atomically put a message into the mailbox
-    void Get(PacketHeader *pktHdr, MailHeader *mailHdr, char *data, int timeout = -1);
+    /*!
+     * \return true if it has been parsed
+     */
+    bool Get(PacketHeader *pktHdr, MailHeader *mailHdr, char *data, int timeout = -1);
    				// Atomically get a message out of the
 				// mailbox (and wait if there is no message
 				// to get!)
@@ -107,12 +113,18 @@ class PostOffice {
 				//   get dropped by the underlying network
     ~PostOffice();		// De-allocate Post Office data
 
-    void Send(PacketHeader pktHdr, MailHeader mailHdr, const char *data);
+    /*!
+     * \return true if it has been sent
+     */
+    bool Send(PacketHeader pktHdr, MailHeader mailHdr, const char *data, int timeout = -1);
     				// Send a message to a mailbox on a remote
 				// machine.  The fromBox in the MailHeader is
 				// the return box for ack's.
 
-    void Receive(int box, PacketHeader *pktHdr,
+    /*!
+     * \return true if it has been sent
+     */
+    bool Receive(int box, PacketHeader *pktHdr,
 		MailHeader *mailHdr, char *data, int timeout = -1);
     				// Retrieve a message from "box".  Wait if
 				// there is no message in the box.

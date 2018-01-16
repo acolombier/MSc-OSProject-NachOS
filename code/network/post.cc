@@ -119,7 +119,7 @@ MailBox::Put(PacketHeader pktHdr, MailHeader mailHdr, char *data)
 //	"data" -- address to put: payload message data
 //----------------------------------------------------------------------
 
-void
+bool
 MailBox::Get(PacketHeader *pktHdr, MailHeader *mailHdr, char *data, int timeout)
 {
     DEBUG('n', "MailBox::Get -- Waiting for mail\n");
@@ -141,11 +141,10 @@ MailBox::Get(PacketHeader *pktHdr, MailHeader *mailHdr, char *data, int timeout)
                         // the caller's buffer
         delete mail;	// we've copied out the stuff we
                         // need, we can now discard the message
+        return true;
     } else {
         DEBUG('n', "MailBox::Get -- mail is NULL, probably timeout\n");
-        pktHdr = NULL;
-        mailHdr = NULL;
-        data = NULL;
+        return false;
     }
 }
 
@@ -269,8 +268,8 @@ PostOffice::PostalDelivery()
 //	"data" -- payload message data
 //----------------------------------------------------------------------
 
-void
-PostOffice::Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data)
+bool
+PostOffice::Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data, int timeout)
 {
     char* buffer = new char[MaxPacketSize];	// space to hold concatenated
 						// mailHdr + data
@@ -288,17 +287,22 @@ PostOffice::Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data)
     }
 
     // concatenate MailHeader and data
-    bcopy(&mailHdr, buffer, sizeof(MailHeader));
-    bcopy(data, buffer + sizeof(MailHeader), mailHdr.length);
+    memcpy(buffer, &mailHdr, sizeof(MailHeader));
+    memcpy(buffer + sizeof(MailHeader), data, mailHdr.length);
 
     sendLock->Acquire();   		// only one message can be sent
 					// to the network at any one time
     network->Send(pktHdr, buffer);
+    
+    /*! \todo timeout has to be handle here 
+     * if (timeout occur) return false;
+     */
     messageSent->P();			// wait for interrupt to tell us
 					// ok to send the next message
     sendLock->Release();
 
     delete [] buffer;			// we've sent the message, so
+    return true;
 					// we can delete our buffer
 }
 
@@ -317,16 +321,18 @@ PostOffice::Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data)
 //	"data" -- address to put: payload message data
 //----------------------------------------------------------------------
 
-void
+bool
 PostOffice::Receive(int box, PacketHeader *pktHdr,
 				MailHeader *mailHdr, char* data, int timeout)
 {
     ASSERT((box >= 0) && (box < numBoxes));
 
     DEBUG('n', "PostOffice::Receive -- Post office calling get on box %d\n", box);
-    boxes[box].Get(pktHdr, mailHdr, data, timeout);
-    if (data != NULL)
-        ASSERT(mailHdr->length <= MaxMailSize);
+    bool result = boxes[box].Get(pktHdr, mailHdr, data, timeout);
+    
+    ASSERT(mailHdr->length <= MaxMailSize);
+    
+    return result;
 }
 
 //----------------------------------------------------------------------

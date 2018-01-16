@@ -16,8 +16,10 @@
 
 class TransferHeader {
   public:
-    unsigned int seq_num;
+    TransferHeader(char _flags = 0, unsigned int _seq_num = 0):
+        flags(_flags), seq_num(_seq_num){}
     char flags;
+    unsigned int seq_num;
 };
 
 class Connection {
@@ -39,8 +41,15 @@ class Connection {
     Connection(MailBoxAddress localbox, NetworkAddress to = -1, MailBoxAddress mailbox = -1);
     ~Connection();
 
-    int Send(char *data);  // send a message reliably with ack
-    void Receive(char *data);  // receive a message reliably with ack, store it in data
+    /*!
+     * \todo doc
+     */
+    bool Send(char *data);
+    
+    /*!
+     * \todo doc
+     */
+    bool Receive(char *data);
     
     /*!
      *  \brief Turn the socket in to a server socket, and wait a client to connect
@@ -61,15 +70,16 @@ class Connection {
 
   private:
     Status _status;
-    unsigned int _last_seq_number;
+    unsigned int _last_local_seq_number;
+    unsigned int _last_remote_seq_number;
     
     MailBoxAddress lcl_box;
     NetworkAddress rmt_adr;	// Destination machine ID
     MailBoxAddress rmt_box;		// Destination mail box
     
 
-    int _send_worker(char flags, int timeout, char* data = nullptr, size_t lenght = 0);  // send a message of size == MaxPacketSize
-    char _read_worker(int timeout, char* data = nullptr, size_t lenght = 0);  // receive a message of size == MaxPacketSize
+    int _send_worker(char flags, int timeout, char* data = nullptr, size_t length = 0);  // send a message of size == MaxPacketSize
+    char _read_worker(int timeout, char* data = nullptr, size_t length = 0);  // receive a message of size == MaxPacketSize
     
     char *flagstostr(char flags);
 };

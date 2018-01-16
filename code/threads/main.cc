@@ -58,7 +58,7 @@
 // External functions used by this file
 
 extern void ThreadTest (void), Copy (const char *unixFile, const char *nachosFile);
-extern void Print (char *file), PerformanceTest (void);
+extern void Print (const char *file), PerformanceTest (void), ChangeMod(char*, const char*), MakeTree (void), QuickTest (void), MakeDirectory (const char *file), ShowTree (void);
 extern void StartProcess (char *file), ConsoleTest (char *in, char *out), SynchConsoleTest (char *in, char *out);
 extern void MailTest (int networkID);
 extern void TransferTest (int networkID, int isSender);
