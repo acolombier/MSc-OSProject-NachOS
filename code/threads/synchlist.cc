@@ -81,7 +81,6 @@ SynchList::Remove (int timeout)
         interrupt->Schedule(TimeoutHandler, (int) this, timeout, IntType::TimerInt);
 
     while (list->IsEmpty () && !(timeout != -1 && hasTimeout))
-        //DEBUG('n', "%d && !(%d && %d)", list->IsEmpty (), timeout == -1, hasTimeout);
         listEmpty->Wait (lock);	// wait until list isn't empty
 
     if (hasTimeout) {
@@ -129,6 +128,6 @@ SynchList::Unlock ()
 void
 SynchList::TimeoutHandler (int synchL)
 {
-    DEBUG('n', "SynchList had a timeout. Yikes.\n");
+    DEBUG('N', "SynchList::TimeoutHandler -- SynchList had a timeout. Yikes.\n");
     ((SynchList *)synchL)->Unlock ();
 }

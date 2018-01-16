@@ -122,12 +122,12 @@ MailBox::Put(PacketHeader pktHdr, MailHeader mailHdr, char *data)
 void
 MailBox::Get(PacketHeader *pktHdr, MailHeader *mailHdr, char *data, int timeout)
 {
-    DEBUG('n', "Waiting for mail\n");
+    DEBUG('n', "MailBox::Get -- Waiting for mail\n");
     Mail *mail = (Mail *) messages->Remove(timeout);	// remove message from list;
 						// will wait if list is empty
 
     if (mail != NULL) {
-        DEBUG('n', "Took mail in mbox %d from mbox %d\n", mailHdr->to, mailHdr->from);
+        DEBUG('n', "MailBox::Get -- Took mail in mbox %d from mbox %d\n", mailHdr->to, mailHdr->from);
         *pktHdr = mail->pktHdr;
         *mailHdr = mail->mailHdr;
         if (DebugIsEnabled('n')) {
@@ -135,14 +135,14 @@ MailBox::Get(PacketHeader *pktHdr, MailHeader *mailHdr, char *data, int timeout)
             PrintHeader(*pktHdr, *mailHdr);
         }
 
-        DEBUG('n', "Copying message data into the callers buffer\n");
+        DEBUG('n', "MailBox::Get -- Copying message data into the callers buffer\n");
         bcopy(mail->data, data, mail->mailHdr.length);
                         // copy the message data into
                         // the caller's buffer
         delete mail;	// we've copied out the stuff we
                         // need, we can now discard the message
     } else {
-        DEBUG('n', "mail is NULL, probably timeout\n");
+        DEBUG('n', "MailBox::Get -- mail is NULL, probably timeout\n");
         pktHdr = NULL;
         mailHdr = NULL;
         data = NULL;
@@ -323,7 +323,7 @@ PostOffice::Receive(int box, PacketHeader *pktHdr,
 {
     ASSERT((box >= 0) && (box < numBoxes));
 
-    DEBUG('n', "Post office calling get on box %d\n", box);
+    DEBUG('n', "PostOffice::Receive -- Post office calling get on box %d\n", box);
     boxes[box].Get(pktHdr, mailHdr, data, timeout);
     if (data != NULL)
         ASSERT(mailHdr->length <= MaxMailSize);

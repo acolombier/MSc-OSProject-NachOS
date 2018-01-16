@@ -1,137 +1,137 @@
 #include "transfer.h"
 #include "network.h"
 #include "post.h"
-#include "system.h"     // for postOffice member
+#include "system.h" // for posrmt_adrffice member
 
-
-Connection::Connection(MailBoxAddress localbox,
-                       NetworkAddress to, MailBoxAddress mailbox) {
-    fromMail = localbox;
-    toMachine = to;
-    toMail = mailbox;
+Connection::Connection(MailBoxAddress localbox, NetworkAddress to, MailBoxAddress mailbox) {
+    lcl_box = localbox;
+    rmt_adr = to;
+    rmt_box = mailbox;
 }
 
 Connection::~Connection() {
 
 }
 
-int Connection::SendFixedSize(char *data, char flags) {
-    ASSERT(strlen(data) <= MAX_MESSAGE_SIZE - 1);
+int Connection::SendFixedSize(char *data, size_t length, unsigned int seq_num, char flags) {
+    ASSERT(length <= MAX_MESSAGE_SIZE);
     PacketHeader outPktHdr, inPktHdr;
     MailHeader outMailHdr, inMailHdr;
     TransferHeader outTrHdr, inTrHdr;
     char outBuffer[MaxMailSize], inBuffer[MaxMailSize];
     int attempts = 0;
 
-    /* link + transfer layers */
-    memset(&inMailHdr, 0, sizeof(MailHeader));
     memset(&outPktHdr, 0, sizeof(PacketHeader));
-    outPktHdr.to = toMachine;
+    memset(&inPktHdr, 0, sizeof(PacketHeader));
+    memset(&outMailHdr, 0, sizeof(MailHeader));
+    memset(&inMailHdr, 0, sizeof(MailHeader));
+    memset(&outTrHdr, 0, sizeof(TransferHeader));
+    memset(&inTrHdr, 0, sizeof(TransferHeader));
 
-    outMailHdr.to = toMail;
-    outMailHdr.from = fromMail;
-    outMailHdr.length = sizeof(TransferHeader) + strlen(data) + 1;
+    outPktHdr.to = rmt_adr;
+    outMailHdr.to = rmt_box;
+    outMailHdr.from = lcl_box;
+    outMailHdr.length = sizeof(TransferHeader) + length;
     ASSERT(outMailHdr.length <= MaxMailSize);
 
-    /* application layer */
+    outTrHdr.seq_num = seq_num;
     outTrHdr.flags = flags;
 
     /* concatenate TransferHeader and data */
     memcpy(outBuffer, &outTrHdr, sizeof(TransferHeader));
-    memcpy(outBuffer + sizeof(TransferHeader), data, MAX_MESSAGE_SIZE); // added '/0' included
+    memcpy(outBuffer + sizeof(TransferHeader), data, MAX_MESSAGE_SIZE);
 
     do {
         postOffice->Send(outPktHdr, outMailHdr, outBuffer);
-        DEBUG('n', "Sending fixed \"%s\" to %d, box %d\n", outBuffer + sizeof(TransferHeader), outPktHdr.to, outMailHdr.to);
+        DEBUG('n', "Connection::SendFixedSize -- Sending fixed \"%s\" to %d, box %d\n", outBuffer + sizeof(TransferHeader), outPktHdr.to, outMailHdr.to);
 
         /* recieve acknowledgement */
-        DEBUG('n', "Sending fixed: waiting for ACK\n");
-        postOffice->Receive(fromMail, &inPktHdr, &inMailHdr, inBuffer, TEMPO);
-        if (inBuffer != NULL) {
-            DEBUG('n', "Sending fixed: got ACK from %d, box %d\n", inPktHdr.from, inMailHdr.from);
-            fflush(stdout);
+        DEBUG('n', "Connection::SendFixedSize -- waiting for ACK\n");
+        postOffice->Receive(lcl_box, &inPktHdr, &inMailHdr, inBuffer, TEMPO);
+        if (inBuffer == NULL) {
+            DEBUG('n', "Connection::SendFixedSize -- did not got ACK\n");
+        } else {
+            DEBUG('n', "Connection::SendFixedSize -- got ACK from %d, box %d\n", inPktHdr.from, inMailHdr.from);
 
             /* unpack the data of the mail that gets put into inBuffer
                 which consists of TransferHeader + data */
             memcpy(&inTrHdr, inBuffer, sizeof(TransferHeader));
-            //DEBUG('n', "Sending fixed: receive flags %s\n", flagstostr(inTrHdr.flags));
-        } else {
-            DEBUG('n', "Sending fixed: did not got ACK\n");
-            fflush(stdout);
-            inTrHdr.flags = 0;
+            //DEBUG('n', "Connection::SendFixedSize -- receive flags %s\n", flagstostr(inTrHdr.flags));
         }
 
         attempts++;
-    } while (!(inTrHdr.flags & (flags | ACK)) && attempts < MAXREEMISSIONS);
+    } while (!(inTrHdr.seq_num == seq_num && inTrHdr.flags & ACK) &&
+             attempts < MAXREEMISSIONS);
 
-    DEBUG('n', "Came out of the sending loop.\n");
-
-    if (attempts == MAXREEMISSIONS)
+    if (attempts == MAXREEMISSIONS) {
+        DEBUG('N', "Connection::SendFixedSize -- too many attempts");
         return -1;
-    else
+    } else {
         return 0;
+    }
 }
 
-char Connection::ReceiveFixedSize(char *data) {
+void Connection::ReceiveFixedSize(char *data) {
     PacketHeader outPktHdr, inPktHdr;
     MailHeader outMailHdr, inMailHdr;
     TransferHeader outTrHdr, inTrHdr;
     char inBuffer[MaxMailSize];
 
-    postOffice->Receive(toMail, &inPktHdr, &inMailHdr, inBuffer);
-    DEBUG('n', "Our receive got \"%s\" from %d, box %d\n",
-               inBuffer + sizeof(TransferHeader), inPktHdr.from, inMailHdr.from);
+    memset(&outPktHdr, 0, sizeof(PacketHeader));
+    memset(&inPktHdr, 0, sizeof(PacketHeader));
+    memset(&outMailHdr, 0, sizeof(MailHeader));
+    memset(&inMailHdr, 0, sizeof(MailHeader));
+    memset(&outTrHdr, 0, sizeof(TransferHeader));
+    memset(&inTrHdr, 0, sizeof(TransferHeader));
+
+    postOffice->Receive(rmt_box, &inPktHdr, &inMailHdr, inBuffer);
+    DEBUG('n', "Connection::ReceiveFixedSize -- got \"%s\" from %d, box %d\n",
+          inBuffer + sizeof(TransferHeader), inPktHdr.from, inMailHdr.from);
 
     memcpy(&inTrHdr, inBuffer, sizeof(TransferHeader));
-    memcpy(data, inBuffer + sizeof(TransferHeader), inMailHdr.length - sizeof(TransferHeader));
+    memcpy(data, inBuffer, inMailHdr.length);
 
     outPktHdr.to = inPktHdr.from;
     outMailHdr.to = inMailHdr.from;
-    outMailHdr.from = fromMail;
+    outMailHdr.from = lcl_box;
     outMailHdr.length = sizeof(TransferHeader);
+    outTrHdr.seq_num = inTrHdr.seq_num;
     outTrHdr.flags = inTrHdr.flags | ACK;
-    DEBUG('n', "Our receive sending ACK to %d, box %d\n", outPktHdr.to, outMailHdr.to);
+    DEBUG('n', "Connection::ReceiveFixedSize -- sending ACK to %d, box %d\n", outPktHdr.to, outMailHdr.to);
     postOffice->Send(outPktHdr, outMailHdr, (char *) &outTrHdr);
-
-    return inTrHdr.flags;
 }
 
 int Connection::Send(char *data) {
-    unsigned int offset = 0;
+    unsigned int seq_num = 0;
     char chunk[MAX_MESSAGE_SIZE], flags;
 
-    while (offset < strlen(data)) {
+    while (seq_num * MAX_MESSAGE_SIZE < strlen(data) + 1) {
         flags = 0;
-        if (offset == 0)
+        if (seq_num == 0)
             flags = flags | START;
-        if (offset + MAX_MESSAGE_SIZE - 1 >= strlen(data))
+        if ((seq_num + 1) * MAX_MESSAGE_SIZE >= strlen(data) + 1)
             flags = flags | END;
-        strncpy(chunk, data + offset, MAX_MESSAGE_SIZE - 1);
-        chunk[MAX_MESSAGE_SIZE - 1] = '\0';
+        memcpy(chunk, data + (seq_num * MAX_MESSAGE_SIZE), MAX_MESSAGE_SIZE);
 
-        DEBUG('n', "--> Send char at offset %d in str of len %d\n", offset, strlen(data) + 1);
-        if (SendFixedSize(chunk, flags) == -1)
+        DEBUG('n', "Connection::Send -- Send packet %D of %d\n", seq_num, (strlen(data) + 1) / MAX_MESSAGE_SIZE);
+        if (SendFixedSize(chunk, MAX_MESSAGE_SIZE, seq_num, flags) == -1)
             return -1;
-
-        offset += MAX_MESSAGE_SIZE - 1;
+        seq_num++;
     }
-
     return 0;
 }
 
-int Connection::Receive(char *data) {
-    unsigned int offset = 0;
-    char chunk[MAX_MESSAGE_SIZE], flags;
+void Connection::Receive(char *data) {
+    char chunk[MAX_MESSAGE_SIZE];
+    TransferHeader inTrHdr;
 
     do {
-        flags = ReceiveFixedSize(chunk);
+        ReceiveFixedSize(chunk);
         //DEBUG('n', "Current flags at receive are: %s\n", flagstostr(flags));
-        // memcpy: put data to correct place; copy without headers; copy without artificially added '\0'
-        memcpy(data + offset, chunk, MAX_MESSAGE_SIZE - 1);
-        offset += MAX_MESSAGE_SIZE - 1;
-    } while (!(flags & END));
-
-    return 0;
+        memset(&inTrHdr, 0, sizeof(TransferHeader));
+        memcpy(&inTrHdr, chunk, sizeof(TransferHeader));
+        strncpy(data + (inTrHdr.seq_num * MAX_MESSAGE_SIZE), chunk + sizeof(TransferHeader), MAX_MESSAGE_SIZE);
+    } while (!(inTrHdr.flags & END));
 }
 
 /* int Connection::SendFile(int fd, int fileSize) {
