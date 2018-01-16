@@ -118,7 +118,6 @@ typedef struct remote_peer_struct {
 #define NULL 0
 typedef unsigned int size_t;
 
-
 /* Permission */
 #define O_NONE 0
 /*! \def O_R
@@ -158,19 +157,21 @@ typedef int sema_t;
 /* Syscalls definition */
 
 /*!
- * \brief Stop Nachos machine if last process to be alive, and print out performance stats
+ * \brief Stop Nachos machine if it is the last process that is alive, and print out performance stats.
  */
 void Halt () __attribute__((noreturn));
 
 /*!
- * \brief This user program is done (status = 0 means exited normally). Alias of `return <code>` in the main function
+ * \brief This user program is done (status = 0 means exited normally). Alias of `return <code>` in the main function.
  */
 void Exit (int status) __attribute__((noreturn));
 
 
-/*! Only return once the the user program "id" has finished.
- * \param pointer to store the result code. NULL to ignore it
- * \return boolean saying if the process has been join
+/*!
+ * \brief Join a process. Alieas to wait on POSIX.
+ * \param id only return once the the user program "id" has finished.
+ * \param result_code_ptr pointer to store the result code. NULL to ignore it
+ * \return Returns 0 if the process has been joined, otherwise returns -1.
  */
 int Join (SpaceId id, int* result_code_ptr);
 
@@ -184,51 +185,54 @@ typedef int ThreadId;  /**< Used type to describ a concurrent process on the sys
 
 
 /*!
- * \brief Create a file name at path "name"
- * \param name the path
- * \return return an error code, E_SUCCESS (0) if none
+ * \brief Create a file name at path "name".
+ * \param name the path of the file to be created
+ * \param perm new file permission in octal. You can use \ref O_R, \ref O_W, \ref 0_X, \ref O_RW or \ref O_RX to make it easier.
+ * \return Returns E_SUCCESS (0) on success and an error number on failure.
  */
 int Create (const char *name, int perm);
 
 /*!
- * \brief Create a dir name at path "name"
- * \param name the path
- * \return return an error code, E_SUCCESS (0) if none
+ * \brief Create a directory name at path "name"
+ * \param name the path of the directory to be created
+ * \param perm new directory permission in octal. You can use \ref O_R, \ref O_W or \ref O_RW to make it easier.
+ * \return Returns E_SUCCESS (0) on success and an error number on failure.
  */
 int MakeDir (char *name, int perm);
 
 /*!
- * \brief Open the Nachos file "name", and return an "OpenFileId" that can
- * be used to read and write to the file.
- * \param name the path
- * \return return an error code, \ref E_SUCCESS if none.
+ * \brief Open a Nachos file "name" for reading and writing.
+ * \param name the path of the file to be opened
+ * \return On success returns an "OpenFileId" that can be used to read and write to the file, returns NULL on failure.
  */
 OpenFileId Open (const char *name);
 
 /*!
- *  Open the Nachos dir "name", and return an "OpenFileId" that can
- * be used to read to the dir.
+ * \brief Open Nachos directory "name" for reading.
+ * \param name the path of the direct to be opened
+ * \return On success returns an "OpenFileId" that can be used to read the directory, returns NULL on failure.
  */
 OpenFileId OpenDir (const char *name);
 
 /*!
- *  Open the parent directory of a directory. Return 0 if non (root directory) or if it not a directory.
- * \param dir The child directory you want to find it parent
+ * \brief Open the parent directory of a directory.
+ * \param dir The child directory you want to find the parent of.
+ * \return Return NULL if file has no parent (root directory) or if it is not a directory.
  */
 OpenFileId ParentDir (OpenFileId dir);
 
 /*!
- * \brief Change the permission of an open item.
+ * \brief Change the permissions of an open item.
  * \param perm the new permission in octal. You can use \ref O_R, \ref O_W or \ref O_X to make it easier.
  * \param id file descriptor
- * \return Return false if no error and modified with success, anything else otherwise
+ * \return Returns false if no error and modified with success, true on failure.
  */
 int ChMod (int perm, OpenFileId id);
 
 /*!
  * \brief Delete a file from the filesystem.
- * \param path file path
- * \return Return false if no error, anything else otherwise
+ * \param id TODO file path
+ * \return Return TODO false if no error, anything else otherwise
  */
 int Remove (char* id);
 
@@ -406,40 +410,41 @@ void sem_wait(sema_t s);
  */
 void Kill(SpaceId pid, char sig);
 
-/*! \brief Fork and run a process 
+/*! \brief Fork and run a process. 
  *  \param *s path to the executable
- *  \param **args argument to pass to the process. Must finish by a NULL arg. Can be NULL if no arguments
- *  \return the pid of the created process, 0 on error 
+ *  \param **args arguments to pass to the process. Must finish by a NULL arg. Can be NULL if no arguments.
+ *  \return Returns the pid of the created process on success, 0 on error.
  */
 int ForkExec(char *s, char** args);
 
-/*! \brief Move the break value of n pages
- *  \param size the number of page to allocate if positive, or to free if negative
- *  \return the pointer the first byte now available if size positive, or unavailable. If positive size and no more memory available, NULL is returned
+/*! \brief Move the break value of n pages.
+ *  \param size the number of pages to allocate if positive, or to free if negative.
+ * 	\return If the size is positive the pointer to the first byte now available is returned. If the size is negative the previous value of Sbrk is returned. If the size is negative the pointer
+ *  \return Returns the pointer to the first byte now available if size is positive or unavailable if size is negative. If positive size and no more memory available, NULL is returned.
  */
 void *Sbrk(int size);
 
-/*! \brief Create a socket object and return its stream descriptor 
- *  \param NetworkAddress the address of the remote machine
- *  \param MailBoxAddress the port of the remote machine
- *  \return the stream descriptor, 0 on error 
+/*! \brief Create a socket object and return its stream descriptor.
+ *  \param machineId the address of the remote machine
+ *  \param port the port of the remote machine
+ *  \return Returns the stream descriptor on success, 0 on error.
  */
-OpenSocketId Soket(NetworkAddress to, MailBoxAddress);
+OpenSocketId Socket(NetworkAddress machineId, MailBoxAddress port);
 
-/*! \brief Block the socket until a client has procceded to synchronisation with the given socket (by calling \ref Connect)
+/*! \brief Block the socket until a client has procceded to synchronisation with the given socket (by calling \ref Connect).
  *  \param *client the structure to store information about the client
  *  \param timeout the maximun time to wait for (in msec ?). 0 to be none blocking
  *  \param sd the socket descriptor
- *  \return \ref E_SUCCESS if a peerr has syncronised, \ref E_NOTFOUND if timeout
+ *  \return Returns \ref E_SUCCESS if a peerr has syncronised, \ref E_NOTFOUND if timeout
  */
 int Accept(remote_peer_t* client, unsigned int timeout, OpenSocketId sd);
 
 /*! \brief Block the socket until a server has procceded to synchronisation with the given socket (by calling \ref Accept)
  *  \param timeout the maximun time to wait for (in msec ?). 0 to be none blocking
  *  \param sd the socket descriptor
- *  \return \ref E_SUCCESS if a peerr has syncronised, \ref E_NOTFOUND if timeout
+ *  \return Returns \ref E_SUCCESS if a peer has syncronised, \ref E_NOTFOUND if timeout.
  */
-int Connect(unsigned int timeout, OpenSocketId);
+int Connect(unsigned int timeout, OpenSocketId sd);
 
 #endif // IN_USER_MODE
 
