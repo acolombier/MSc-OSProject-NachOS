@@ -25,7 +25,6 @@ class FrameProvider
     FrameProvider (int nitems);	// Initialize a frameprovider // TODO
      ~FrameProvider ();		// De-allocate a frameprovider
 
-	// returns might not be correct
     unsigned int GetEmptyFrame();	// retrieve a free frame initialized to 0 by bzero
     void ReleaseFrame(int entry);	// release a frame obtained via GetEmptyFrame
     unsigned int NumAvailFrame();	// return the number of available frames
