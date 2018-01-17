@@ -19,8 +19,9 @@
 #include "copyright.h"
 #include "post.h"
 #include "thread.h"
+#include "transfer.h"
 
-#include <strings.h> /* for bzero */
+#include <strings.h> /* for memset */
 
 //----------------------------------------------------------------------
 // Mail::Mail
@@ -122,6 +123,7 @@ MailBox::Put(PacketHeader pktHdr, MailHeader mailHdr, char *data)
 bool
 MailBox::Get(PacketHeader *pktHdr, MailHeader *mailHdr, char *data, int timeout)
 {
+    DEBUG('N', "MailBox::Get -- Receiving....\n");
     Mail *mail = (Mail *) messages->Remove(timeout);	// remove message from list;
 						// will wait if list is empty
 
@@ -174,12 +176,14 @@ static void WriteDone(int arg)
 //----------------------------------------------------------------------
 
 PostOffice::PostOffice(NetworkAddress addr, double reliability, int nBoxes):
-    _availableBoxes(new BitMap(nBoxes))
+     _last_item_cnt(0), _availableBoxes(new BitMap(nBoxes)), closeHandler(new Connection*[nBoxes])
 {
 // First, initialize the synchronization with the interrupt handlers
     messageAvailable = new Semaphore("message available", 0);
-    messageSent = new Semaphore("message sent", 0);
+    messageSent = new Condition("message sent");
     sendLock = new Lock("message send lock");
+    
+    memset(closeHandler, 0, sizeof(Connection*) * nBoxes);
 
 // Second, initialize the mailboxes
     netAddr = addr;
@@ -204,11 +208,15 @@ PostOffice::PostOffice(NetworkAddress addr, double reliability, int nBoxes):
 
 PostOffice::~PostOffice()
 {
-    delete network;
+    for (int i = 0; i < numBoxes; i++)
+        if (closeHandler[i])
+            delete closeHandler[i];
+    //~ delete network;
     delete [] boxes;
     delete messageAvailable;
     delete messageSent;
     delete sendLock;
+    delete [] closeHandler;
     delete _availableBoxes;
 }
 
@@ -231,8 +239,9 @@ PostOffice::PostalDelivery()
         // first, wait for a message
         messageAvailable->P();
         pktHdr = network->Receive(buffer);
-
+        
         mailHdr = *(MailHeader *)buffer;
+
         if (DebugIsEnabled('n')) {
 			fprintf(stderr, "Putting mail into mailbox: ");
 			PrintHeader(pktHdr, mailHdr);
@@ -243,6 +252,21 @@ PostOffice::PostalDelivery()
 		ASSERT(mailHdr.length <= MaxMailSize);
 
 		// put into mailbox
+        
+        if (mailHdr.to >= 0 && mailHdr.to < numBoxes && closeHandler[mailHdr.to]){ 
+            TransferHeader inTrHdr;
+            memcpy(&inTrHdr, buffer + sizeof(MailHeader), sizeof(TransferHeader));
+            if (inTrHdr.flags == Connection::END && closeHandler[mailHdr.to]->status() == Connection::ESTABLISHED){
+                while (boxes[mailHdr.to].size())
+                    //~ boxes[mailHdr.to].Get(nullptr, nullptr, nullptr);
+                    currentThread->Yield();
+                boxes[mailHdr.to].Put(pktHdr, mailHdr, buffer + sizeof(MailHeader));
+                DEBUG('L', "PostOffice::PostalDelivery -- Connection remotely closed on %d\n", mailHdr.to);
+                closeHandler[mailHdr.to]->Close(TEMPO, true);
+                continue;
+            }
+                
+        }
         boxes[mailHdr.to].Put(pktHdr, mailHdr, buffer + sizeof(MailHeader));
     }
 }
@@ -284,17 +308,26 @@ PostOffice::Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data, int 
 
     sendLock->Acquire();   		// only one message can be sent
 					// to the network at any one time
+    
+    po_timeout_t* tmb = new po_timeout_t;
+    tmb->packet_number = _last_item_cnt;
+    tmb->that = this;
+
+    if (timeout > -1)
+        interrupt->Schedule(TimeoutHandler, (int) tmb, timeout, IntType::TimerInt);
+
+    _sending_msg = 1;
     network->Send(pktHdr, buffer);
     
-    /*! \todo timeout has to be handle here 
-     * if (timeout occur) return false;
-     */
-    messageSent->P();			// wait for interrupt to tell us
+    while (_sending_msg == 1)
+        messageSent->Wait (sendLock);	// wait until list isn't empty
+
+    _last_item_cnt++;
 					// ok to send the next message
     sendLock->Release();
 
     delete [] buffer;			// we've sent the message, so
-    return true;
+    return _sending_msg == 0;
 					// we can delete our buffer
 }
 
@@ -352,7 +385,10 @@ PostOffice::IncomingPacket()
 void
 PostOffice::PacketSent()
 {
-    messageSent->V();
+    sendLock->Acquire();
+    _sending_msg = 0;
+    messageSent->Signal(sendLock);    
+    sendLock->Release();
 }
  
 MailBoxAddress PostOffice::assignateBox(){
@@ -362,3 +398,28 @@ MailBoxAddress PostOffice::assignateBox(){
 void PostOffice::releaseBox(MailBoxAddress b){
     _availableBoxes->Clear(b);
 }
+
+void
+PostOffice::Unlock ()
+{
+    sendLock->Acquire();
+    DEBUG('N', "PostOffice::Send -- Timeout\n");
+    _sending_msg = -1;
+    messageSent->Signal(sendLock);
+    sendLock->Release();
+}
+
+void PostOffice::registerCloseHandler(MailBoxAddress box, Connection* conn){
+    closeHandler[box] = conn;
+}
+
+void
+PostOffice::TimeoutHandler (int tmb_ptr)
+{
+    po_timeout_t* tmb = (po_timeout_t*)tmb_ptr;
+    
+    if (tmb->packet_number == tmb->that->lastPacket())
+        tmb->that->Unlock ();
+    delete tmb;    
+}
+

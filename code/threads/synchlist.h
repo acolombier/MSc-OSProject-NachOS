@@ -21,6 +21,7 @@
 //      wait until the list has an element on it.
 //      2. One thread at a time can access list data structures
 
+
 class SynchList
 {
   public:
@@ -35,13 +36,22 @@ class SynchList
     void Mapcar (VoidFunctionPtr func);
     void Unlock ();		//
 
+    inline int lastPacket () const { return _last_item_cnt; }
+    inline int size () const { return list->size(); }
+    
     static void TimeoutHandler (int synchL);
 
   private:
     List * list;		// the unsynchronized list
     Lock *lock;			// enforce mutual exclusive access to the list
     Condition *listEmpty;	// wait in Remove if the list is empty
-    bool hasTimeout;
+    
+    int _last_item_cnt;
 };
+
+typedef struct sl_timeout_struct {
+    SynchList* that;
+    int packet_number;
+} sl_timeout_t;
 
 #endif // SYNCHLIST_H

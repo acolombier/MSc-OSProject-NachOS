@@ -93,6 +93,8 @@ class MailBox {
    				// Atomically get a message out of the
 				// mailbox (and wait if there is no message
 				// to get!)
+    inline int size () const { return messages->size(); }
+    
   private:
     SynchList *messages;	// A mailbox is just a list of arrived messages
 };
@@ -105,6 +107,7 @@ class MailBox {
 //
 // Incoming messages are put by the PostOffice into the
 // appropriate mailbox, waking up any threads waiting on Receive.
+class Connection;
 
 class PostOffice {
   public:
@@ -150,6 +153,14 @@ class PostOffice {
      * \todo doc
      */         
     void releaseBox(MailBoxAddress);
+    
+    void registerCloseHandler(MailBoxAddress, Connection*);    
+
+    inline int lastPacket () const { return _last_item_cnt; }
+    
+    void Unlock ();
+
+    static void TimeoutHandler (int tmb_ptr);
 
   private:
     Network *network;		// Physical network connection
@@ -157,10 +168,20 @@ class PostOffice {
     MailBox *boxes;		// Table of mail boxes to hold incoming mail
     int numBoxes;		// Number of mail boxes
     Semaphore *messageAvailable;// V'ed when message has arrived from network
-    Semaphore *messageSent;	// V'ed when next message can be sent to network
+    Condition *messageSent;	// V'ed when next message can be sent to network
     Lock *sendLock;		// Only one outgoing message at a time
     
+    char _sending_msg;
+    int _last_item_cnt;
+    
     BitMap* _availableBoxes;
+    Connection** closeHandler;
 };
+
+
+typedef struct po_timeout_struct {
+    PostOffice* that;
+    int packet_number;
+} po_timeout_t;
 
 #endif

@@ -5,9 +5,9 @@
 #include "network.h"
 #include "post.h"
 
-#define TEMPO 1000000
-#define SYNC_TEMPO 10000
-#define MAXREEMISSIONS 3000
+#define TEMPO 10000000
+#define SYNC_TEMPO 100000
+#define MAXREEMISSIONS 50
 
 #define MAX_MESSAGE_SIZE (MaxWireSize - sizeof(struct PacketHeader) - sizeof(struct MailHeader) - sizeof(struct TransferHeader))
 
@@ -28,7 +28,8 @@ class Connection {
         ACK     = 0b0100,
         START   = 0b0010,
         END     = 0b0001,
-        TIMEOUT = 0b0001 // Virtual flag
+        RESET   = 0b1000,
+        TIMEOUT = 0b10000 // Virtual flag
     };
     
     enum Status {
@@ -73,12 +74,14 @@ class Connection {
     /*!
      *  \brief Turn the socket in to a client socket, and try to connect the remote peer
      */
-    bool Close(int timeout = -1);
+    bool Close(int timeout = -1, bool receiving = false);
 
   private:
     Status _status;
     unsigned int _last_local_seq_number;
     unsigned int _last_remote_seq_number;
+    
+    Lock* _lock;
     
     MailBoxAddress lcl_box;
     NetworkAddress rmt_adr;	// Destination machine ID

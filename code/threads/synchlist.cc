@@ -24,12 +24,12 @@
 //      Elements can now be added to the list.
 //----------------------------------------------------------------------
 
-SynchList::SynchList ()
+SynchList::SynchList ():
+    _last_item_cnt(0)
 {
     list = new List ();
     lock = new Lock ("list lock");
     listEmpty = new Condition ("list empty cond");
-    hasTimeout = false;
 }
 
 //----------------------------------------------------------------------
@@ -76,20 +76,20 @@ SynchList::Remove (int timeout)
     void *item;
 
     lock->Acquire ();		// enforce mutual exclusion
+    
+    sl_timeout_t* tmb = new sl_timeout_t;
+    tmb->packet_number = _last_item_cnt;
+    tmb->that = this;
 
     if (timeout > -1)
-        interrupt->Schedule(TimeoutHandler, (int) this, timeout, IntType::TimerInt);
+        interrupt->Schedule(TimeoutHandler, (int) tmb, timeout, IntType::TimerInt);
 
-    while (list->IsEmpty () && !(timeout != -1 && hasTimeout))
+    while (list->IsEmpty ())
         listEmpty->Wait (lock);	// wait until list isn't empty
 
-    //~ if (hasTimeout) {
-        //~ item = NULL;
-        //~ hasTimeout = false;
-    //~ } else {
-        item = list->Remove ();
-        //~ ASSERT (item != NULL);
-    //~ }
+    item = list->Remove ();
+    _last_item_cnt++;
+    
     lock->Release ();
     return item;
 }
@@ -123,8 +123,11 @@ SynchList::Unlock ()
 
 
 void
-SynchList::TimeoutHandler (int synchL)
+SynchList::TimeoutHandler (int tmb_ptr)
 {
-    DEBUG('N', "SynchList::TimeoutHandler -- SynchList had a timeout. Yikes.\n");
-    ((SynchList *)synchL)->Unlock ();
+    sl_timeout_t* tmb = (sl_timeout_t*)tmb_ptr;
+    
+    if (tmb->packet_number == tmb->that->lastPacket())
+        tmb->that->Unlock ();
+    delete tmb;    
 }
