@@ -360,6 +360,32 @@ Sbrk:
     syscall
     j    $31
     .end Sbrk
+/*
+    Network
+*/
+    .globl Socket
+    .ent    Socket
+Socket:
+    addiu $2,$0,SC_Socket
+    syscall
+    j    $31
+    .end Socket
+    
+    .globl Connect
+    .ent    Connect
+Connect:
+    addiu $2,$0,SC_Connect
+    syscall
+    j    $31
+    .end Connect
+    
+    .globl Accept
+    .ent    Accept
+Accept:
+    addiu $2,$0,SC_Accept
+    syscall
+    j    $31
+    .end Accept
 
 /* dummy function to keep gcc happy */
         .globl  __main

@@ -25,6 +25,9 @@
  */
 #define UserStackSize        768    // increase this as necessary!
 
+#define SocketDescriptor 1
+#define FileDescriptor 0
+
 class Thread;
 
 extern "C" {
@@ -45,7 +48,7 @@ extern "C" {
     typedef struct fd_bundle_struct {
         char* pathname;
         void* object;
-        /*int type; if we want to handle socket on the same way */
+        int type; /*if we want to handle socket on the same way */
         int fd;
     } fd_bundle_t;
 }

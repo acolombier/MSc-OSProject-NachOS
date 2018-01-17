@@ -152,6 +152,11 @@ class PostOffice {
     /*!
      * \todo doc
      */         
+    bool acquireBox(MailBoxAddress);
+    
+    /*!
+     * \todo doc
+     */         
     void releaseBox(MailBoxAddress);
     
     void registerCloseHandler(MailBoxAddress, Connection*);    
