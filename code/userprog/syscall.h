@@ -231,8 +231,8 @@ int ChMod (int perm, OpenFileId id);
 
 /*!
  * \brief Delete a file from the filesystem.
- * \param id TODO file path
- * \return Return TODO false if no error, anything else otherwise
+ * \param id file path
+ * \return Return false if no error, anything else otherwise.
  */
 int Remove (char* id);
 
@@ -240,7 +240,7 @@ int Remove (char* id);
  * \brief Move a file from the filesystem.
  * \param old the old file path
  * \param new_ the new file path
- * \return Return false if no error, anything else otherwise
+ * \return Return false if no error, anything else otherwise.
  */
 int Move (char* old, char* new_);
 
@@ -263,8 +263,7 @@ int Write (char *buffer, int size, OpenFileId id);
 int Read (char *buffer, int size, OpenFileId id);
 
 /*!
- * \todo fix description see man of ReadDir
- * \brief Read at most "size" of next the file name
+ * \brief Read at most "size" of next the file name.
  * \param buffer buffer address where next file is written
  * \param size size of data read and write
  * \param id file descriptor
@@ -277,29 +276,27 @@ int ReadDir (char *buffer, int size, OpenFileId id);
 
 
 /*!
- * \brief Move the reading head of the file
+ * \brief Move the reading head of the file.
  * \param fd file descriptor
  * \param offset the value where the head should be
- * \return Return the value after beeing set. Might be different if there was a range error
+ * \return Return the value after beeing set. Might be different if there was a range error.
  */
 int Seek (OpenFileId fd, int offset);
 
 /*!
- * \todo fix parameters
- * \brief Get a structure containing the epoch timestamp of the last access (date), the permission in octal (perm), the size(size), and is type (file = 0, dir = 1, ...)
+ * \brief Get a structure containing the epoch timestamp of the last access (date), the permission in octal (perm), the size(size), and its type (file = 0, dir = 1, ...).
  * \param *info pointer to the structure to write
  * \param fd file descriptor
- * \return false is no error, anything else if one occur
+ * \return Returns false is no error, anything else if one occurs.
  */
 int FileInfo (file_info_t* info, OpenFileId fd);
 
 /*!
- * \todo fix parameters
- * \brief Get a structure containing the number of free block (free_block), the used block (used_block), and the block size(block_size) to the main file system
- * \param a pointer to the structure to write
- * \return false is no error, anything else if one occur
+ * \brief Get a structure containing the number of free block (free_block), the used block (used_block), and the block size(block_size) to the main file system.
+ * \param info a pointer to the structure to write
+ * \return false is no error, anything else if one occurs.
  */
-int FileSystemInfo (fs_info_t*);
+int FileSystemInfo (fs_info_t *info);
 
 /*!
  * \brief Get the reading head position.
@@ -309,7 +306,7 @@ int FileSystemInfo (fs_info_t*);
 int Tell (OpenFileId fd);
 
 /*!
- * \brief Trunk the file to the current head position and deallocate the space already allocated after
+ * \brief Trunk the file to the current head position and deallocate the space already allocated after.
  * \param fd file descriptor
  */
 void Trunk (OpenFileId fd);
@@ -419,7 +416,6 @@ int ForkExec(char *s, char** args);
 
 /*! \brief Move the break value of n pages.
  *  \param size the number of pages to allocate if positive, or to free if negative.
- * 	\return If the size is positive the pointer to the first byte now available is returned. If the size is negative the previous value of Sbrk is returned. If the size is negative the pointer
  *  \return Returns the pointer to the first byte now available if size is positive or unavailable if size is negative. If positive size and no more memory available, NULL is returned.
  */
 void *Sbrk(int size);
@@ -435,12 +431,12 @@ OpenSocketId Socket(NetworkAddress machineId, MailBoxAddress port);
  *  \param *client the structure to store information about the client
  *  \param timeout the maximun time to wait for (in msec ?). 0 to be none blocking
  *  \param sd the socket descriptor
- *  \return Returns \ref E_SUCCESS if a peerr has syncronised, \ref E_NOTFOUND if timeout
+ *  \return Returns \ref E_SUCCESS if a peer has syncronised, \ref E_NOTFOUND if timeout
  */
 int Accept(remote_peer_t* client, unsigned int timeout, OpenSocketId sd);
 
-/*! \brief Block the socket until a server has procceded to synchronisation with the given socket (by calling \ref Accept)
- *  \param timeout the maximun time to wait for (in msec ?). 0 to be none blocking
+/*! \brief Block the socket until a server has procceded to synchronisation with the given socket (by calling \ref Accept).
+ *  \param timeout the maximum time to wait for (in msec ?). 0 to be none blocking
  *  \param sd the socket descriptor
  *  \return Returns \ref E_SUCCESS if a peer has syncronised, \ref E_NOTFOUND if timeout.
  */
