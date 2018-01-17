@@ -168,7 +168,7 @@ void Exit (int status) __attribute__((noreturn));
 
 
 /*!
- * \brief Join a process. Alieas to wait on POSIX.
+ * \brief Join a process. Alias to wait on POSIX.
  * \param id only return once the the user program "id" has finished.
  * \param result_code_ptr pointer to store the result code. NULL to ignore it
  * \return Returns 0 if the process has been joined, otherwise returns -1.
@@ -209,7 +209,7 @@ OpenFileId Open (const char *name);
 
 /*!
  * \brief Open Nachos directory "name" for reading.
- * \param name the path of the direct to be opened
+ * \param name the path of the directory to be opened
  * \return On success returns an "OpenFileId" that can be used to read the directory, returns NULL on failure.
  */
 OpenFileId OpenDir (const char *name);
@@ -217,7 +217,7 @@ OpenFileId OpenDir (const char *name);
 /*!
  * \brief Open the parent directory of a directory.
  * \param dir The child directory you want to find the parent of.
- * \return Return NULL if file has no parent (root directory) or if it is not a directory.
+ * \return Returns NULL if file has no parent (root directory) or if it is not a directory.
  */
 OpenFileId ParentDir (OpenFileId dir);
 
@@ -247,7 +247,7 @@ int Move (char* old, char* new_);
 /*!
  * \brief Write "size" bytes from "buffer" to a file.
  * \param buffer address of the buffer where data is written
- * \param size of data to read from the buffer and write to the file
+ * \param size size of data to read from the buffer and write to the file
  * \param id file descriptor
  * \return If the return value was positive it corresponds to the number of bytes that were copied. If it is negative it is an error code.
  */
@@ -256,7 +256,7 @@ int Write (char *buffer, int size, OpenFileId id);
 /*!
  * \brief Read "size" bytes from the a opened file into "buffer".
  * \param buffer address of the buffer where data is written
- * \param size of data to read from the file and write to the buffer
+ * \param size size of data to read from the file and write to the buffer
  * \param id file descriptor
  * \return If the return value was positive it corresponds to the number of bytes that were copied. If it is negative it is an error code.
  */
@@ -278,17 +278,17 @@ int ReadDir (char *buffer, int size, OpenFileId id);
 
 /*!
  * \brief Move the reading head of the file
- * \param fd the file
+ * \param fd file descriptor
  * \param offset the value where the head should be
  * \return Return the value after beeing set. Might be different if there was a range error
  */
 int Seek (OpenFileId fd, int offset);
 
 /*!
- * \toto fix parameters
+ * \todo fix parameters
  * \brief Get a structure containing the epoch timestamp of the last access (date), the permission in octal (perm), the size(size), and is type (file = 0, dir = 1, ...)
  * \param *info pointer to the structure to write
- * \param fd the file
+ * \param fd file descriptor
  * \return false is no error, anything else if one occur
  */
 int FileInfo (file_info_t* info, OpenFileId fd);
@@ -302,21 +302,21 @@ int FileInfo (file_info_t* info, OpenFileId fd);
 int FileSystemInfo (fs_info_t*);
 
 /*!
- * \brief Get the readixng head position
- * \param fd the file
- * \return Return the value
+ * \brief Get the reading head position.
+ * \param fd file descriptor
+ * \return Return the value.
  */
 int Tell (OpenFileId fd);
 
 /*!
  * \brief Trunk the file to the current head position and deallocate the space already allocated after
- * \param fd the file
+ * \param fd file descriptor
  */
 void Trunk (OpenFileId fd);
 
 /*!
- * \brief Close the related file if found, and deallocating it from the current address space. The file might still be opened in other address spaces
- * \param fd the opened file
+ * \brief Close the related file if found, and deallocating it from the current address space. The file might still be opened in other address spaces.
+ * \param fd file descriptor of the opened file
  */
 void Close (OpenFileId id);
 
@@ -347,9 +347,9 @@ void PutString(char *s);
 /*!
  * \todo define "blocks"
  * \brief Read a string in NachOS input console. This function blocks until the n charracters has been read, or until either a line break or a end of file.
- * \param *s the string to write.
+ * \param *s the string to write
  * \param n the maximun number of characters. This value can't excceed \ref MAX_STRING_SIZE
- * \return the number of charactes that were read. If negative, return a code control such as \ref EOF 
+ * \return Returns the number of charactes that were read. If negative, return a code control such as \ref EOF. 
  */
 int GetString(char *s, int n);
 
@@ -360,18 +360,18 @@ int GetString(char *s, int n);
 void PutInt(int n);
 /*!
     \brief Reads an integer in the NachOS input console as a string using ascii representation and converts it to an actual integer.
-    \param *n Pointer to an integer for storing the read value.
+    \param *n pointer to an integer for storing the read value
 */
 void GetInt(int *n);
 
-/*! \brief Create a user thread
+/*! \brief Create a user thread.
  *  \param f User pointer to the user function to execute. The function signature must have signature void* f(void *)
  *  \param arg User pointer to the args of the function to execute.
- *  \return If the creation succeeded return the tid (thread id) of the new thread. If the creation failed return \ref NULL_TID .
+ *  \return If the creation succeeded return the tid (thread id) of the new thread. If the creation failed return \ref NULL_TID.
  */
 ThreadId UserThreadCreate(void* f(void *arg), void *arg);
 
-/*! \brief Exit a user thread
+/*! \brief Exit a user thread.
  *  \param result_code result code to return to any waiting thread
  */
 void UserThreadExit(void* result_code) __attribute__((noreturn));
@@ -381,8 +381,8 @@ void _user_thread_exit_by_return() __attribute__((noreturn));
 
 /*! \brief Wait for the specified thread to finish.
  *  \param tid the thread identifier
- *  \param pointer to store the result code. Can be NULL to ignore it.
- *  \return \ref E_SUCCESS if no error, anything else otherwise
+ *  \param result_code_ptr pointer to store the result code. Can be NULL to ignore it
+ *  \return Returns \ref E_SUCCESS if no error, anything else otherwise.
  */
 int UserThreadJoin(ThreadId tid, void* result_code_ptr);
 
@@ -403,7 +403,7 @@ void sem_post(sema_t s);
  */
 void sem_wait(sema_t s);
 
-/*! \brief send a signal to a given process
+/*! \brief Send a signal to a given process.
  *  \param pid the process identifier that will receive the signal
  *  \param sig the signal to send
  *  \todo /!\ NOT IMPLEMENTED /!\
@@ -412,7 +412,7 @@ void Kill(SpaceId pid, char sig);
 
 /*! \brief Fork and run a process. 
  *  \param *s path to the executable
- *  \param **args arguments to pass to the process. Must finish by a NULL arg. Can be NULL if no arguments.
+ *  \param **args arguments to pass to the process. Must finish by a NULL arg. Can be NULL if no arguments
  *  \return Returns the pid of the created process on success, 0 on error.
  */
 int ForkExec(char *s, char** args);
