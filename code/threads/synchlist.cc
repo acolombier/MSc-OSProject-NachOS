@@ -83,13 +83,13 @@ SynchList::Remove (int timeout)
     while (list->IsEmpty () && !(timeout != -1 && hasTimeout))
         listEmpty->Wait (lock);	// wait until list isn't empty
 
-    if (hasTimeout) {
-        item = NULL;
-        hasTimeout = false;
-    } else {
+    //~ if (hasTimeout) {
+        //~ item = NULL;
+        //~ hasTimeout = false;
+    //~ } else {
         item = list->Remove ();
-        ASSERT (item != NULL);
-    }
+        //~ ASSERT (item != NULL);
+    //~ }
     lock->Release ();
     return item;
 }
@@ -118,10 +118,7 @@ SynchList::Mapcar (VoidFunctionPtr func)
 void
 SynchList::Unlock ()
 {
-    lock->Acquire ();
-    hasTimeout = true;
-    listEmpty->Broadcast (lock);
-    lock->Release ();
+    Append(nullptr);
 }
 
 

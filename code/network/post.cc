@@ -80,7 +80,7 @@ MailBox::~MailBox()
 static void
 PrintHeader(PacketHeader pktHdr, MailHeader mailHdr)
 {
-    printf("From (%d, %d) to (%d, %d) bytes %d\n",
+    fprintf(stderr, "From (%d, %d) to (%d, %d) bytes %d\n",
     	    pktHdr.from, mailHdr.from, pktHdr.to, mailHdr.to, mailHdr.length);
 }
 
@@ -122,30 +122,20 @@ MailBox::Put(PacketHeader pktHdr, MailHeader mailHdr, char *data)
 bool
 MailBox::Get(PacketHeader *pktHdr, MailHeader *mailHdr, char *data, int timeout)
 {
-    DEBUG('n', "MailBox::Get -- Waiting for mail\n");
     Mail *mail = (Mail *) messages->Remove(timeout);	// remove message from list;
 						// will wait if list is empty
 
     if (mail != NULL) {
-        DEBUG('n', "MailBox::Get -- Took mail in mbox %d from mbox %d\n", mailHdr->to, mailHdr->from);
         *pktHdr = mail->pktHdr;
         *mailHdr = mail->mailHdr;
-        if (DebugIsEnabled('n')) {
-            printf("Got mail from mailbox: ");
-            PrintHeader(*pktHdr, *mailHdr);
-        }
-
-        DEBUG('n', "MailBox::Get -- Copying message data into the callers buffer\n");
         bcopy(mail->data, data, mail->mailHdr.length);
                         // copy the message data into
                         // the caller's buffer
         delete mail;	// we've copied out the stuff we
                         // need, we can now discard the message
         return true;
-    } else {
-        DEBUG('n', "MailBox::Get -- mail is NULL, probably timeout\n");
+    } else 
         return false;
-    }
 }
 
 //----------------------------------------------------------------------
@@ -244,7 +234,7 @@ PostOffice::PostalDelivery()
 
         mailHdr = *(MailHeader *)buffer;
         if (DebugIsEnabled('n')) {
-			printf("Putting mail into mailbox: ");
+			fprintf(stderr, "Putting mail into mailbox: ");
 			PrintHeader(pktHdr, mailHdr);
 		}
 
@@ -283,10 +273,10 @@ PostOffice::Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data, int 
     pktHdr.from = netAddr;
     pktHdr.length = mailHdr.length + sizeof(MailHeader);
 
-    if (DebugIsEnabled('n')) {
-		printf("Post send: ");
-		PrintHeader(pktHdr, mailHdr);
-    }
+    //~ if (DebugIsEnabled('n')) {
+		//~ fprintf(stderr, "Post send: ");
+		//~ PrintHeader(pktHdr, mailHdr);
+    //~ }
 
     // concatenate MailHeader and data
     memcpy(buffer, &mailHdr, sizeof(MailHeader));
@@ -328,8 +318,7 @@ PostOffice::Receive(int box, PacketHeader *pktHdr,
 				MailHeader *mailHdr, char* data, int timeout)
 {
     ASSERT((box >= 0) && (box < numBoxes));
-
-    DEBUG('n', "PostOffice::Receive -- Post office calling get on box %d\n", box);
+    
     bool result = boxes[box].Get(pktHdr, mailHdr, data, timeout);
     
     ASSERT(mailHdr->length <= MaxMailSize);

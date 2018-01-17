@@ -5,8 +5,9 @@
 #include "network.h"
 #include "post.h"
 
-#define TEMPO 100
-#define MAXREEMISSIONS 5
+#define TEMPO 1000000
+#define SYNC_TEMPO 10000
+#define MAXREEMISSIONS 3000
 
 #define MAX_MESSAGE_SIZE (MaxWireSize - sizeof(struct PacketHeader) - sizeof(struct MailHeader) - sizeof(struct TransferHeader))
 
@@ -24,9 +25,10 @@ class TransferHeader {
 class Connection {
   public:
     enum Flag {
-        ACK     = 0b100,
-        START   = 0b010,
-        END     = 0b001
+        ACK     = 0b0100,
+        START   = 0b0010,
+        END     = 0b0001,
+        TIMEOUT = 0b0001 // Virtual flag
     };
     
     enum Status {
@@ -44,7 +46,7 @@ class Connection {
     /*!
      * \todo doc
      */
-    bool Send(char *data, size_t length);
+    bool Send(const char *data, size_t length);
     
     /*!
      * \todo doc
@@ -54,7 +56,7 @@ class Connection {
     /*!
      *  \brief Turn the socket in to a server socket, and wait a client to connect
      */
-    Connection* Accept(int timeout = -1);
+    bool Accept(int timeout = -1);
     
     /*!
      *  \brief Turn the socket in to a client socket, and try to connect the remote peer
