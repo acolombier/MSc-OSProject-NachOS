@@ -109,8 +109,8 @@ bool Connection::Receive(char *data, size_t length) {
         _lock->Acquire();
         while (_status == ESTABLISHED){
             char flag;
-            if ((flag = _read_worker(/*timeout*/-1, chunk, chunk_size)) == 0){ // No flag. What about if it is an END ? We should close the connection
-                if (_send_worker(ACK, /*timeout*/TEMPO, (char*)&_last_remote_seq_number, sizeof(int)) == sizeof(int)){
+            if ((flag = _read_worker(TEMPO, chunk, chunk_size)) == 0){
+                if (_send_worker(ACK, TEMPO, (char*)&_last_remote_seq_number, sizeof(int)) == sizeof(int)){
                     memcpy(data + (current_chunk * MAX_MESSAGE_SIZE), chunk, chunk_size);
                     DEBUG('L', "Chunk %d on %d is been aknowledged (data=%p) (seq=%d), next is %d\n", current_chunk, num_chunks, (void*)(((int*)(data + (current_chunk * MAX_MESSAGE_SIZE)))[0]), _last_remote_seq_number, _last_remote_seq_number - starting);
                     
@@ -158,6 +158,8 @@ bool Connection::Accept(int timeout){
                     &remoteAddr, &remotePort)) == START) //We strongly want only a start flag, otherwise we consider it as flood
                 break;
             else {
+                rmt_adr = remoteAddr;
+                rmt_box = remotePort;
                 DEBUG('L', "Peer sending data without synch -- reset request\n");
                 _last_local_seq_number--;
                 _send_worker(RESET, TEMPO);

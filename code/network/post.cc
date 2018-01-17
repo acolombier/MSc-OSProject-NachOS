@@ -258,7 +258,6 @@ PostOffice::PostalDelivery()
             memcpy(&inTrHdr, buffer + sizeof(MailHeader), sizeof(TransferHeader));
             if (inTrHdr.flags == Connection::END && closeHandler[mailHdr.to]->status() == Connection::ESTABLISHED){
                 while (boxes[mailHdr.to].size())
-                    //~ boxes[mailHdr.to].Get(nullptr, nullptr, nullptr);
                     currentThread->Yield();
                 boxes[mailHdr.to].Put(pktHdr, mailHdr, buffer + sizeof(MailHeader));
                 DEBUG('L', "PostOffice::PostalDelivery -- Connection remotely closed on %d\n", mailHdr.to);
@@ -394,9 +393,18 @@ PostOffice::PacketSent()
 MailBoxAddress PostOffice::assignateBox(){
     return _availableBoxes->Find();
 }
+ 
+bool PostOffice::acquireBox(MailBoxAddress b){
+    if (!_availableBoxes->Test(b)){
+        _availableBoxes->Mark(b);
+        return true;
+    }
+    return false;
+}
 
 void PostOffice::releaseBox(MailBoxAddress b){
-    _availableBoxes->Clear(b);
+    _availableBoxes->Clear(b);    
+    registerCloseHandler(b, nullptr);
 }
 
 void

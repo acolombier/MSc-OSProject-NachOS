@@ -14,6 +14,14 @@
 // The following class defines part of the message header.
 // This is prepended to the message by the RTFM, before the message
 // is sent to the Network.sizeof(struct PacketHeader)
+
+extern "C" {
+    typedef struct remote_peer_struct {
+        NetworkAddress addr;
+        MailBoxAddress port;
+    } remote_peer_t;
+}
+
 class TransferHeader {
   public:
     TransferHeader(char _flags = 0, unsigned int _seq_num = 0):
@@ -69,12 +77,14 @@ class Connection {
      */
     bool Synch(int timeout);
     
-    inline Status status() const { return _status; }
-    
     /*!
      *  \brief Turn the socket in to a client socket, and try to connect the remote peer
      */
     bool Close(int timeout = -1, bool receiving = false);
+    
+    inline Status status() const { return _status; }    
+    inline MailBoxAddress remotePort() const { return rmt_box; }    
+    inline NetworkAddress remoteAddr() const { return rmt_adr; }
 
   private:
     Status _status;
