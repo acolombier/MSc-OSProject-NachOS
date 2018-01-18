@@ -173,7 +173,7 @@ class PostOffice {
     MailBox *boxes;		// Table of mail boxes to hold incoming mail
     int numBoxes;		// Number of mail boxes
     Semaphore *messageAvailable;// V'ed when message has arrived from network
-    Condition *messageSent;	// V'ed when next message can be sent to network
+    Semaphore *messageSent;	// V'ed when next message can be sent to network
     Lock *sendLock;		// Only one outgoing message at a time
     
     char _sending_msg;

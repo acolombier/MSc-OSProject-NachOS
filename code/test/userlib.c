@@ -67,7 +67,6 @@ int atoi(char* s){
 		i *= -1;
 		k--;
 	}
-    PutChar('\n');
 	return k > 0 ? -1 : i;
 }
 

@@ -38,7 +38,8 @@ bool Connection::Send(const char *data, size_t length) {
         _lock->Acquire();
         while (_status == ESTABLISHED){
             char flag;
-            if (_send_worker(0, /*timeout*/-1, chunk, chunk_size) == (int)chunk_size){
+            _last_local_seq_number = i;
+            if (_send_worker(0, TEMPO, chunk, chunk_size) == (int)chunk_size){
                 unsigned int acked_seq;
                 if ((flag = _read_worker(TEMPO, (char*)&acked_seq, 4)) == ACK && acked_seq == _last_local_seq_number){ // Need to be strict, could be a END|ACK
                     DEBUG('L', "Chunk %d is aknowledged (data=%p) (seq=%d)\n", i, (void*)(((int*)chunk)[0]), _last_local_seq_number);
@@ -58,7 +59,7 @@ bool Connection::Send(const char *data, size_t length) {
                 } else if (flag != TIMEOUT){
                     DEBUG('L', "Attempt %d on %d: seq is %d and should be %d\n", attempts+1, MAXREEMISSIONS, acked_seq, _last_local_seq_number);
                 }
-                _last_local_seq_number--;
+                //~ _last_local_seq_number--;
             }
             if (++attempts == MAXREEMISSIONS) {
                 DEBUG('L', "Connection::Send -- too many attempts\n");
@@ -68,7 +69,6 @@ bool Connection::Send(const char *data, size_t length) {
         }
         _lock->Release();
     }
-    _send_worker(ACK, TEMPO);
     return _status == ESTABLISHED;
 }
 
@@ -76,7 +76,7 @@ bool Connection::Receive(char *data, size_t length) {
     
     ASSERT(_status == ESTABLISHED);
     
-    unsigned int attempts = 0, current_chunk = 0, num_chunks = (unsigned int)divRoundUp(length, MAX_MESSAGE_SIZE), starting = _last_remote_seq_number,
+    unsigned int attempts = 0, current_chunk = 0, num_chunks = (unsigned int)divRoundUp(length, MAX_MESSAGE_SIZE), starting = 1,
         chunk_size = MAX_MESSAGE_SIZE;;
     char chunk[MAX_MESSAGE_SIZE];
     
@@ -89,18 +89,14 @@ bool Connection::Receive(char *data, size_t length) {
         if (current_chunk == num_chunks - 1) // If it's the last chunk, the size might be smaller
             chunk_size = length % MAX_MESSAGE_SIZE;
         
-        current_chunk = _last_remote_seq_number - starting;
-        
-        if (current_chunk >= num_chunks){
+        if (current_chunk == num_chunks){
             attempts = 0;
             do {
-                if (_read_worker(TEMPO) != TIMEOUT)
+                if (_read_worker(SYNC_TEMPO) != TIMEOUT)
                     break;
             } while(++attempts == MAXREEMISSIONS);
-            if (attempts == MAXREEMISSIONS)
-                return false;
-            if (_last_remote_seq_number - starting >= num_chunks)
-                break;
+            if (attempts == MAXREEMISSIONS || _last_remote_seq_number == num_chunks)
+                return true;
         }
         
         attempts = 0;
@@ -109,18 +105,21 @@ bool Connection::Receive(char *data, size_t length) {
         _lock->Acquire();
         while (_status == ESTABLISHED){
             char flag;
-            if ((flag = _read_worker(TEMPO, chunk, chunk_size)) == 0){
+            if ((flag = _read_worker(TEMPO, chunk, chunk_size)) == 0){ // No flag. What about if it is an END ? We should close the connection
                 if (_send_worker(ACK, TEMPO, (char*)&_last_remote_seq_number, sizeof(int)) == sizeof(int)){
                     memcpy(data + (current_chunk * MAX_MESSAGE_SIZE), chunk, chunk_size);
                     DEBUG('L', "Chunk %d on %d is been aknowledged (data=%p) (seq=%d), next is %d\n", current_chunk, num_chunks, (void*)(((int*)(data + (current_chunk * MAX_MESSAGE_SIZE)))[0]), _last_remote_seq_number, _last_remote_seq_number - starting);
-                    
+                    current_chunk = _last_remote_seq_number;
                     break;
                 } else
                     DEBUG('L', "Connection::Receive -- ACK -> Timeout\n"); 
             } else if (flag != TIMEOUT){
                 DEBUG('L', "Attempt %d on %d failed: after acking seq is %d\n", attempts+1, MAXREEMISSIONS, _last_remote_seq_number); 
                 _last_remote_seq_number--;
-            }           
+            } else if (current_chunk == num_chunks){
+                _lock->Release();
+                return true;
+            }
             if (++attempts == MAXREEMISSIONS) {
                 DEBUG('L', "Connection::Receive -- too many attempts\n");
                 _lock->Release();
@@ -337,8 +336,8 @@ char Connection::_read_worker(int timeout, char* data, size_t length, NetworkAdd
         memcpy(&inTrHdr, inBuffer, sizeof(TransferHeader));
         memcpy(data, inBuffer + sizeof(TransferHeader), inMailHdr.length < length ? inMailHdr.length : length);
                                                       // `-> inMailHdr.length?
-        _last_remote_seq_number = inTrHdr.seq_num
-        ;
+        _last_remote_seq_number = inTrHdr.seq_num;
+        
         if (remoteAddr)
             *remoteAddr = inPktHdr.from;
         if (remotePort)
