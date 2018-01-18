@@ -208,9 +208,9 @@ PostOffice::PostOffice(NetworkAddress addr, double reliability, int nBoxes):
 
 PostOffice::~PostOffice()
 {
-    for (int i = 0; i < numBoxes; i++)
-        if (closeHandler[i])
-            delete closeHandler[i];
+    //~ for (int i = 0; i < numBoxes; i++)
+        //~ if (closeHandler[i])
+            //~ delete closeHandler[i];
     //~ delete network;
     delete [] boxes;
     delete messageAvailable;

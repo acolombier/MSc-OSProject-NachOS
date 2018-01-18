@@ -5,12 +5,14 @@
 int main()
 {    
     char processes[NB_PROCESS];
-    char *execArgs[] = { "echo", " "};
+    char processname[] = "/userpages0";
+    char arg[] = "";
+    char *execArgs[] = { processname, arg, NULL};
 	
     for (int i = 0; i < NB_PROCESS; i++){
         PutString("Forking process ");PutInt(i);PutString("...\n");
         execArgs[1][0] = '0' + (i % 9);
-        processes[i] = ForkExec("/userpages0", execArgs);
+        processes[i] = ForkExec(processname, execArgs);
         PutString("Forked as ");PutInt(processes[i]);PutString("\n");
     }
 	

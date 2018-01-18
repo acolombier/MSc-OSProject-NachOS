@@ -93,31 +93,37 @@ void TransferTest(int farAddr, int isSender)
     if (isSender > 0) {
         Connection *conn = new Connection(postOffice->assignateBox(), farAddr, 4);
         if (conn->Connect(TEMPO)){
+            Delay(1);
             printf("Server is ready\n");
             int select_data = 3;
             unsigned int size = strlen(pl_list[select_data]);
             printf("Sending the payload %d of size %d, %p\n", select_data, size, (void*)size);
             if (!conn->Send((char*)&size, sizeof(int)))
                 printf("\n\tCouldn't send the size!\n\n");
-            else
+            else {
                 printf("\n\tPayload has%s been sent!\n\n%s\n\n", (conn->Send(pl_list[select_data], size)) ? "" : " NOT", pl_list[select_data]);
+            }
         } else
             printf("Cannot connect: timeout\n");
+        Delay(1);
         delete conn;
     } else {
         Connection *conn = new Connection(4);
         if (conn->Accept()){
             printf("Client is ready\n");
+            Delay(1);
             unsigned int size;
-            while (conn->Receive((char*)&size, sizeof(int))){
+            if (conn->Receive((char*)&size, sizeof(int))){
                 printf("Receiving the payload of size %d, %p\n", size, (void*)size);
                 char* buffer = (char*) malloc((size + 1) * sizeof(char));
-                if (!conn->Receive(buffer, size))
-                    break;
-                buffer[size] = '\0';
-                printf("Got \"%s\"\n", buffer);
+                //~ Delay(1);
+                if (conn->Receive(buffer, size)){
+                    buffer[size] = '\0';
+                    printf("Got \"%s\"\n", buffer);
+                }
             }
         }
+        Delay(1);
         delete conn;
     }
     

@@ -424,6 +424,19 @@ Delay(int seconds)
 }
 
 //----------------------------------------------------------------------
+// Sleep
+// 	Put the UNIX process running Nachos to sleep for x seconds,
+//	to give the user time to start up another invocation of Nachos
+//	in a different UNIX shell.
+//----------------------------------------------------------------------
+
+void 
+Delayms(int ms)
+{
+    (void) usleep((unsigned) ms * 1000);
+}
+
+//----------------------------------------------------------------------
 // Abort
 // 	Quit and drop core.
 //----------------------------------------------------------------------

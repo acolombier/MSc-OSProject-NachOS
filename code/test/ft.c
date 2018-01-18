@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
             PutString(" to ");PutInt(address);PutString(" on port ");PutInt(port);PutString(".");
             break;
         case 2:
-            sd = socket(-1, -1, port);
+            sd = Socket(-1, -1, port);
             return ft_receive(sd);
             break;
         case 3:
@@ -93,8 +93,8 @@ int ft_send(char *filename, OpenSocketId sd) {
 
     /* sending the filename */
     size = strlen(filename) + 1;
-    if (!Send((char *) &size, sizeof(int), sd)) return EXIT_FAILURE; /* y'a eu une couille */
-    if (!Send(filename, size, sd)) return EXIT_FAILURE; /* y'a eu une couille */
+    if (!Write((char *) &size, sizeof(int), sd)) return EXIT_FAILURE; /* y'a eu une couille */
+    if (!Write(filename, size, sd)) return EXIT_FAILURE; /* y'a eu une couille */
 
     do {
         /* reading a part of the file */
@@ -105,8 +105,8 @@ int ft_send(char *filename, OpenSocketId sd) {
         }
 
         /* sending that part */
-        if (!Send((char *) &size, sizeof(int), sd)) return EXIT_FAILURE; /* y'a eu une couille */
-        if (!Send(buffer, size, sd)) return EXIT_FAILURE; /* y'a eu une couille */
+        if (!Write((char *) &size, sizeof(int), sd)) return EXIT_FAILURE; /* y'a eu une couille */
+        if (!Write(buffer, size, sd)) return EXIT_FAILURE; /* y'a eu une couille */
 
     } while (size == SIZE_BUFFER);
 
@@ -121,16 +121,16 @@ int ft_send(char *filename, OpenSocketId sd) {
 int ft_receive(OpenSocketId sd) {
     char *filename = malloc(SIZE_BUFFER), *buffer = malloc(SIZE_BUFFER);
     int size, res;
-    remote_peer_t *client;
+    remote_peer_t client;
 
     //for (;;) {
 
     /* init network connection */
-    Accept(client, 0, sd);
+    Accept(&client, 0, sd);
 
     /* receiving the filename */
-    if (!Receive((char *) &size, sizeof(int), sd)) return EXIT_FAILURE; /* y'a eu une couille */
-    if (!Receive(filename, size, sd)) return EXIT_FAILURE; /* y'a eu une couille */
+    if (!Read((char *) &size, sizeof(int), sd)) return EXIT_FAILURE; /* y'a eu une couille */
+    if (!Read(filename, size, sd)) return EXIT_FAILURE; /* y'a eu une couille */
 
     /* creating/opening the file */
     res = Create(filename, O_RW);
@@ -138,7 +138,7 @@ int ft_receive(OpenSocketId sd) {
         PutString("Can't create \"");PutString(filename);PutString("\".\n");
         return EXIT_FAILURE;
     }
-    file = Open(filename);
+    OpenFileId file = Open(filename);
     if (file == NULL) {
         PutString("The file \"");PutString(filename);PutString("\" does not exist.\n");
         return EXIT_FAILURE;
@@ -146,8 +146,8 @@ int ft_receive(OpenSocketId sd) {
 
     do {
         /* receiving a part of the file */
-        if (!Receive((char *) &size, sizeof(int), sd)) return EXIT_FAILURE; /* y'a eu une couille */
-        if (!Receive(buffer, size, sd)) return EXIT_FAILURE; /* y'a eu une couille */
+        if (!Read((char *) &size, sizeof(int), sd)) return EXIT_FAILURE; /* y'a eu une couille */
+        if (!Read(buffer, size, sd)) return EXIT_FAILURE; /* y'a eu une couille */
 
         /* writing that part */
         res = Write(buffer, size, file);

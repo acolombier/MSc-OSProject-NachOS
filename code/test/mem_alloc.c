@@ -12,8 +12,6 @@ static void cleanup(){
 
 	if(divRoundDown(memory_size, PageSize) == 1)
 	    return;
-
-	    // PutString("Loop\n");
         
 #ifdef VERBOSE_MALLOC                
 	PutString("Cleaning unused tail pages\n");
@@ -22,12 +20,6 @@ static void cleanup(){
 		previous_block = current_block;
 		current_block = (mem_block*)((char*)current_block + current_block->size + 2 * BLOCK_SIZE_WITH_PADDING);
 	}
-	// PutString("Cond 1\n");
-	// PutInt((unsigned int)previous_block);
-	// PutString("Cond 2\n");
-	// PutInt((unsigned int)IS_BLOCK_FREE(previous_block));
-	// PutString("Cond 3\n");
-	// PutInt((unsigned int)previous_block->size + 2 * BLOCK_SIZE_WITH_PADDING >= PageSize);
 	if (previous_block && IS_BLOCK_FREE(previous_block) && previous_block->size + 2 * BLOCK_SIZE_WITH_PADDING >= PageSize){
 		int deallocated_pages = divRoundDown(previous_block->size, PageSize);
         previous_block->size -= deallocated_pages * PageSize;
@@ -39,7 +31,6 @@ static void cleanup(){
 
 void memory_init() {	
 	memory = Sbrk(0);
-	// PutInt((int)memory);
 	if (!Sbrk(1))
 		return;
 	memory_size = PageSize;
@@ -62,7 +53,6 @@ char *memory_alloc(int size){
 
 		mem_block *temporary_block = NULL, *current_block = (mem_block *)memory;
 
-		//Rounding up size in order to keep mem alignment
 		int effective_size = size;
 
 		if (effective_size % MEM_ALIGNMENT)
@@ -75,7 +65,6 @@ char *memory_alloc(int size){
 
 #endif
 
-	//~ fprintf(stdout, "ALLOCATING, %p, %p\n", memory + memory_size, (char*)current_block);
 		while (memory + memory_size > (char*)current_block){
 
 	/* code specific to first fit strategy can be inserted here */
@@ -108,13 +97,11 @@ char *memory_alloc(int size){
 					memset(temporary_block, 0, BLOCK_SIZE_WITH_PADDING);
 					// We update the size of the block from where we took the memory
 					temporary_block->size = current_block->size - effective_size - 2 * BLOCK_SIZE_WITH_PADDING;
-					//~ DUMP_HEADER_TO_FOOTER(temporary_block);
 				} else
 					effective_size = current_block->size;
 
 				current_block->size = effective_size;
 				current_block->flag |= USED_BLOCK;
-				//~ DUMP_HEADER_TO_FOOTER(current_block);
 				mem = (char*)current_block + BLOCK_SIZE_WITH_PADDING;
 				break;
 			} else
@@ -160,19 +147,14 @@ char *memory_alloc(int size){
 
 			((mem_block*)elected_block)->size = effective_size;
 			elected_block->flag |= USED_BLOCK;
-			//~ DUMP_HEADER_TO_FOOTER(elected_block);
 			mem = (char*)elected_block + BLOCK_SIZE_WITH_PADDING;
 		}
 	#endif
 
-	// PutString("Checking block\n");
 		if (mem){
-			// PutString("dumping block\n");
 			if (temporary_block){
-				// PutString("temporary block\n");
 				DUMP_HEADER_TO_FOOTER(temporary_block);
 			}
-			// PutString("selected block\n");
 			DUMP_HEADER_TO_FOOTER(((mem_block*)(mem - BLOCK_SIZE_WITH_PADDING)));
 		} else {
 			int additionnal_pages = divRoundUp(size, PageSize);
@@ -184,9 +166,7 @@ char *memory_alloc(int size){
 				cleanup();
 				return NULL;
 			}
-			// PutString("Updating new free area for ");
-			// PutInt((unsigned int)new_area);
-			// PutString("\n");
+            
 			mem_block* last_block = PREV_FOOTER_BLOCK(new_area);
 			if (IS_BLOCK_FREE(last_block)){
 #ifdef VERBOSE_MALLOC                
@@ -205,7 +185,6 @@ char *memory_alloc(int size){
 			memory_size += additionnal_pages * PageSize;
 		}
 	}
-	// PutString("Going to clean\n");
 	cleanup();
 
     return mem; /* to be modified */
@@ -230,9 +209,7 @@ void memory_free(char *p){
 #endif
 	}
 
-	//~ fprintf(stderr, "Previous: %c\n", meta_previous_block->flag);
     if ((char*)meta_previous_block >= memory && IS_BLOCK_FREE(meta_previous_block)){ // The previous block is free
-		//~ fprintf(stderr, "... is just before the freeing area\n");
 		meta_previous_block = HEADER_FROM_FOOTER(meta_previous_block);
 		meta_previous_block->size += meta_block_to_free->size + 2 * BLOCK_SIZE_WITH_PADDING;
 		DUMP_HEADER_TO_FOOTER(meta_previous_block);
@@ -255,12 +232,8 @@ mem_block* check_memory(){
 
 void compute_checksum(mem_block* b){
 	
-	// PutString("updating checksum\n");
 	mem_block* sibbling_meta[2] = {PREV_FOOTER_BLOCK(b), NEXT_HEADER_BLOCK(b)};
 
-	//~ fprintf(stderr, "Block #%lu, Hash header: %#02x, Hash footer: %#02x\n", ULONG((char*)b - memory), b->flag, FOOTER_FROM_HEADER(b)->flag);
-
-	// PutString("tracking on left\n");
 	// HEADER: 4 bits for own checksum, 3 for sibbling (left) checksum
 	if ((char*)sibbling_meta[LEFT_SIBBLING] > memory){
 		b->flag = sibbling_meta[LEFT_SIBBLING]->size % 7 << 1 | (b->flag & 1);
@@ -271,7 +244,6 @@ void compute_checksum(mem_block* b){
 	}
 	b->flag = b->size % 15 << 4 | (b->flag & 0xF);
 
-	// PutString("tracking on right\n");
 	// FOOTER: 4 bits for own checksum, 3 for sibbling (right) checksum
 	if ((char*)sibbling_meta[RIGHT_SIBBLING] < memory + memory_size){
 		FOOTER_FROM_HEADER(b)->flag = sibbling_meta[RIGHT_SIBBLING]->size % 7 << 1 | (FOOTER_FROM_HEADER(b)->flag & 1);
@@ -282,7 +254,6 @@ void compute_checksum(mem_block* b){
 	}
 	FOOTER_FROM_HEADER(b)->flag = FOOTER_FROM_HEADER(b)->size % 15 << 4 | (FOOTER_FROM_HEADER(b)->flag & 0xF);
 
-	// PutString("Inversing\n");
 	// Inverse sum if allocated
 	if (!IS_BLOCK_FREE(b)){
 		if ((char*)sibbling_meta[RIGHT_SIBBLING] < memory + memory_size)
@@ -293,9 +264,6 @@ void compute_checksum(mem_block* b){
 		b->flag = ((~b->flag) & 0xF0) | (b->flag & 0xF);
 		FOOTER_FROM_HEADER(b)->flag = ((~FOOTER_FROM_HEADER(b)->flag) & 0xF0) | (FOOTER_FROM_HEADER(b)->flag & 0xF);
 	}
-
-	//~ fprintf(stderr, "Block #%lu, Hash header: %#02x, Hash footer: %#02x\n", ULONG((char*)b - memory), b->flag, FOOTER_FROM_HEADER(b)->flag);
-	//~ memory_display_state();
 }
 
 char check_block(mem_block* b){
@@ -316,9 +284,6 @@ char check_block(mem_block* b){
 		computed_extended_hash = (~computed_extended_hash) & 0xF;
 		computed_sibbling_sum = (~computed_sibbling_sum) & 0x7;
 	}
-
-	//~ fprintf(stderr, "Block info: %d, %#02x\n", b->size, b->flag);
-	//~ fprintf(stderr, "Block self check: %d,%d; Block left check: %d,%d; Block right check: %d,%d;\n", computed_extended_hash,extended_hash, computed_sibbling_sum, small_hash_from_left, computed_sibbling_sum, small_hash_from_right);
 
 	return (computed_extended_hash == extended_hash)
 		&& ((char*)sibbling_meta[LEFT_SIBBLING] < memory || computed_sibbling_sum == small_hash_from_left)

@@ -5,7 +5,7 @@
 #include "network.h"
 #include "post.h"
 
-#define TEMPO 10000000
+#define TEMPO 20000000
 #define SYNC_TEMPO 100000
 #define MAXREEMISSIONS 50
 

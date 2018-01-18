@@ -44,17 +44,25 @@ int main(int argc, char** argv){
     if (!strcmp(argv[3], "--string")){
         int str_size = strlen(argv[4]);
         PutString("Sending (");PutInt(str_size);PutString("): ");
-        while (!Write((char*)&str_size, sizeof(int), remotePoint)){
-            if (++global_attempts == MAX_ATTEMPS){
-                PutString("Can't write after ");PutInt(MAX_ATTEMPS);PutString(" attempts\n");
-                return -3;
-            }
+        //~ while (!Write((char*)&str_size, sizeof(int), remotePoint)){
+            //~ if (++global_attempts == MAX_ATTEMPS){
+                //~ PutString("Can't write after ");PutInt(MAX_ATTEMPS);PutString(" attempts\n");
+                //~ return -3;
+            //~ }
+        //~ }
+        //~ while (!Write(argv[4], str_size, remotePoint)){
+            //~ if (++global_attempts == MAX_ATTEMPS){
+                //~ PutString("Can't write after ");PutInt(MAX_ATTEMPS);PutString(" attempts\n");
+                //~ return -3;
+            //~ }
+        //~ }
+        if (!Write((char*)&str_size, sizeof(int), remotePoint)){
+            PutString("Can't write after ");PutInt(MAX_ATTEMPS);PutString(" attempts\n");
+            return -3;
         }
-        while (!Write(argv[4], str_size, remotePoint)){
-            if (++global_attempts == MAX_ATTEMPS){
-                PutString("Can't write after ");PutInt(MAX_ATTEMPS);PutString(" attempts\n");
-                return -3;
-            }
+        if (!Write(argv[4], str_size, remotePoint)){
+            PutString("Can't write after ");PutInt(MAX_ATTEMPS);PutString(" attempts\n");
+            return -3;
         }
         PutString(argv[4]);PutString("\n");
     } else if (!strcmp(argv[3], "--file")){
@@ -70,13 +78,14 @@ int main(int argc, char** argv){
         file_info_t info;
         FileInfo(&info, file);
         char* buffer = malloc(sizeof(char)*info.size), *current = buffer;
+        int remaining = info.size;
         
         if (!buffer){
             PutString("Can't allocate ");PutInt(info.size);PutString(" bytes\n");
             return -3;
         }
         
-        while ((read = Read(current, 100, file))){
+        while ((read = Read(current, remaining < 100 ? remaining : 100, file))){
             if (read < 0){
                 switch (read) {
                 case E_PERM:              
@@ -93,6 +102,7 @@ int main(int argc, char** argv){
             if (read < 100)
                 break;
             current += 100;
+            remaining -= read;
         }
         
         Close(file);

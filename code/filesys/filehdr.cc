@@ -104,7 +104,7 @@ FileHeader::Allocate(BitMap *freeMap, int allocSize)
         if (divRoundDown(i, AllocSector) > _last_extended_sector){
             if (sector_to__lloc < 0){ // Free...
                 freeMap->Clear(dataSectors[_last_extended_sector]);
-                synchDisk->ReadSector(dataSectors[--_last_extended_sector], (char*)sector);
+                synchDisk->ReadSector(dataSectors[++_last_extended_sector], (char*)sector);
                 DEBUG('f', "Free %d a %d-th extended table sector.\n", dataSectors[_last_extended_sector], _last_extended_sector);  
             } else { // Alloc...
                 synchDisk->WriteSector(dataSectors[_last_extended_sector], (char*)sector);

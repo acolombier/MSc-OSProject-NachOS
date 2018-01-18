@@ -369,7 +369,7 @@ ExceptionHandler (ExceptionType which)
                     
                     machine->WriteRegister(2, returnvalue);                        
 
-                    copyStringToMachine(buffer, reg4, reg5);
+                    copyByteToMachine(buffer, reg4, reg5 + 1);
                     delete [] buffer;
                 } 
                     
@@ -406,7 +406,7 @@ ExceptionHandler (ExceptionType which)
                     
                 fd_bundle_t* b = currentThread->space->get_fd(reg6);
                 if (b){   
-                    char* buffer = copyStringFromMachine(reg4, reg5);
+                    char* buffer = (char*)copyByteFromMachine(reg4, reg5);
                                      
                     if (b->type == FileDescriptor){
                         returnvalue = ((OpenFile*)b->object)->Write(buffer, reg5);
@@ -640,8 +640,8 @@ ExceptionHandler (ExceptionType which)
         /*! \todo error code */
         do_UserProcessExit(-1);
     } else if (which == PageFaultException){        
-        char *buffer = new char[64];
-        snprintf(buffer, 64, "SIGSEGV on process %d, thread %d: Address %p (page %d) is invalid.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid(), (void*)reg4, divRoundDown(reg4, PageSize));
+        char *buffer = new char[96];
+        snprintf(buffer, 96, "SIGSEGV on process %d, thread %d: Address %p (page %d) is invalid.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid(), (void*)reg4, divRoundDown(reg4, PageSize));
         
         synchconsole->AcquireOutput();
         synchconsole->PutString(buffer);        
@@ -653,8 +653,8 @@ ExceptionHandler (ExceptionType which)
         /*! \todo error code */
         do_UserProcessExit(-1);
     } else if (which == ReadOnlyException){
-        char *buffer = new char[64];
-        snprintf(buffer, 64, "SIGSEGV on process %d, thread %d: Address %p is readOnly.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid(), (void*)reg4);
+        char *buffer = new char[80];
+        snprintf(buffer, 80, "SIGSEGV on process %d, thread %d: Address %p is readOnly.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid(), (void*)reg4);
         
         synchconsole->AcquireOutput();
         synchconsole->PutString(buffer);        
@@ -677,8 +677,8 @@ ExceptionHandler (ExceptionType which)
         /*! \todo error code */
         do_UserProcessExit(-1);
     } else if (which == AddressErrorException){
-        char *buffer = new char[64];
-        snprintf(buffer, 64, "SIGSEGV on process %d, thread %d: Address %p is not aligned on the size requested %d.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid(), (void*)reg4, reg5);
+        char *buffer = new char[108];
+        snprintf(buffer, 108, "SIGSEGV on process %d, thread %d: Address %p is not aligned on the size requested %d.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid(), (void*)reg4, reg5);
         
         synchconsole->AcquireOutput();
         synchconsole->PutString(buffer);        

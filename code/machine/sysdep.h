@@ -42,6 +42,7 @@ extern void SendToSocket(int sockID, const char *buffer, int packetSize, const c
 extern void Abort();
 extern void Exit(int exitCode);
 extern void Delay(int seconds);
+extern void Delayms(int msseconds);
 
 // Initialize system so that cleanUp routine is called when user hits ctl-C
 extern void CallOnUserAbort(VoidNoArgFunctionPtr cleanUp);
