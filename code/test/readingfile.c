@@ -6,7 +6,7 @@ int main()
    int num;
    FILE *fptr;
 
-   if ((fptr = fopen("test.txt","r")) == NULL){
+   if ((fptr = Open("test.txt","r")) == NULL){
        PutString("Error! opening file");
 
    }
@@ -14,7 +14,7 @@ int main()
    num=GetChar();
 
    PutString("Value of n=%d", num);
-   fclose(fptr);
+   Close(fptr);
 
    return 0;
 }
