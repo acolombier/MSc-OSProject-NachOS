@@ -53,8 +53,8 @@ class BitMap
 
     // These aren't needed until FILESYS, when we will need to read and 
     // write the bitmap to a file
-    void FetchFrom (OpenFile * file);	// fetch contents from disk 
-    void WriteBack (OpenFile * file);	// write contents to disk
+    bool FetchFrom (OpenFile * file);	// fetch contents from disk 
+    bool WriteBack (OpenFile * file);	// write contents to disk
     
     /*!
      * The next two methods are use to do transaction with a bitmap instead than single request

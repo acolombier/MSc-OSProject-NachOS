@@ -16,10 +16,11 @@ char *copyStringFromMachine(int from, unsigned int max_size) {
     return buffer;
 }
 
-void copyStringToMachine(char *string, int to, unsigned max_size) {
+unsigned int copyStringToMachine(char *string, int to, unsigned max_size) {
     for (unsigned int i = 0; i < max_size - 1; i++) {
         machine->WriteMem(to + i, 1, string[i]);
         if (string[i] == '\0')
-            break;
+            return i;
     }
+    return 0;
 }

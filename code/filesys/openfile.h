@@ -20,6 +20,8 @@
 #ifndef OPENFILE_H
 #define OPENFILE_H
 
+#define LocalTS 1514764800
+
 #include "copyright.h"
 #include "utility.h"
 
@@ -69,6 +71,7 @@ class OpenFile {
 
     void Seek(int position); 		// Set the position from which to 
 					// start reading/writing -- UNIX lseek
+    inline int Tell() const { return seekPosition; }; 		
 
     int Read(char *into, int numBytes); // Read/write bytes from the file,
 					// starting at the implicit position.

@@ -2,9 +2,9 @@
 
 #define SIZE 10
 
-void* lock;
-void* free_to_fill;
-void* ready_to_consume;
+sema_t lock;
+sema_t free_to_fill;
+sema_t ready_to_consume;
 
 int in = 0, out = 0;
 char buffer[10];

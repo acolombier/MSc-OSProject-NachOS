@@ -197,16 +197,18 @@ BitMap::Print ()
 //      "file" is the place to read the bitmap from
 //----------------------------------------------------------------------
 
-void
+bool
 BitMap::FetchFrom (OpenFile * file)
 {
-    bool single_mode = !mLock->isHeldByCurrentThread();
+    bool result, single_mode = !mLock->isHeldByCurrentThread();
     
     if (single_mode) mLock->Acquire();
     
-    file->ReadAt ((char *) map, numWords * sizeof (unsigned), 0);
+    result = file->ReadAt ((char *) map, numWords * sizeof (unsigned), 0);
     
     if (single_mode) mLock->Release();
+    
+    return result;
 }
 
 //----------------------------------------------------------------------
@@ -216,14 +218,15 @@ BitMap::FetchFrom (OpenFile * file)
 //      "file" is the place to write the bitmap to
 //----------------------------------------------------------------------
 
-void
+bool
 BitMap::WriteBack (OpenFile * file)
 {
-    bool single_mode = !mLock->isHeldByCurrentThread();
+    bool result, single_mode = !mLock->isHeldByCurrentThread();
     
     if (single_mode) mLock->Acquire();
     
-    file->WriteAt ((char *) map, numWords * sizeof (unsigned), 0);
+    result = file->WriteAt ((char *) map, numWords * sizeof (unsigned), 0);
     
     if (single_mode) mLock->Release();
+    return result;
 }

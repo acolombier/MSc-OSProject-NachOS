@@ -57,6 +57,7 @@
 #include "list.h"
 
 #include <algorithm>
+#include <sys/time.h>
 
 // Sectors containing the file headers for the bitmap of free sectors,
 // and the directory of files.  These file headers are placed in well-known 
@@ -88,7 +89,7 @@ char FileSystem::PARENT_LABEL[3] = "..";
 char FileSystem::DELIMITER[2] = "/";
 
 FileSystem::FileSystem(bool format):
-	fs_lock(new Lock("FS lock"))
+    fs_lock(new Lock("FS lock"))
 { 
     DEBUG('F', "Initializing the file system.\n");
     
@@ -103,6 +104,8 @@ FileSystem::FileSystem(bool format):
         OpenFile* rootDirectory;
         FileHeader *mapHdr = new FileHeader;
         rootHeader = new FileHeader(FileHeader::Directory);
+        rootHeader->setPermission(FileHeader::Read);
+        rootHeader->setPermission(FileHeader::Write);
 
         DEBUG('F', "Formatting the file system.\n");
 
@@ -130,8 +133,10 @@ FileSystem::FileSystem(bool format):
         // while Nachos is running.
 
         freeMapFile = new OpenFile(FreeMapSector);
+        freeMapFile->header()->setPermission(FileHeader::Read);
+        freeMapFile->header()->setPermission(FileHeader::Write);
         
-        rootDirectory = new OpenFile(DirectorySector, rootHeader);
+        rootDirectory = new OpenFile(rootHeader);
 
         // Once we have the files "open", we can write the initial version
         // of each file back to disk.  The directory at this point is completely
@@ -140,10 +145,9 @@ FileSystem::FileSystem(bool format):
         // to hold the file data for the directory and bitmap.
 
         DEBUG('F', "Writing bitmap and directory back to disk.\n");
-        freeMap->WriteBack(freeMapFile);     // flush changes to disk
-        
-        directory->WriteBack(rootDirectory);
-        rootHeader->WriteBack(DirectorySector);        
+        ASSERT(freeMap->WriteBack(freeMapFile));     // flush changes to disk        
+        ASSERT(directory->WriteBack(rootDirectory));
+        rootHeader->WriteBack(DirectorySector);
 
         if (DebugIsEnabled('f')) {
             freeMap->Print();
@@ -153,14 +157,23 @@ FileSystem::FileSystem(bool format):
         }
         delete freeMap;
         delete rootDirectory;
-		delete directory; 
+        delete directory; 
     } else {
     // if we are not formatting the disk, just open the files representing
     // the bitmap and directory; these are left open while Nachos is running
         freeMapFile = new OpenFile(FreeMapSector);
+        freeMapFile->header()->setPermission(FileHeader::Read);
+        freeMapFile->header()->setPermission(FileHeader::Write);
         rootHeader = new FileHeader(FileHeader::Directory);
         rootHeader->FetchFrom(DirectorySector);
     }
+}
+
+FileSystem::~FileSystem(){
+    delete freeMapFile;
+    rootHeader->dec_ref();
+    delete files_table;
+    delete fs_lock;
 }
 
 int FileSystem::walkThrough(OpenFile** directory_file, const char* ro_name){    
@@ -174,38 +187,43 @@ int FileSystem::walkThrough(OpenFile** directory_file, const char* ro_name){
     //~ *directory_header = nullptr; // By default, we did not found the directory
     
     const char *element_name = strtok(name, DELIMITER);
-	
-	while( element_name != NULL ) {			
-		if (directory) delete directory;	
-		directory = new Directory;
-		directory->FetchFrom(*directory_file);
-		
-		if ((sector = directory->Find(element_name)) == -1){
-			delete directory;
-			delete *directory_file;
-			*directory_file = nullptr;
-			return E_NOTFOUND;
-		} else {	
-			delete *directory_file;		
-			*directory_file = new OpenFile(sector);
-			DEBUG('F', "Walking in %d", sector);
-			if ((*directory_file)->type() != (int)FileHeader::Directory){
-				delete directory;
-				DEBUG('F', "The parent is of type %p", (*directory_file)->type());
-				delete *directory_file;
-				*directory_file = nullptr;
-				return E_NOTDIR;
-			} 
-		}	
-		
-		element_name = strtok(NULL, DELIMITER);
-	}
-	
-	if (directory) delete directory;
-	
-	delete [] name;
-	
-	return E_SUCESS;
+    
+    while( element_name != NULL ) {            
+        if (directory) delete directory;    
+        directory = new Directory;
+        if (!directory->FetchFrom(*directory_file)){
+            delete directory;
+            delete *directory_file;
+            *directory_file = nullptr;
+            return E_PERM;
+        }
+        
+        if ((sector = directory->Find(element_name)) == -1){
+            delete directory;
+            delete *directory_file;
+            *directory_file = nullptr;
+            return E_NOTFOUND;
+        } else {    
+            delete *directory_file;        
+            *directory_file = new OpenFile(sector);
+            DEBUG('F', "Walking in %d", sector);
+            if ((*directory_file)->type() != (int)FileHeader::Directory){
+                delete directory;
+                DEBUG('F', "The parent is of type %p", (*directory_file)->type());
+                delete *directory_file;
+                *directory_file = nullptr;
+                return E_NOTDIR;
+            } 
+        }    
+        
+        element_name = strtok(NULL, DELIMITER);
+    }
+    
+    if (directory) delete directory;
+    
+    delete [] name;
+    
+    return E_SUCESS;
 }
 
 //----------------------------------------------------------------------
@@ -238,7 +256,7 @@ int FileSystem::walkThrough(OpenFile** directory_file, const char* ro_name){
 //----------------------------------------------------------------------
 
 
-int FileSystem::Create(const char *name, int initialSize, FileHeader::Type type)
+int FileSystem::Create(const char *name, int initialSize, FileHeader::Type type, int perm)
 {   
     initialSize = (type == FileHeader::File ? initialSize : sizeof(int) * 2);
     
@@ -247,35 +265,36 @@ int FileSystem::Create(const char *name, int initialSize, FileHeader::Type type)
     int success;
     OpenFile *parent_element;
 
-    DEBUG('F', "Creating file %s, size %d\n", name, initialSize);
+    DEBUG('F', "Creating file %s, with octal perm %d\n", name, perm);
     
     char *element_name, *parent_name;
     basename(name, &parent_name, &element_name);
     
+    if ((success = walkThrough(&parent_element, parent_name))){
+        delete [] element_name;
+        delete [] parent_name;
+        return success;
+    }    
     
-    DEBUG('F', "Basename is %s\n", parent_name);
-	if ((success = walkThrough(&parent_element, parent_name))){
-		delete [] element_name;
-		delete [] parent_name;
-		return success;
-	}	
-	
-	int sector;
-    FileHeader *hdr;	
+    int sector;
+    FileHeader *hdr;    
     Directory *directory;
     
-	ASSERT(parent_element->type() == (int)FileHeader::Directory);
-	
-	directory = new Directory;
-	directory->FetchFrom(parent_element);
-	
-    DEBUG('F', "filename is %s\n", element_name);
+    ASSERT(parent_element->type() == (int)FileHeader::Directory);
+    
+    if (!(parent_element->header()->permission() & FileHeader::Write) || !(parent_element->header()->permission() & FileHeader::Read)){
+	delete parent_element;
+	return E_PERM;
+    }
+
+    directory = new Directory;
+    directory->FetchFrom(parent_element);
 
     if (directory->Find(element_name) != -1)
       success = E_EXIST;          // file is already in directory
     else {  
-		BitMap *freeMap = new BitMap(NumSectors);
-		freeMap->FetchFrom(freeMapFile);
+        BitMap *freeMap = new BitMap(NumSectors);
+        freeMap->FetchFrom(freeMapFile);
         sector = freeMap->Find();   // find a sector to hold the file header
         if (sector == -1)       
             success = E_BLOCK;        // no free block for file header 
@@ -283,27 +302,32 @@ int FileSystem::Create(const char *name, int initialSize, FileHeader::Type type)
             success = E_DIRECTORY;    // no space in directory
         else {
             hdr = new FileHeader(type);
+	    hdr->setPermission(FileHeader::Write);
             if (!hdr->Allocate(freeMap, initialSize))
                 success = E_DISK;    // no space on disk for data
             else {   
-                hdr->WriteBack(sector);
-                directory->WriteBack(parent_element);
+                ASSERT(directory->WriteBack(parent_element));
                 parent_element->SaveHeader();
                 
                 success = E_SUCESS;  
                     
                 if (type == FileHeader::Directory){
-					OpenFile* new_file = new OpenFile(sector);
-					Directory* new_directory = new Directory;
-					new_directory->FetchFrom(new_file);
-					new_directory->parent(parent_element->sector());
-					new_directory->WriteBack(new_file);
-					delete new_directory;
-					delete new_file;
-				}
+                    OpenFile* new_file = new OpenFile(hdr);
+                    Directory* new_directory = new Directory;
+                    new_directory->FetchFrom(new_file);
+                    new_directory->parent(parent_element->sector());
+                    new_directory->WriteBack(new_file);
+                    delete new_directory;
+                    delete new_file;
+                }
                 freeMap->WriteBack(freeMapFile);
+                hdr->permission(perm);
+                struct timeval tv;
+                gettimeofday(&tv,NULL);
+                hdr->lastaccess(tv.tv_sec - LocalTS);
+                hdr->WriteBack(sector);
+                hdr->dec_ref();
             }
-			hdr->dec_ref();
         }
         delete freeMap;
     }
@@ -312,11 +336,11 @@ int FileSystem::Create(const char *name, int initialSize, FileHeader::Type type)
     
     delete directory;
     delete [] parent_name;
-	delete parent_element;
-	delete [] element_name;
+    delete parent_element;
+    delete [] element_name;
     
     fs_lock->Release();
-	
+    
     return success;
 }
 
@@ -333,80 +357,88 @@ int FileSystem::Create(const char *name, int initialSize, FileHeader::Type type)
 OpenFile *
 FileSystem::Open(const char *name)
 { 
-	OpenFile *openFile = NULL;
+    OpenFile *openFile = NULL;
 
-	char *element_name, *parent_name;
-	basename(name, &parent_name, &element_name);
+    char *element_name = nullptr, *parent_name = nullptr;
+    basename(name, &parent_name, &element_name);
+    
+    name = (const char*)new char[strlen(parent_name) + strlen(element_name) + 2];
+    snprintf((char*)name, strlen(parent_name) + strlen(element_name) + 2, "%s/%s", strlen(parent_name) > 1 ? parent_name : "", element_name);
 
-	if (walkThrough(&openFile, parent_name)){
-		delete [] element_name;
-		delete [] parent_name;
-		return NULL;
+    if (walkThrough(&openFile, parent_name)){
+        delete [] element_name;
+        delete [] parent_name;
+        return NULL;
+    }
+
+    fs_lock->Acquire();
+
+    int free_block = -1;
+    for (int i = 0; i < MAX_OPEN_FILE; i++){
+        DEBUG('F', "At table %d: %s <?> %s\n", i, files_table[i].pathname, name);
+        
+        if (files_table[i].pathname == nullptr || (files_table[i].file && strcmp(files_table[i].pathname, name) == 0)){
+            free_block = i;
+            break;
+        }
+    }
+    if (files_table[free_block].pathname != nullptr){ // if free block actually corresponds to the same file already opened
+        files_table[free_block].spaceid->push_back(currentThread->space ? currentThread->space->pid() : 0);
+        openFile = new OpenFile(files_table[free_block].sector, files_table[free_block].file);
+        fs_lock->Release();
+        return openFile;
+    }
+
+    if (free_block < 0){
+        fs_lock->Release();
+        DEBUG('F', "No more room to open a file\n");
+        return nullptr;
+    }
+
+    ASSERT(openFile->type() == (int)FileHeader::Directory);
+
+    if (strlen(element_name)){
+        Directory *directory = new Directory;
+        if (!directory->FetchFrom(openFile)){
+	    delete [] element_name;
+	    delete [] parent_name;
+	    delete [] name;
+	    delete openFile;
+	    delete directory;
+	    return NULL;
 	}
-
-	fs_lock->Acquire();
-
-	int free_block = -1;
-	for (int i = 0; i < MAX_OPEN_FILE; i++){
-		DEBUG('F', "At table %d: %p <?> %s/%s\n", i, files_table[i].file, parent_name, element_name);
-		
-		if (files_table[i].pathname == nullptr || (files_table[i].file && strncmp(files_table[i].pathname, parent_name, strlen(parent_name)) == 0 && strcmp(files_table[i].pathname + strlen(parent_name) + 2, element_name) == 0)){
-			free_block = i;
-			break;
-		}
-	}
-	if (files_table[free_block].pathname != nullptr){ // if free block actually corresponds to the same file already opened
-		files_table[free_block].spaceid->push_back(currentThread->space ? currentThread->space->pid() : 0);
-		fs_lock->Release();
-		return new OpenFile(files_table[free_block].sector, files_table[free_block].file);
-	}
-
-	if (free_block < 0){
-		fs_lock->Release();
-		DEBUG('F', "No more room to open a file\n");
-		return nullptr;
-	}
-
-	ASSERT(openFile->type() == (int)FileHeader::Directory);
-
-	if (strlen(element_name)){
-		Directory *directory;
-		directory = new Directory;
-		directory->FetchFrom(openFile);
-		
-		delete openFile;
-		openFile = nullptr;
-			
-		int sector = directory->Find(element_name); 
-		if (sector >= 0){
-			openFile = new OpenFile(sector);    // name was found in directory 
+        
+        delete openFile;
+        openFile = nullptr;
+            
+        int sector = directory->Find(element_name); 
+        if (sector >= 0){
+            openFile = new OpenFile(sector);    // name was found in directory 
             DEBUG('f', "File object is %p\n", openFile);
         }
-		else
-			DEBUG('F', "File %s not found\n", name);
-		delete directory;
-	}
-	
-	if (openFile){
-		files_table[free_block].pathname = new char[strlen(parent_name) + strlen(element_name) + 2];
-		strcpy(files_table[free_block].pathname, parent_name);
-		*(files_table[free_block].pathname + strlen(parent_name)) = '/';
-		strcpy(files_table[free_block].pathname + strlen(parent_name) + 1, element_name);
-        
-		files_table[free_block].spaceid = new std::vector<SpaceId>;
-		files_table[free_block].spaceid->push_back(currentThread->space ? currentThread->space->pid() : 0);
-		files_table[free_block].file = openFile->header();
-		files_table[free_block].sector = openFile->sector();
-        
-        DEBUG('F', "Opening file %s in %s for %d: vector is at %p\n", element_name, strlen(parent_name) ? parent_name : DELIMITER, currentThread->space ? currentThread->space->pid() : -1, files_table[free_block].spaceid);
-		delete [] element_name;
-		delete [] parent_name;
-		
-	}
-
-	fs_lock->Release();
+        else
+            DEBUG('F', "File %s not found\n", name);
+        delete directory;
+    }
     
-	return openFile;                // return NULL if not found
+    if (openFile){    
+        files_table[free_block].pathname = (char *)name;
+        
+        files_table[free_block].spaceid = new std::vector<SpaceId>;
+        files_table[free_block].spaceid->push_back(currentThread->space ? currentThread->space->pid() : 0);
+        files_table[free_block].file = openFile->header();
+        files_table[free_block].sector = openFile->sector();
+        
+        DEBUG('F', "Opening file %s in %s for the process %d\n", element_name, strlen(parent_name) ? parent_name : DELIMITER, currentThread->space ? currentThread->space->pid() : -1, files_table[free_block].spaceid);
+        delete [] element_name;
+        delete [] parent_name;
+        
+    } else
+        delete [] name;
+
+    fs_lock->Release();
+    
+    return openFile;                // return NULL if not found
 }
 
 /*!
@@ -419,11 +451,11 @@ void FileSystem::Close(OpenFile* openFile){
     
     int free_block = -1;
     for (int i = 0; i < MAX_OPEN_FILE; i++){
-            if (files_table[i].file == openFile->header()){		    
+            if (files_table[i].file == openFile->header()){            
                     std::vector<SpaceId>::iterator position = 
-                        std::find(files_table[i].spaceid->begin(), 
-                                  files_table[i].spaceid->end(), 
-                                  currentThread->space ? currentThread->space->pid() : 0);
+            std::find(files_table[i].spaceid->begin(), 
+                  files_table[i].spaceid->end(), 
+                  currentThread->space ? currentThread->space->pid() : 0);
                     ASSERT(position != files_table[i].spaceid->end())
                     files_table[i].spaceid->erase(position);
                     free_block = i;
@@ -431,13 +463,15 @@ void FileSystem::Close(OpenFile* openFile){
             }
     }
     if (free_block != -1 && files_table[free_block].spaceid->size() == 0){
-            delete [] files_table[free_block].pathname;
-            delete files_table[free_block].spaceid;
-            delete openFile;
-            memset(files_table + free_block, 0, sizeof(openfile_t));
+        DEBUG('F', "The file %s has been closed by every one\n", files_table[free_block].pathname);
+        delete [] files_table[free_block].pathname;
+        delete files_table[free_block].spaceid;
+        files_table[free_block].pathname = nullptr;
+        delete openFile;
+        memset(files_table + free_block, 0, sizeof(openfile_t));
     }
 
-    fs_lock->Release();	
+    fs_lock->Release();    
 }
 
 /*!
@@ -450,118 +484,190 @@ void FileSystem::Close(OpenFile* openFile){
  */
 int FileSystem::Move(const char *oldpath, const char *newpath)
 { 
-	if (strcmp(oldpath, newpath) == 0)
-		return E_SUCESS;
-	
-    fs_lock->Acquire();
+    if (strcmp(oldpath, newpath) == 0)
+        return E_SUCESS;
     
-    for (int i = 0; i < MAX_OPEN_FILE; i++){
-		if (files_table[i].pathname && strcmp(files_table[i].pathname, oldpath) == 0){
-			fs_lock->Release();
-			DEBUG('F', "File is currently used by %d process and can't be move\n", files_table[i].spaceid->size());
-			return E_ISUSED;
-		}
-	}
-		
+    fs_lock->Acquire();
+        
     int sector, success;
-    OpenFile *old_parent_file = NULL, *new_parent_file = NULL;
+    OpenFile *old_parent_file = NULL, *new_parent_file = NULL, *moved_file;
 
     char *prefix_name_old, *suffix_name_old;
     char *prefix_name_new, *suffix_name_new;
     
-    basename(oldpath, &prefix_name_old, &suffix_name_old);
+    basename(oldpath, &prefix_name_old, &suffix_name_old);    
+    oldpath = (const char *)new char[strlen(prefix_name_old) + strlen(suffix_name_old) + 2];
+    snprintf((char*)oldpath, strlen(prefix_name_old) + strlen(suffix_name_old) + 2, "%s/%s", strlen(prefix_name_old) > 1 ? prefix_name_old : "", suffix_name_old);
+    
+    for (int i = 0; i < MAX_OPEN_FILE; i++){
+        if (files_table[i].pathname && strcmp(files_table[i].pathname, oldpath) == 0){
+            fs_lock->Release();
+            DEBUG('F', "File is currently used by %d process and can't be move\n", files_table[i].spaceid->size());
+            return E_ISUSED;
+        }
+    }
     
     DEBUG('F', "Move: looking for the old prefix %s\n", prefix_name_old);
-	if ((success = walkThrough(&old_parent_file, prefix_name_old))){
-		delete [] prefix_name_old;
-		delete [] suffix_name_old;
-		
-		fs_lock->Release();
-		return success;
-	}
+    if ((success = walkThrough(&old_parent_file, prefix_name_old))){
+        delete [] prefix_name_old;
+        delete [] suffix_name_old;
+        
+        fs_lock->Release();
+        return success;
+    }
     DEBUG('F', "Move: oldpath found in %s at sector %d\n", prefix_name_old, old_parent_file->sector());
-	
+    
     basename(newpath, &prefix_name_new, &suffix_name_new);
-	
-	if ((success = walkThrough(&new_parent_file, prefix_name_new))){
-		delete [] prefix_name_old;
-		delete [] suffix_name_old;
-		delete [] prefix_name_new;
-		delete [] suffix_name_new;
-		
-		fs_lock->Release();
-		return success;
-	}
+    
+    if ((success = walkThrough(&new_parent_file, prefix_name_new))){
+        delete [] prefix_name_old;
+        delete [] suffix_name_old;
+        delete [] prefix_name_new;
+        delete [] suffix_name_new;
+        
+        fs_lock->Release();
+        return success;
+    }
     DEBUG('F', "Move: newpath found in %s at sector %d\n", prefix_name_new, new_parent_file->sector());
     
-	Directory *old_directory = new Directory, *new_directory = new Directory;
-	old_directory->FetchFrom(old_parent_file);
-	new_directory->FetchFrom(new_parent_file);
-	
-	if ((sector = new_directory->Find(suffix_name_new)) != -1){
-		new_parent_file = new OpenFile(sector);
-		if (new_parent_file->type() == (int)FileHeader::Directory){
-			new_directory->FetchFrom(new_parent_file);
-			delete [] suffix_name_new;
-			suffix_name_new = suffix_name_old;
-			DEBUG('F', "%s is a directory at %d, moving %s inside\n", newpath, new_parent_file->sector(), suffix_name_old);
-		} else {
-			delete [] prefix_name_old;
-			delete [] suffix_name_old;
-			delete [] prefix_name_new;
-			delete [] suffix_name_new;
-			delete old_directory;
-			delete new_directory;
-			DEBUG('F', "File %s exist\n", newpath);
-			
-			fs_lock->Release();
-			return E_EXIST;
-		}			
-	}
-	
-	if ((sector = old_directory->Find(suffix_name_old)) == -1){
-		delete [] prefix_name_old;
-		delete [] suffix_name_old;
-		delete [] prefix_name_new;
-		delete [] suffix_name_new;
-		delete old_directory;
-		delete new_directory;
-		DEBUG('F', "File %s not found\n", oldpath);
-		fs_lock->Release();
-		return E_NOTFOUND;		
-	}
-	
-	DEBUG('F', "Moving file %s in %s\n", oldpath, newpath);
-	
-	DEBUG('F', "Comitting new path\n", oldpath, newpath);
-	fs_lock->Release();
-	if (!new_directory->Add(suffix_name_new, sector))
-		return E_DISK;
-	fs_lock->Acquire();
-	new_directory->WriteBack(new_parent_file);
-	new_parent_file->SaveHeader();
-	delete new_directory;
-	
-	DEBUG('F', "Comitting old path\n", oldpath, newpath);
-	fs_lock->Release();
-	if (!old_directory->Remove(suffix_name_old))
-		return E_DISK;
-	fs_lock->Acquire();
-	old_directory->WriteBack(old_parent_file);
-	old_parent_file->SaveHeader();
+    Directory *old_directory = new Directory, *new_directory = new Directory;
+    if (!old_directory->FetchFrom(old_parent_file)){
 	delete old_directory;
 	
 	delete old_parent_file;
 	delete new_parent_file;
-		
+	    
 	delete [] prefix_name_old;
 	delete [] prefix_name_new;
 	if (suffix_name_old != suffix_name_new) delete [] suffix_name_old;
 	delete [] suffix_name_new;
 	
-	
+	delete [] oldpath;
+    
 	fs_lock->Release();
+	return E_PERM;
+    }
+    if (!new_directory->FetchFrom(new_parent_file)){
+	delete new_directory;
+	delete old_directory;
 	
+	delete old_parent_file;
+	delete new_parent_file;
+	    
+	delete [] prefix_name_old;
+	delete [] prefix_name_new;
+	delete [] suffix_name_old;
+	delete [] suffix_name_new;
+	
+	delete [] oldpath;
+    
+	fs_lock->Release();
+	return E_PERM;
+    }
+    
+    if ((sector = new_directory->Find(suffix_name_new)) != -1){
+        new_parent_file = new OpenFile(sector);
+        if (new_parent_file->type() == (int)FileHeader::Directory){
+            if (!new_directory->FetchFrom(new_parent_file)){
+		delete new_directory;
+		delete old_directory;
+		
+		delete old_parent_file;
+		delete new_parent_file;
+		    
+		delete [] prefix_name_old;
+		delete [] prefix_name_new;
+		delete [] suffix_name_old;
+		delete [] suffix_name_new;
+		
+		delete [] oldpath;
+	    
+		fs_lock->Release();
+		return E_PERM;
+	    }
+            delete [] suffix_name_new;
+            suffix_name_new = suffix_name_old;
+            DEBUG('F', "%s is a directory at %d, moving %s inside\n", newpath, new_parent_file->sector(), suffix_name_old);
+        } else {
+            delete [] prefix_name_old;
+            delete [] suffix_name_old;
+            delete [] prefix_name_new;
+            delete [] suffix_name_new;
+            delete old_directory;
+            delete new_directory;
+            DEBUG('F', "File %s exist\n", newpath);
+            
+            fs_lock->Release();
+            return E_EXIST;
+        }            
+    }
+    
+    if ((sector = old_directory->Find(suffix_name_old)) == -1){
+        delete [] prefix_name_old;
+        delete [] suffix_name_old;
+        delete [] prefix_name_new;
+        delete [] suffix_name_new;
+        delete old_directory;
+        delete new_directory;
+        DEBUG('F', "File %s not found\n", oldpath);
+        fs_lock->Release();
+        return E_NOTFOUND;        
+    }
+    moved_file = new OpenFile(sector);
+    if (!(moved_file->header()->permission() & FileHeader::Write)){
+        DEBUG('F', "File %s is read only\n", oldpath);
+	delete old_directory;
+	delete new_directory;
+	delete moved_file;
+	
+	delete old_parent_file;
+	delete new_parent_file;
+	    
+	delete [] prefix_name_old;
+	delete [] prefix_name_new;
+	if (suffix_name_old != suffix_name_new) delete [] suffix_name_old;
+	delete [] suffix_name_new;
+	
+	delete [] oldpath;
+    
+	fs_lock->Release();
+	return E_PERM;
+    }    
+    delete moved_file;
+    
+    DEBUG('F', "Moving file %s in %s\n", oldpath, newpath);
+    
+    DEBUG('F', "Comitting new path\n", oldpath, newpath);
+    fs_lock->Release();
+    if (!new_directory->Add(suffix_name_new, sector))
+        return E_DISK;
+    fs_lock->Acquire();
+    new_directory->WriteBack(new_parent_file);
+    new_parent_file->SaveHeader();
+    delete new_directory;
+    
+    DEBUG('F', "Comitting old path\n", oldpath, newpath);
+    fs_lock->Release();
+    if (!old_directory->Remove(suffix_name_old))
+        return E_DISK;
+    fs_lock->Acquire();
+    old_directory->WriteBack(old_parent_file);
+    old_parent_file->SaveHeader();
+    delete old_directory;
+    
+    delete old_parent_file;
+    delete new_parent_file;
+        
+    delete [] prefix_name_old;
+    delete [] prefix_name_new;
+    if (suffix_name_old != suffix_name_new) delete [] suffix_name_old;
+    delete [] suffix_name_new;
+    
+    delete [] oldpath;
+    
+    
+    fs_lock->Release();
+    
     return E_SUCESS;
 }
 
@@ -585,122 +691,136 @@ FileSystem::Remove(const char *name)
     int sector;
     OpenFile *openFile = NULL;
     
-	DEBUG('F', "Deleting file %s\n", name);
+    DEBUG('F', "Deleting file %s\n", name);
     fs_lock->Acquire();
     
-    for (int i = 0; i < MAX_OPEN_FILE; i++){
-		if (files_table[i].pathname && strcmp(files_table[i].pathname, name) == 0){
-			fs_lock->Release();
-			DEBUG('F', "File is currently used by %d process and can't be deleted\n", files_table[i].spaceid->size());
-			return false;
-		}
-	}
-
     char *element_name = nullptr, *parent_name = nullptr;
     basename(name, &parent_name, &element_name);
     
-	if (walkThrough(&openFile, parent_name)){
-		delete [] element_name;
+    name = (const char*)new char[strlen(parent_name) + strlen(element_name) + 2];
+    snprintf((char*)name, strlen(parent_name) + strlen(element_name) + 2, "%s/%s", strlen(parent_name) > 1 ? parent_name : "", element_name);
     
-		fs_lock->Release();
-		DEBUG('F', "Directory %s not found\n", parent_name);
-		delete [] parent_name;
-		return false;
-	}
-	
-	ASSERT(openFile->type() == (int)FileHeader::Directory);
-	
-	Directory *directory = new Directory;
-	directory->FetchFrom(openFile);
-	
-	DEBUG('F', "Deleting file %s in %s\n", element_name, parent_name);
-	sector = directory->Find(element_name); 
-	bool success = false;
-	delete [] parent_name;
-	
-	if (sector != -1){
-		FileHeader* fileHdr = new FileHeader;
-		fileHdr->FetchFrom(sector);
-		
-		if (fileHdr->type() == FileHeader::Directory){
-			OpenFile* curr_file = new OpenFile(sector);
-			Directory* curr_dir = new Directory;
-			curr_dir->FetchFrom(curr_file);
-			if (curr_dir->count() > 2){	
-				delete [] element_name;
-				delete directory;
-				delete curr_dir;
-				delete curr_file;
-				DEBUG('F', "Directory %s not empty\n", name);
-				fs_lock->Release();
-				return false;
-			}
-			delete curr_dir;
-			delete curr_file;
-		}
-
-		BitMap* freeMap = new BitMap(NumSectors);
-		freeMap->FetchFrom(freeMapFile);
-		
-		fileHdr->Deallocate(freeMap);       // remove data blocks
-		freeMap->Clear(sector);         // remove header block
-		directory->Remove(element_name, freeMap);
-		freeMap->WriteBack(freeMapFile);        // flush to disk
-		directory->WriteBack(openFile);        // flush to disk
-		openFile->SaveHeader();
-		
-		fileHdr->dec_ref(); //implicit delete
-		delete freeMap;
-		success = true;
-	}  
-	else
-		DEBUG('F', "File %s not found\n", name);
-		
-	delete directory;	
+    for (int i = 0; i < MAX_OPEN_FILE; i++){
+        if (files_table[i].pathname && strcmp(files_table[i].pathname, name) == 0){
+            fs_lock->Release();
+            DEBUG('F', "File is currently used by %d process and can't be deleted\n", files_table[i].spaceid->size());
+            return false;
+        }
+    }
+    
+    if (walkThrough(&openFile, parent_name)){
+        delete [] element_name;
+    
+        fs_lock->Release();
+        DEBUG('F', "Directory %s cannot be accessed\n", parent_name);
+        delete [] parent_name;
+        delete [] name;
+        return false;
+    }
+    
+    ASSERT(openFile->type() == (int)FileHeader::Directory);
+    
+    Directory *directory = new Directory;
+    if (!directory->FetchFrom(openFile) || !(openFile->header()->permission() & FileHeader::Write)){
+	DEBUG('F', "Parent directory %s can't be written\n", parent_name);
+	delete directory;    
 	delete openFile;
-	
-	fs_lock->Release();
+	delete [] parent_name;
+	return false;
+    }
+    
+    sector = directory->Find(element_name); 
+    bool success = false;
+    delete [] parent_name;
+    
+    if (sector != -1){
+        FileHeader* fileHdr = new FileHeader;
+        fileHdr->FetchFrom(sector);
+	if (fileHdr->permission() & FileHeader::Write){
+	    
+	    if (fileHdr->type() == FileHeader::Directory){
+		OpenFile* curr_file = new OpenFile(sector);
+		Directory* curr_dir = new Directory;
+		curr_dir->FetchFrom(curr_file);
+		if (curr_dir->count() > 2){    
+		    delete [] element_name;
+		    delete directory;
+		    delete curr_dir;
+		    delete curr_file;
+		    delete name;
+		    DEBUG('F', "Directory %s not empty\n", name);
+		    fs_lock->Release();
+		    return false;
+		}
+		delete curr_dir;
+		delete curr_file;
+	    }
+
+	    BitMap* freeMap = new BitMap(NumSectors);
+	    freeMap->FetchFrom(freeMapFile);
+	    
+	    fileHdr->Deallocate(freeMap);       // remove data blocks
+	    freeMap->Clear(sector);         // remove header block
+	    directory->Remove(element_name, freeMap);
+	    freeMap->WriteBack(freeMapFile);        // flush to disk
+	    directory->WriteBack(openFile);        // flush to disk
+	    openFile->SaveHeader();
+	    
+	    fileHdr->dec_ref(); //implicit delete
+	    delete freeMap;
+	    success = true;
+	} else
+	    DEBUG('F', "File %s is read only.\n", name);	    
+    }  
+    else
+        DEBUG('F', "File %s not found\n", name);
+        
+    delete directory;    
+    delete openFile;
+    delete [] name;
+    
+    fs_lock->Release();
     return success;
 } 
 
-void FileSystem::basename(const char* ro_name, char**const  prefix, char**const  suffix) {	    
+void FileSystem::basename(const char* ro_name, char**const  prefix, char**const  suffix) {        
     char* name = new char[strlen(ro_name) + 1];
     strcpy(name, ro_name);
     
     const char* splitter = strrchr(name, DELIMITER[0]);
     
-	unsigned int splitter_pos = splitter - name;
-	
-	while (splitter_pos == strlen(name) - 1){ //Removing the delimiter sign at the end
-		name[strlen(name) - 1] = '\0';
-		splitter = strrchr(name, DELIMITER[0]);
-		splitter_pos = splitter - name;
-	}
-	
+    unsigned int splitter_pos = splitter - name;
+    
+    while (splitter_pos == strlen(name) - 1){ //Removing the delimiter sign at the end
+        name[strlen(name) - 1] = '\0';
+        splitter = strrchr(name, DELIMITER[0]);
+        splitter_pos = splitter - name;
+    }
+    
     if (splitter){
-		*prefix = new char[splitter_pos + 1];
-		*suffix = new char[strlen(name) - splitter_pos];
-		strncpy(*prefix, name, splitter_pos);
-		strncpy(*suffix, splitter + 1, strlen(name) - splitter_pos);
-		(*prefix)[splitter_pos] = '\0';
-		(*suffix)[strlen(name) - splitter_pos - 1] = '\0';
-	} else {
-		*prefix = new char[2];
-		strcpy(*prefix, DELIMITER);
-		*suffix = new char[strlen(name) + 1];
-		strcpy(*suffix, name);
-		(*suffix)[strlen(name)] = '\0';
-	}
-	
-	delete [] name;
+        *prefix = new char[splitter_pos + 1];
+        *suffix = new char[strlen(name) - splitter_pos];
+        strncpy(*prefix, name, splitter_pos);
+        strncpy(*suffix, splitter + 1, strlen(name) - splitter_pos);
+        (*prefix)[splitter_pos] = '\0';
+        (*suffix)[strlen(name) - splitter_pos - 1] = '\0';
+    } else {
+        *prefix = new char[2];
+        strcpy(*prefix, DELIMITER);
+        *suffix = new char[strlen(name) + 1];
+        strcpy(*suffix, name);
+        (*suffix)[strlen(name)] = '\0';
+    }
+    
+    delete [] name;
 }
 
 int FileSystem::freeSector(){
-	int sector = 0;
-	BitMap* bm = bitmapTransaction();
-	sector = bm->NumClear();
-	bitmapCommit(bm);
-	return sector;
+    int sector = 0;
+    BitMap* bm = bitmapTransaction();
+    sector = bm->NumClear();
+    bitmapCommit(bm);
+    return sector;
 }
 
 //----------------------------------------------------------------------
@@ -713,34 +833,34 @@ FileSystem::List()
 {
     Directory *directory = new Directory;
     
-	OpenFile* rootDirectory = new OpenFile(DirectorySector, rootHeader);
+    OpenFile* rootDirectory = new OpenFile(DirectorySector, rootHeader);
 
     directory->FetchFrom(rootDirectory);
     directory->List();
         
-	delete rootDirectory;
+    delete rootDirectory;
     delete directory;
 }
 
 BitMap* FileSystem::bitmapTransaction(){
-	fs_lock->Acquire();
-	BitMap* freeMap = new BitMap(NumSectors);
-	freeMap->FetchFrom(freeMapFile);
-	freeMap->lock();
-	return freeMap;
+    fs_lock->Acquire();
+    BitMap* freeMap = new BitMap(NumSectors);
+    freeMap->FetchFrom(freeMapFile);
+    freeMap->lock();
+    return freeMap;
 }
 
 bool FileSystem::bitmapCommit(BitMap* freeMap){
-	if (!fs_lock->isHeldByCurrentThread())
-		return false;
-	if (!freeMap->unlock()){
-		DEBUG('F', "%s#%d from process %d has provided has commited a wrong transaction. Cancelling its request...\n", currentThread->getName(), currentThread->tid(), currentThread->space->pid());
-		fs_lock->Release();
-		return false;
-	}
-	freeMap->WriteBack(freeMapFile);
-	fs_lock->Release();
-	return true;
+    if (!fs_lock->isHeldByCurrentThread())
+        return false;
+    if (!freeMap->unlock()){
+        DEBUG('F', "%s#%d from process %d has provided has commited a wrong transaction. Cancelling its request...\n", currentThread->getName(), currentThread->tid(), currentThread->space->pid());
+        fs_lock->Release();
+        return false;
+    }
+    freeMap->WriteBack(freeMapFile);
+    fs_lock->Release();
+    return true;
 }
 //----------------------------------------------------------------------
 // FileSystem::Print
@@ -759,7 +879,7 @@ FileSystem::Print()
     FileHeader *dirHdr = new FileHeader;
     BitMap *freeMap = new BitMap(NumSectors);
     Directory *directory = new Directory;    
-	OpenFile* rootDirectory = new OpenFile(DirectorySector, rootHeader);
+    OpenFile* rootDirectory = new OpenFile(DirectorySector, rootHeader);
 
     printf("Bit map file header:\n");
     bitHdr->FetchFrom(FreeMapSector);

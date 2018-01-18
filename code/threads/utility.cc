@@ -92,6 +92,7 @@ DEBUG (char flag, const char *format, ...)
 	  // You will get an unused variable message here -- ignore it.
 	  switch (LOWER(flag)){
 		case 'l':
+		case 'e':
 		  fprintf(stderr, !IS_UPPER(flag) ? KRED : KRED_BLD);
 		  break;
 		case 't':
@@ -116,6 +117,7 @@ DEBUG (char flag, const char *format, ...)
 		case 'c':
 		case 'd':
 		case 'f':
+		case 'e':
 		  fprintf(stderr, EOL);
 		  break;
 	  }

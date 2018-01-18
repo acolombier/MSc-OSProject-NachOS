@@ -18,58 +18,69 @@
 #include "system.h"
 #include "synch.h"
 
+#include <exception>
+
 /*!
  * \def UserStackSize Used macro for stack allocation
  */
-#define UserStackSize		512	// increase this as necessary!
+#define UserStackSize        768    // increase this as necessary!
 
 class Thread;
 
 extern "C" {
-	typedef struct thread_bundle_struct {
-		Thread* object;
-		int result_code;
-		tid_t tid;
-		unsigned int stack_first_page;
-		unsigned int ref_cnt;
-	} thread_bundle_t;
-	
-	typedef struct addrspace_bundle_struct {
-		AddrSpace* object;
-		int result_code;
-		SpaceId pid;
-		unsigned int ref_cnt;
-	} addrspace_bundle_t;
-	
-	typedef struct fd_bundle_struct {
-		char* pathname;
-		void* object;
+    typedef struct thread_bundle_struct {
+        Thread* object;
+        int result_code;
+        tid_t tid;
+        unsigned int ref_cnt;
+    } thread_bundle_t;
+    
+    typedef struct addrspace_bundle_struct {
+        AddrSpace* object;
+        int result_code;
+        SpaceId pid;
+        unsigned int ref_cnt;
+    } addrspace_bundle_t;
+    
+    typedef struct fd_bundle_struct {
+        char* pathname;
+        void* object;
         /*int type; if we want to handle socket on the same way */
         int fd;
     } fd_bundle_t;
 }
 
+class PermissionException : public std::exception {
+};
+
+class ExecutableException : public std::exception {
+};
+
 class AddrSpace
 {
   public:
-    AddrSpace (OpenFile * executable);	// Create an address space,
+    AddrSpace (OpenFile * executable);    // Create an address space,
     // initializing it with the program
     // stored in the file "executable"
-    ~AddrSpace ();		// De-allocate an address space
+    ~AddrSpace ();        // De-allocate an address space
 
-    void InitRegisters ();	// Initialize user-level CPU registers,
+    void InitRegisters ();    // Initialize user-level CPU registers,
     // before jumping to user code
 
-    void SaveState ();		// Save/restore address space-specific
-    void RestoreState ();	// info on a context switch
+    void SaveState ();        // Save/restore address space-specific
+    void RestoreState ();    // info on a context switch
 
     Thread* getThread(unsigned int tid);
-	inline List* threadList() { return mThreadList; }
+    inline List* threadList() { return mThreadList; }
 
     void appendThread(Thread*);
     void removeThread(Thread*, int result_code);
 
-    int Sbrk(unsigned int n);
+    /*!
+     * Modify the number of page allocated between the code and the stack
+     * \param n the number used for the brk shift
+     */
+    int Sbrk(int n);
     
     unsigned int countThread() const;
     
@@ -132,9 +143,10 @@ class AddrSpace
     void del_fd(int fd);
 
   private:
-    TranslationEntry * pageTable;	// Assume linear page table translation
+    TranslationEntry * pageTable;    // Assume linear page table translation
+    int stackUsage[MAX_THREADS];
     // for now!
-    unsigned int numPages;	// Number of pages in the virtual
+    unsigned int numPages;    // Number of pages in the virtual
     tid_t lastTID;
     int lastFD;
     List* mThreadList;
