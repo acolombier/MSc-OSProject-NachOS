@@ -16,11 +16,11 @@ int main(int argc, char *argv[]) {
     while (mode < 3 && (argc - arg > 1 || (mode != 1 && argc - arg > 0))) {
         if (!strcmp(argv[arg], "-s") || !strcmp(argv[arg], "--send")) {
             if (mode != 0) {
-                mode = 3;
+                mode = 4;
                 PutString("Incompatible options: can't send and receive at the same time.\n");
             }
             if (arg >= argc - 2) {
-                mode = 3;
+                mode = 4;
                 PutString("Not enough arguments: missing destination or file.\n");
             }
             arg++;
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
 
         } else if (!strcmp(argv[arg], "-r") || !strcmp(argv[arg], "--receive")) {
             if (mode != 0) {
-                mode = 3;
+                mode = 4;
                 PutString("Incompatible options: can't send and receive at the same time.\n");
             }
             mode = 2;
@@ -37,15 +37,17 @@ int main(int argc, char *argv[]) {
 
         } else if (!strcmp(argv[arg], "-p") || !strcmp(argv[arg], "--port")) {
             if (arg >= argc - 1) {
-                mode = 3;
+                mode = 4;
                 PutString("Not enough arguments: missing port.\n");
             }
             arg++;
             port = atoi(argv[arg]);
             arg++;
 
-        } else {
+        } else if (!strcmp(argv[arg], "-h") || !strcmp(argv[arg], "--help")) {
             mode = 3;
+        } else {
+            mode = 4;
             PutString("Unknown option \"");PutString(argv[arg]);PutString("\".\n");
         }
     }
@@ -61,10 +63,13 @@ int main(int argc, char *argv[]) {
             sd = socket(-1, -1, port);
             return ft_receive(sd);
             break;
-        default:
+        case 3:
             PutString("\n       ");PutString(argv[0]);PutString(" - files transfer utility\n\nUSAGE\n       ");
             PutString(argv[0]);PutString(" [OPTION]... FILE\n       ");PutString(argv[0]);
             PutString(" [OPTION]...\n\nOPTIONS\n       -s, --send  ADDRESS\n              send FILE to a files transfer receiver at ADDRESS\n\n       -r, --receive\n              receive file(s) from files transfer sender, does not accept FILE\n              as an argument\n\n       -p, --port  PORT\n              use PORT instead of default port\n");
+            break;
+        default:
+            PutString("Try '");PutString(argv[0]);PutString(" --help' for more information.\n");
     }
 
     return EXIT_SUCCESS;
