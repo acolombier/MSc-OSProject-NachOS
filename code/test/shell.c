@@ -13,7 +13,7 @@ int main (){
         
 		PutString("\x1B[32mnach_shell\x1B[31m>\033[0m ");
 		GetString(buffer, 512);
-    
+		
         char forking_mode = 0;
         result_code = 0;
         
@@ -29,9 +29,13 @@ int main (){
             continue;
         }
         *args = buffer;
-        
-		if (strcmp("exit", buffer) == 0)
+	
+	if (strcmp("exit", buffer) == 0)
             break;
+	else if (strcmp("\a",buffer)==0){ 
+	    PutString("*** ding ***\n");
+	    break;
+	}
         else if (strcmp("join", buffer) == 0 && argc == 2){
             if (!Join(atoi(args[1]), &result_code)) PutString("Can't join the process\n");
             if (result_code) {PutString("Command exit with the code ");PutInt(result_code);PutChar('\n');}
