@@ -180,7 +180,7 @@ PostOffice::PostOffice(NetworkAddress addr, double reliability, int nBoxes):
 {
 // First, initialize the synchronization with the interrupt handlers
     messageAvailable = new Semaphore("message available", 0);
-    messageSent = new Condition("message sent");
+    messageSent = new Semaphore("message sent", 0);
     sendLock = new Lock("message send lock");
     
     memset(closeHandler, 0, sizeof(Connection*) * nBoxes);
@@ -307,21 +307,9 @@ PostOffice::Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data, int 
 
     sendLock->Acquire();   		// only one message can be sent
 					// to the network at any one time
-    
-    po_timeout_t* tmb = new po_timeout_t;
-    tmb->packet_number = _last_item_cnt;
-    tmb->that = this;
-
-    if (timeout > -1)
-        interrupt->Schedule(TimeoutHandler, (int) tmb, timeout, IntType::TimerInt);
-
-    _sending_msg = 1;
     network->Send(pktHdr, buffer);
     
-    while (_sending_msg == 1)
-        messageSent->Wait (sendLock);	// wait until list isn't empty
-
-    _last_item_cnt++;
+    messageSent->P();	// wait until list isn't empty
 					// ok to send the next message
     sendLock->Release();
 
@@ -384,10 +372,7 @@ PostOffice::IncomingPacket()
 void
 PostOffice::PacketSent()
 {
-    sendLock->Acquire();
-    _sending_msg = 0;
-    messageSent->Signal(sendLock);    
-    sendLock->Release();
+    messageSent->V(); 
 }
  
 MailBoxAddress PostOffice::assignateBox(){
@@ -407,27 +392,6 @@ void PostOffice::releaseBox(MailBoxAddress b){
     registerCloseHandler(b, nullptr);
 }
 
-void
-PostOffice::Unlock ()
-{
-    sendLock->Acquire();
-    DEBUG('N', "PostOffice::Send -- Timeout\n");
-    _sending_msg = -1;
-    messageSent->Signal(sendLock);
-    sendLock->Release();
-}
-
 void PostOffice::registerCloseHandler(MailBoxAddress box, Connection* conn){
     closeHandler[box] = conn;
 }
-
-void
-PostOffice::TimeoutHandler (int tmb_ptr)
-{
-    po_timeout_t* tmb = (po_timeout_t*)tmb_ptr;
-    
-    if (tmb->packet_number == tmb->that->lastPacket())
-        tmb->that->Unlock ();
-    delete tmb;    
-}
-

@@ -50,12 +50,13 @@ int main(int argc, char** argv){
                 return -3;
             }
         }
-        while (!Write(argv[4], str_size + 1, remotePoint)){
+        while (!Write(argv[4], str_size, remotePoint)){
             if (++global_attempts == MAX_ATTEMPS){
                 PutString("Can't write after ");PutInt(MAX_ATTEMPS);PutString(" attempts\n");
                 return -3;
             }
         }
+        PutString(argv[4]);PutString("\n");
     } else if (!strcmp(argv[3], "--file")){
         OpenFileId file = Open(argv[4]);
     
@@ -122,7 +123,7 @@ int main(int argc, char** argv){
                 return -3;
         }
         PutString("Received (");PutInt(str_size);PutString("): ");
-        char* buffer = (char*)malloc(str_size);
+        char* buffer = (char*)malloc(str_size + 1);
         if (!buffer){
             PutString("Can't allocate ");PutInt(str_size);PutString(" bytes\n");
             return -3;

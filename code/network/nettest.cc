@@ -94,7 +94,7 @@ void TransferTest(int farAddr, int isSender)
         Connection *conn = new Connection(postOffice->assignateBox(), farAddr, 4);
         if (conn->Connect(TEMPO)){
             printf("Server is ready\n");
-            int select_data = 1;
+            int select_data = 3;
             unsigned int size = strlen(pl_list[select_data]);
             printf("Sending the payload %d of size %d, %p\n", select_data, size, (void*)size);
             if (!conn->Send((char*)&size, sizeof(int)))

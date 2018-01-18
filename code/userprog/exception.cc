@@ -362,6 +362,7 @@ ExceptionHandler (ExceptionType which)
                         DEBUG('c', "Reading file: result %d.\n", returnvalue);
                     }
                     else if (b->type == SocketDescriptor && ((Connection*)b->object)->status() == Connection::ESTABLISHED){
+                        DEBUG('c', "Reading socket: receiving %d.\n", reg5);
                         returnvalue = ((Connection*)b->object)->Receive(buffer, reg5);
                         DEBUG('c', "Reading socket: result %d.\n", returnvalue);
                     } 
@@ -572,11 +573,11 @@ ExceptionHandler (ExceptionType which)
                     break;
                     
                 fd_bundle_t* b = new fd_bundle_t;
-                b->pathname = (char*)reg4;
+                b->pathname = nullptr;
                 b->object = (reg4 == -1 && reg5 == -1) ? new Connection(box) : new Connection(box, reg4, reg5);
                 b->type = SocketDescriptor;
                 
-                if (b->object == NULL){
+                if (b->object == nullptr){
                     DEBUG('c', "Unable to open socket %d:%d\n", reg4, reg5);
                     delete b;
                     machine->WriteRegister(2, 0);                    
