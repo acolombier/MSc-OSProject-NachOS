@@ -2,11 +2,11 @@
 
 int main()
 {
-   FILE *fp1 = fopen("file1.txt", "r");
-   FILE *fp2 = fopen("file2.txt", "r");
+   FILE *fp1 = Open("file1.txt", "r");
+   FILE *fp2 = Open("file2.txt", "r");
 
 
-   FILE *fp3 = fopen("file3.txt", "w");
+   FILE *fp3 = Open("file3.txt", "w");
    char c;
 
    if (fp1 == NULL || fp2 == NULL || fp3 == NULL)
@@ -23,8 +23,8 @@ int main()
 
    PutString("Merged file1.txt and file2.txt into file3.txt");
 
-   fclose(fp1);
-   fclose(fp2);
-   fclose(fp3);
+   Close(fp1);
+   Cclose(fp2);
+   Close(fp3);
    return 0;
 }
