@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
     int address, port = 2, mode = 0, arg = 1;
     OpenSocketId sd;
 
-    while (mode < 3 && argc - arg > 0 || (sending && argc - arg > 1)) {
+    while (mode < 3 && (argc - arg > 1 || (mode != 1 && argc - arg > 0))) {
         if (!strcmp(argv[arg], "-s") || !strcmp(argv[arg], "--send")) {
             if (mode != 0) {
                 mode = 3;
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
 
         } else {
             mode = 3;
-            PutString("Unknown option \"");PutString(argv[arg]);PutString(".\n");
+            PutString("Unknown option \"");PutString(argv[arg]);PutString("\".\n");
         }
     }
 
@@ -54,11 +54,17 @@ int main(int argc, char *argv[]) {
         case 1:
             sd = Socket(address, port, -1);
             return ft_send(argv[arg], sd);
+            PutString("Sending ");PutString(argv[arg]);
+            PutString(" to ");PutInt(address);PutString(" on port ");PutInt(port);PutString(".");
+            break;
         case 2:
             sd = socket(-1, -1, port);
             return ft_receive(sd);
+            break;
         default:
-            /* TODO: print some doc */
+            PutString("\n       ");PutString(argv[0]);PutString(" - files transfer utility\n\nUSAGE\n       ");
+            PutString(argv[0]);PutString(" [OPTION]... FILE\n       ");PutString(argv[0]);
+            PutString(" [OPTION]...\n\nOPTIONS\n       -s, --send  ADDRESS\n              send FILE to a files transfer receiver at ADDRESS\n\n       -r, --receive\n              receive file(s) from files transfer sender, does not accept FILE\n              as an argument\n\n       -p, --port  PORT\n              use PORT instead of default port\n");
     }
 
     return EXIT_SUCCESS;
