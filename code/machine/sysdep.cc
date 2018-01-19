@@ -310,6 +310,8 @@ void
 AssignNameToSocket(const char *socketName, int sockID)
 {
     struct sockaddr_un uName;
+    memset(&uName, 0, sizeof(struct sockaddr_un));
+    
     int retVal;
 
     (void) unlink(socketName);    // in case it's still around from last time
@@ -317,7 +319,7 @@ AssignNameToSocket(const char *socketName, int sockID)
     InitSocketName(&uName, socketName);
     retVal = bind(sockID, (struct sockaddr *) &uName, sizeof(uName));
     ASSERT(retVal >= 0);
-    DEBUG('n', "Created socket %s\n", socketName);
+    DEBUG('n', "Created socket %s on the fd %d\n", socketName, sockID);
 }
 
 //----------------------------------------------------------------------
@@ -388,6 +390,10 @@ SendToSocket(int sockID, const char *buffer, int packetSize, const char *toName)
     InitSocketName(&uName, toName);
     retVal = sendto(sockID, buffer, packetSize, 0,
 			  (sockaddr *) &uName, sizeof(uName));
+
+	if (retVal < 0)
+		perror("Error sendToSocket");
+		
     ASSERT(retVal == packetSize);
 }
 
@@ -415,6 +421,19 @@ void
 Delay(int seconds)
 {
     (void) sleep((unsigned) seconds);
+}
+
+//----------------------------------------------------------------------
+// Sleep
+// 	Put the UNIX process running Nachos to sleep for x seconds,
+//	to give the user time to start up another invocation of Nachos
+//	in a different UNIX shell.
+//----------------------------------------------------------------------
+
+void 
+Delayms(int ms)
+{
+    (void) usleep((unsigned) ms * 1000);
 }
 
 //----------------------------------------------------------------------

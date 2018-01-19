@@ -8,7 +8,7 @@
  * \todo Get rid of this last argument and get the ability to compute the return handler
  * \return Process identifier. If NULL_TID, error when creating process
  */
-extern SpaceId do_UserProcessCreate(OpenFile* executable/*, int argc, char** argv*/, int exit_handler);
+extern SpaceId do_UserProcessCreate(OpenFile* executable, int argc, char** argv, int exit_handler);
 extern int do_UserProcessJoin(SpaceId pid, int result_code_ptr);
 extern void do_UserProcessExit(int code);
 extern void do_UserHalt();

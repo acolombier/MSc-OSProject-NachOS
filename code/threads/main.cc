@@ -1,4 +1,4 @@
-// main.cc 
+// main.cc
 //      Bootstrap code to initialize the operating system kernel.
 //
 //      Allows direct calls into internal operating system functions,
@@ -32,7 +32,7 @@
 //    -p prints a Nachos file to stdout
 //    -r removes a Nachos file from the file system
 //    -l lists the contents of the Nachos directory
-//    -D prints the contents of the entire file system 
+//    -D prints the contents of the entire file system
 //    -t tests the performance of the Nachos file system
 //
 //  NETWORK
@@ -44,7 +44,7 @@
 //  Some of the flags are interpreted here; some in system.cc.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #define MAIN
@@ -59,20 +59,22 @@
 
 extern void ThreadTest (void), Copy (const char *unixFile, const char *nachosFile);
 extern void LockTest (void);
-extern void Print (char *file), PerformanceTest (void);
+extern void Print (const char *file), PerformanceTest (void), ChangeMod(char*, const char*), MakeTree (void), QuickTest (void), MakeDirectory (const char *file), ShowTree (void);
 extern void StartProcess (char *file), ConsoleTest (char *in, char *out), SynchConsoleTest (char *in, char *out);
 extern void MailTest (int networkID);
+extern void TransferTest (int networkID, int isSender);
+
 
 //----------------------------------------------------------------------
 // main
-//      Bootstrap the operating system kernel.  
-//      
+//      Bootstrap the operating system kernel.
+//
 //      Check command line arguments
 //      Initialize data structures
 //      (optionally) Call test procedure
 //
 //      "argc" is the number of command line arguments (including the name
-//              of the command) -- ex: "nachos -d +" -> argc = 3 
+//              of the command) -- ex: "nachos -d +" -> argc = 3
 //      "argv" is an array of strings, one for each command line argument
 //              ex: "nachos -d +" -> argv = {"nachos", "-d", "+"}
 //----------------------------------------------------------------------
@@ -80,7 +82,7 @@ extern void MailTest (int networkID);
 int
 main (int argc, char **argv)
 {
-    int argCount;		// the number of arguments 
+    int argCount;		// the number of arguments
     // for a particular command
 
     DEBUG ('t', "Entering main");
@@ -113,8 +115,8 @@ main (int argc, char **argv)
 		      ConsoleTest (*(argv + 1), *(argv + 2));
 		      argCount = 3;
 		  }
-		interrupt->Halt ();	// once we start the console, then 
-		// Nachos will loop forever waiting 
+		interrupt->Halt ();	// once we start the console, then
+		// Nachos will loop forever waiting
 		// for console input
 	    }
 	  else if (!strcmp (*argv, "-sc"))
@@ -127,8 +129,8 @@ main (int argc, char **argv)
 		      SynchConsoleTest (*(argv + 1), *(argv + 2));
 		      argCount = 3;
 		  }
-		interrupt->Halt ();	// once we start the console, then 
-		// Nachos will loop forever waiting 
+		interrupt->Halt ();	// once we start the console, then
+		// Nachos will loop forever waiting
 		// for console input
 	    }
 #endif // USER_PROGRAM
@@ -145,15 +147,36 @@ main (int argc, char **argv)
 		Print (*(argv + 1));
 		argCount = 2;
 	    }
+	  else if (!strcmp (*argv, "--tree"))
+	    {			// print the whole tree
+		ShowTree();
+	    }
+	  else if (!strcmp (*argv, "--init"))
+	    {			// init test tree
+		MakeTree();
+	    }
+	  else if (!strcmp (*argv, "--test"))
+	    {			// init test tree
+		QuickTest();
+	    }
+	  else if (!strcmp (*argv, "--mkdir"))
+	    {			// init test tree
+		ASSERT (argc > 1);
+		MakeDirectory(*(argv + 1));
+		argCount = 2;
+	    }
+	  else if (!strcmp (*argv, "--chmod"))
+	    {			// init test tree
+		ASSERT (argc > 1);
+		ChangeMod(*(argv + 1), *(argv + 2));
+		argCount = 3;
+	    }
 	  else if (!strcmp (*argv, "-r"))
 	    {			// remove Nachos file
 		ASSERT (argc > 1);
+		ChangeMod(*(argv + 1), "rw");
 		fileSystem->Remove (*(argv + 1));
 		argCount = 2;
-	    }
-	  else if (!strcmp (*argv, "-l"))
-	    {			// list Nachos directory
-		fileSystem->List ();
 	    }
 	  else if (!strcmp (*argv, "-D"))
 	    {			// print entire filesystem
@@ -169,15 +192,17 @@ main (int argc, char **argv)
 	    {
 		ASSERT (argc > 1);
 		Delay (2);	// delay for 2 seconds
-		// to give the user time to 
+		// to give the user time to
 		// start up another nachos
-		MailTest (atoi (*(argv + 1)));
+		//MailTest (atoi (*(argv + 1)));
+		TransferTest(atoi(*(argv + 1)), atoi(*(argv + 1))%2);
 		argCount = 2;
-	    }
+		}
 #endif // NETWORK
       }
 
-    currentThread->Finish ();	// NOTE: if the procedure "main" 
+	interrupt->Halt();
+    currentThread->Finish ();	// NOTE: if the procedure "main"
     // returns, then the program "nachos"
     // will exit (as any other normal program
     // would).  But there may be other
