@@ -9,3 +9,5 @@ doc/latex
 doc/man
 latex/
 html/
+osproject.geany
+test/*.o

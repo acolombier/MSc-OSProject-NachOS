@@ -22,11 +22,10 @@ class Lock;
 class FrameProvider
 {
   public:
-    FrameProvider (int nitems);	// Initialize a frameprovider // TODO
+    FrameProvider (int nitems);	// Initialize a frameprovider
      ~FrameProvider ();		// De-allocate a frameprovider
 
-	// returns might not be correct
-    unsigned int GetEmptyFrame();	// retrieve a free frame initialized to 0 by bzero
+    unsigned int GetEmptyFrame();	// retrieve a free frame initialized to 0 by memset
     void ReleaseFrame(int entry);	// release a frame obtained via GetEmptyFrame
     unsigned int NumAvailFrame();	// return the number of available frames
 

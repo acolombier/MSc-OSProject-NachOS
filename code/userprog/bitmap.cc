@@ -17,7 +17,8 @@
 //      "nitems" is the number of bits in the bitmap.
 //----------------------------------------------------------------------
 
-BitMap::BitMap (int nitems)
+BitMap::BitMap (int nitems):
+    mLock(new Lock("Bitmap Lock"))
 {
     numBits = nitems;
     numWords = divRoundUp (numBits, BitsInWord);
@@ -49,8 +50,14 @@ BitMap::~BitMap ()
 void
 BitMap::Mark (int which)
 {
+    bool single_mode = !mLock->isHeldByCurrentThread();
+    
+    if (single_mode) mLock->Acquire();
+    
     ASSERT (which >= 0 && which < numBits);
     map[which / BitsInWord] |= 1 << (which % BitsInWord);
+    
+    if (single_mode) mLock->Release();
 }
 
 //----------------------------------------------------------------------
@@ -63,8 +70,14 @@ BitMap::Mark (int which)
 void
 BitMap::Clear (int which)
 {
+    bool single_mode = !mLock->isHeldByCurrentThread();
+    
+    if (single_mode) mLock->Acquire();
+    
     ASSERT (which >= 0 && which < numBits);
     map[which / BitsInWord] &= ~(1 << (which % BitsInWord));
+    
+    if (single_mode) mLock->Release();
 }
 
 //----------------------------------------------------------------------
@@ -77,12 +90,18 @@ BitMap::Clear (int which)
 bool
 BitMap::Test (int which)
 {
+    bool single_mode = !mLock->isHeldByCurrentThread();
+    
+    if (single_mode) mLock->Acquire();
+    
     ASSERT (which >= 0 && which < numBits);
+    
 
-    if (map[which / BitsInWord] & (1 << (which % BitsInWord)))
-	return TRUE;
-    else
-	return FALSE;
+    bool result = map[which / BitsInWord] & (1 << (which % BitsInWord));
+    
+    if (single_mode) mLock->Release();
+    
+    return result;
 }
 
 //----------------------------------------------------------------------
@@ -97,13 +116,21 @@ BitMap::Test (int which)
 int
 BitMap::Find ()
 {
-    for (int i = 0; i < numBits; i++)
+    bool single_mode = !mLock->isHeldByCurrentThread();
+    
+    if (single_mode) mLock->Acquire();
+    
+    int i;
+    for (i = 0; i < numBits; i++)
 	if (!Test (i))
 	  {
 	      Mark (i);
-	      return i;
+	      break;
 	  }
-    return -1;
+    
+    if (single_mode) mLock->Release();
+    
+    return i == numBits ? -1 : i;
 }
 
 //----------------------------------------------------------------------
@@ -115,12 +142,26 @@ BitMap::Find ()
 int
 BitMap::NumClear ()
 {
+    bool single_mode = !mLock->isHeldByCurrentThread();
+    
+    if (single_mode) mLock->Acquire();
+    
     int count = 0;
 
     for (int i = 0; i < numBits; i++)
 	if (!Test (i))
 	    count++;
+    
+    if (single_mode) mLock->Release();
+    
     return count;
+}
+
+bool BitMap::unlock() {
+    if (!mLock->isHeldByCurrentThread())
+	return false;
+    mLock->Release();
+    return true;
 }
 
 //----------------------------------------------------------------------
@@ -134,11 +175,17 @@ BitMap::NumClear ()
 void
 BitMap::Print ()
 {
+    bool single_mode = !mLock->isHeldByCurrentThread();
+    
+    if (single_mode) mLock->Acquire();
+    
     printf ("Bitmap set:\n");
     for (int i = 0; i < numBits; i++)
 	if (Test (i))
 	    printf ("%d, ", i);
     printf ("\n");
+    
+    if (single_mode) mLock->Release();
 }
 
 // These aren't needed until the FILESYS assignment
@@ -150,10 +197,18 @@ BitMap::Print ()
 //      "file" is the place to read the bitmap from
 //----------------------------------------------------------------------
 
-void
+bool
 BitMap::FetchFrom (OpenFile * file)
 {
-    file->ReadAt ((char *) map, numWords * sizeof (unsigned), 0);
+    bool result, single_mode = !mLock->isHeldByCurrentThread();
+    
+    if (single_mode) mLock->Acquire();
+    
+    result = file->ReadAt ((char *) map, numWords * sizeof (unsigned), 0);
+    
+    if (single_mode) mLock->Release();
+    
+    return result;
 }
 
 //----------------------------------------------------------------------
@@ -163,8 +218,15 @@ BitMap::FetchFrom (OpenFile * file)
 //      "file" is the place to write the bitmap to
 //----------------------------------------------------------------------
 
-void
+bool
 BitMap::WriteBack (OpenFile * file)
 {
-    file->WriteAt ((char *) map, numWords * sizeof (unsigned), 0);
+    bool result, single_mode = !mLock->isHeldByCurrentThread();
+    
+    if (single_mode) mLock->Acquire();
+    
+    result = file->WriteAt ((char *) map, numWords * sizeof (unsigned), 0);
+    
+    if (single_mode) mLock->Release();
+    return result;
 }

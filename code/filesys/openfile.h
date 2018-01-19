@@ -20,6 +20,8 @@
 #ifndef OPENFILE_H
 #define OPENFILE_H
 
+#define LocalTS 1514764800
+
 #include "copyright.h"
 #include "utility.h"
 
@@ -63,12 +65,13 @@ class FileHeader;
 
 class OpenFile {
   public:
-    OpenFile(int sector);		// Open a file whose header is located
-					// at "sector" on the disk
+    OpenFile(int sector, FileHeader * hdr = nullptr);		// Open a file whose already have an used header
+    OpenFile(FileHeader * hdr = nullptr);		// Open a file whose already have an used header
     ~OpenFile();			// Close the file
 
     void Seek(int position); 		// Set the position from which to 
 					// start reading/writing -- UNIX lseek
+    inline int Tell() const { return seekPosition; }; 		
 
     int Read(char *into, int numBytes); // Read/write bytes from the file,
 					// starting at the implicit position.
@@ -76,19 +79,34 @@ class OpenFile {
 					// and increment position in file.
     int Write(const char *from, int numBytes);
 
-    int ReadAt(char *into, int numBytes, int position);
+    int ReadAt(char *into, int numBytes, int position = 0);
     					// Read/write bytes from the file,
 					// bypassing the implicit position.
-    int WriteAt(const char *from, int numBytes, int position);
+    int WriteAt(const char *from, int numBytes, int position = 0);
 
     int Length(); 			// Return the number of bytes in the
 					// file (this interface is simpler 
 					// than the UNIX idiom -- lseek to 
 					// end of file, tell, lseek back 
+					
+    int type() const;
+    
+    inline FileHeader* header() const { return hdr; }
+    
+    /*!
+     * Write back the FileHeader to the disk. Careful! sector must have been setted when initialised
+     */
+    void SaveHeader();
+    
+    /*!
+     * Get the header sector of this file.
+     */
+    inline int sector() { return headerSector; }
     
   private:
     FileHeader *hdr;			// Header for this file 
     int seekPosition;			// Current position within the file
+    int headerSector;
 };
 
 #endif // FILESYS

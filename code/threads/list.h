@@ -49,19 +49,21 @@ class List
 
     void Prepend (void *item);	// Put item at the beginning of the list
     void Append (void *item);	// Put item at the end of the list
+    inline void Append (int item) { Append((void*)item); }	// Put item at the end of the list
     void *Remove ();		// Take item off the front of the list
 
-	/*!
-	 * Remove the n-th element
-	 * \param n the index in the list
-	 * \return the n-th element
-	 */
+    /*!
+     * Remove the n-th element
+     * \param n the index in the list
+     * \return the n-th element
+     */
     void *Remove (unsigned int n);
-	/*!
-	 * Remove the n-th element
-	 * \param Return true if found and deleted
-	 */
+    /*!
+     * Remove the n-th element
+     * \param Return true if found and deleted
+     */
     char Remove (void* e);
+    inline char Remove (int e) { return Remove((void*)e); }
 
     void Mapcar (VoidFunctionPtr func);	// Apply "func" to every element 
     // on the list
@@ -75,9 +77,9 @@ class List
     void *SortedRemove (long long *keyPtr);	// Remove first item from list
 
   private:
-	ListElement * first;	// Head of the list, NULL if list is empty
-	ListElement *last;		// Last element of list
-	unsigned int mSize;
+    ListElement * first;	// Head of the list, NULL if list is empty
+    ListElement *last;		// Last element of list
+    unsigned int mSize;
 };
 
 #endif // LIST_H

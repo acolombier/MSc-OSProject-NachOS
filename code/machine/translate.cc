@@ -144,8 +144,8 @@ Machine::WriteMem(int addr, int size, int value)
 
     exception = Translate(addr, &physicalAddress, size, TRUE);
     if (exception != NoException) {
-	machine->RaiseException(exception, addr);
-	return FALSE;
+        machine->RaiseException(exception, addr);
+        return FALSE;
     }
     switch (size) {
       case 1:
@@ -195,8 +195,10 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
 
 // check for alignment errors
     if (((size == 4) && (virtAddr & 0x3)) || ((size == 2) && (virtAddr & 0x1))){
-	DEBUG('a', "alignment problem at %d, size %d!\n", virtAddr, size);
-	return AddressErrorException;
+        DEBUG('a', "alignment problem at %d, size %d!\n", virtAddr, size);
+        machine->WriteRegister(4, virtAddr);
+        machine->WriteRegister(5, size);
+        return AddressErrorException;
     }
     
     // we must have either a TLB or a page table, but not both!
@@ -212,10 +214,12 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
 	if (vpn >= pageTableSize) {
 	    DEBUG('a', "virtual page # %d too large for page table size %d!\n", 
 			virtAddr, pageTableSize);
+	    machine->WriteRegister(4, virtAddr);
 	    return AddressErrorException;
 	} else if (!pageTable[vpn].valid()) {
 	    DEBUG('a', "virtual page # %d is not valid!\n",
 			virtAddr, pageTableSize);
+	    machine->WriteRegister(4, virtAddr);
 	    return PageFaultException;
 	}
 	entry = &pageTable[vpn];
@@ -235,6 +239,7 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
 
     if (entry->readOnly() && writing) {	// trying to write to a read-only page
 	DEBUG('a', "%d mapped read-only at %d in TLB!\n", virtAddr, i);
+	machine->WriteRegister(4, virtAddr);
 	return ReadOnlyException;
     }
     pageFrame = entry->physicalPage();

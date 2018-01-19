@@ -21,7 +21,7 @@
 
     The number of page that a virtual space contains by default.
 */
-#define ADDRSPACE_PAGES_SIZE 64
+#define ADDRSPACE_PAGES_SIZE 192
 
 #ifndef SYSTEM_H
 #define SYSTEM_H
@@ -73,6 +73,7 @@ extern SynchDisk *synchDisk;
 
 #ifdef NETWORK
 #include "post.h"
+#include "transfer.h"
 extern PostOffice *postOffice;
 #endif
 
