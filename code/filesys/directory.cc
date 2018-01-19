@@ -187,8 +187,7 @@ Directory::Remove(const char *name, BitMap* freeMap)
     int i = FindIndex(name);
 
     if (i == -1)
-        return FALSE;         // name not in directory
-        
+        return FALSE;         // name not in directory        
         
     delete [] table[i].name;
     
@@ -197,7 +196,7 @@ Directory::Remove(const char *name, BitMap* freeMap)
         table[i].namelen = table[tableSize - 1].namelen;
         table[i].sector = table[tableSize - 1].sector;    
     }
-    table = (DirectoryEntry*)realloc(table, --tableSize * sizeof(DirectoryEntry));
+    table = (DirectoryEntry*)realloc(table, (--tableSize) * sizeof(DirectoryEntry));
     
     BitMap* bm = freeMap ? freeMap : fileSystem->bitmapTransaction();    
     ASSERT(mItself->header()->Allocate(bm, mItself->header()->FileLength() - strlen(name) - DirectoryEntryLen));

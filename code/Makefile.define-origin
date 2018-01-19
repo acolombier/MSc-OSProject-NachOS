@@ -50,7 +50,7 @@ VM_SRC          :=
 FILESYS_SRC     :=      directory.cc filehdr.cc filesys.cc fstest.cc openfile.cc \
                         synchdisk.cc disk.cc
 
-NETWORK_SRC     :=      nettest.cc post.cc network.cc
+NETWORK_SRC     :=      nettest.cc post.cc network.cc transfer.cc
 #
 ###########################################################################
 
@@ -67,7 +67,7 @@ thread-test_CPPFLAGS=-DTHREADS
 # userprog feature: add support to load userspace program
 #~ userprog_DEP_ALT=filesys filesys-stub
 userprog_SRC=$(USERPROG_SRC)
-userprog_CPPFLAGS=-DUSER_PROGRAM -DFRAME_ALLOC_SEQUENTIAL -DBEST_FIT -DVERBOSE_MALLOC
+userprog_CPPFLAGS=-DUSER_PROGRAM -DFRAME_ALLOC_SEQUENTIAL -DBEST_FIT -DVERBOSE_MALLOC -DNETWORK
 #-DMALLOC_EXIT_ON_FAILURE
 userprog_INCDIRS=bin userprog
 
@@ -86,7 +86,7 @@ filesys-stub_INCDIRS=filesys
 # network: add network support
 network_DEP_ALT=thread-test userprog
 network_SRC=$(NETWORK_SRC)
-network_CPPFLAGS=-DNETWORK
+network_CPPFLAGS=-DNETWORK -DFILESYS_NEEDED
 network_INCDIRS=network
 
 # vm: add TLB support
@@ -119,7 +119,7 @@ $(eval $(call define-flavor,filesys,userprog filesys))
 $(eval $(call define-flavor,network,thread-test userprog filesys network))
 
 # bare bones version
-# $(eval $(call define-flavor,network,thread-test network))
+#$(eval $(call define-flavor,network,thread-test network))
 
 ###########################################################################
 ######### vm

@@ -37,12 +37,12 @@
 #define FS_H
 
 /*! \def E_PERM
- * The file does not contains the required permissions to do the requested action
+ * The file does not contain the required permissions to do the requested action
  */
 #define E_PERM -8
 
 /*! \def E_ISUSE
- * The file is actually in use by an other process and no operation following is allocation can be done
+ * The file is already in use by another process and no operation following is allocation can be done
  */
 #define E_ISUSED -7
 
@@ -57,7 +57,7 @@
 #define E_NOTFOUND -5
 
 /*! \def E_BLOCK
- * There is no blocks free
+ * There are no free blocks
  */
 #define E_BLOCK -4
 
@@ -67,7 +67,7 @@
 #define E_DIRECTORY -3
 
 /*! \def E_DISK
- * The dist cannot hold this file as it is full
+ * The disk cannot hold this file as it is full
  */
 #define E_DISK -2
 
@@ -84,10 +84,10 @@
 /*! \def NumDirEntries
  * Maximun entries for a directory
  */
-#define NumDirEntries       10
+#define NumDirEntries 10
 
 /*! \def MAX_OPEN_FILE
- * Maximun file open at the same time
+ * Maximum number of files open at the same time
  */
 #define MAX_OPEN_FILE 10
 
@@ -123,6 +123,21 @@ class FileSystem {
 
 #else // FILESYS
 
+/*! \brief Structure to hold data about a file */
+typedef struct file_info_struct {
+    int date;
+    int perm;
+    int size;
+    int type;
+} file_info_t;
+
+/*! \brief Structure to hold data about a file system */
+typedef struct fs_info_struct {
+    int free_block;
+    int used_block;
+    int block_size;
+} fs_info_t;
+
 typedef int SpaceId;
 
 #include "filehdr.h"
@@ -153,6 +168,7 @@ class FileSystem {
                         // If "format", there is nothing on
                     // the disk, so initialize the directory
                         // and the bitmap of free blocks.
+    ~FileSystem();
 
     int Create(const char *name, int initialSize = 0, FileHeader::Type type = FileHeader::File, int perm = 0);      
                     // Create a file (UNIX creat)

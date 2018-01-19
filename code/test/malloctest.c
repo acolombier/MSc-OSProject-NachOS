@@ -125,6 +125,7 @@ int main() {
       break;
     case EOF:
     case 'q':
+        index = (int)GetChar(); // to get read of the breakline
       PutString("Exiting...\n");
       sem_wait(lock);
       for (int t = 0; t < NB_MAX_THREAD; t++)

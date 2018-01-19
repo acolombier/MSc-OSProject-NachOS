@@ -297,6 +297,7 @@ ExceptionHandler (ExceptionType which)
                 fd_bundle_t* b = new fd_bundle_t;
                 b->pathname = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
                 b->object = fileSystem->Open(b->pathname);
+                b->type = FileDescriptor;
 
                 if (b->object == NULL){
                     DEBUG('c', "Unable to open file %s\n", b->pathname);
@@ -326,6 +327,7 @@ ExceptionHandler (ExceptionType which)
                 fd_bundle_t* b = new fd_bundle_t;
                 b->pathname = copyStringFromMachine(reg4, (unsigned int)MAX_STRING_SIZE);
                 b->object = fileSystem->Open(b->pathname);
+                b->type = FileDescriptor;
 
                 if (b->object == NULL || ((OpenFile*)b->object)->type() != FileHeader::Directory){
                     DEBUG('c', "Unable to open directory %s\n", b->pathname);
@@ -353,10 +355,21 @@ ExceptionHandler (ExceptionType which)
                 fd_bundle_t* b = currentThread->space->get_fd(reg6);
                 if (b){
                     char* buffer = new char[reg5];
-                    returnvalue = ((OpenFile*)b->object)->Read(buffer, reg5);
-                    machine->WriteRegister(2, returnvalue);
+                    returnvalue = -1;
+                                     
+                    if (b->type == FileDescriptor){
+                        returnvalue = ((OpenFile*)b->object)->Read(buffer, reg5);
+                        DEBUG('c', "Reading file: result %d.\n", returnvalue);
+                    }
+                    else if (b->type == SocketDescriptor && ((Connection*)b->object)->status() == Connection::ESTABLISHED){
+                        DEBUG('c', "Reading socket: receiving %d.\n", reg5);
+                        returnvalue = ((Connection*)b->object)->Receive(buffer, reg5);
+                        DEBUG('c', "Reading socket: result %d.\n", returnvalue);
+                    } 
+                    
+                    machine->WriteRegister(2, returnvalue);                        
 
-                    copyStringToMachine(buffer, reg4, reg5);
+                    copyByteToMachine(buffer, reg4, reg5 + 1);
                     delete [] buffer;
                 } 
                     
@@ -389,13 +402,25 @@ ExceptionHandler (ExceptionType which)
             case SC_Write: {
                 DEBUG('c', "Write syscall on %p, initiated by user program.\n", reg4);
                 
+                machine->WriteRegister(2, 0);
+                    
                 fd_bundle_t* b = currentThread->space->get_fd(reg6);
-                if (b){
-                    char* buffer = copyStringFromMachine(reg4, reg5);
-                    machine->WriteRegister(2, ((OpenFile*)b->object)->Write(buffer, reg5));
+                if (b){   
+                    char* buffer = (char*)copyByteFromMachine(reg4, reg5);
+                                     
+                    if (b->type == FileDescriptor){
+                        returnvalue = ((OpenFile*)b->object)->Write(buffer, reg5);
+                        DEBUG('c', "Reading file: result %d.\n", returnvalue);
+                    }
+                    else if (b->type == SocketDescriptor && ((Connection*)b->object)->status() == Connection::ESTABLISHED){
+                        returnvalue = ((Connection*)b->object)->Send(buffer, reg5);
+                        DEBUG('c', "Reading socket: result %d.\n", returnvalue);
+                    } else
+                        machine->WriteRegister(2, -1);
+                        
+                    machine->WriteRegister(2, returnvalue);
                     delete [] buffer;
-                } else
-                    machine->WriteRegister(2, 0);
+                }
                 break;
             }
             
@@ -477,10 +502,13 @@ ExceptionHandler (ExceptionType which)
                 
                 fd_bundle_t* b = currentThread->space->get_fd(reg4);
                 if (b && b->object){
-                    fileSystem->Close((OpenFile*)b->object);
+                    if (b->type == FileDescriptor)
+                        fileSystem->Close((OpenFile*)b->object);
+                    else if (b->type == SocketDescriptor)
+                        delete (Connection*)b->object;
                     currentThread->space->del_fd(reg4);
                 }
-                machine->WriteRegister(2, returnvalue);
+                machine->WriteRegister(2, 0);
 
                 break;
             }
@@ -532,6 +560,70 @@ ExceptionHandler (ExceptionType which)
                 
                 break;
             }
+            
+            case SC_Socket: {
+                DEBUG('c', "Socket syscall to %d:%d, local: %d.\n", reg4, reg5, reg6);
+                
+                machine->WriteRegister(2, -1);
+                    
+                MailBoxAddress box = 
+                    reg6 != -1 ? (postOffice->acquireBox(reg6) ? reg6 : -1): postOffice->assignateBox();
+                
+                if (box < 0)
+                    break;
+                    
+                fd_bundle_t* b = new fd_bundle_t;
+                b->pathname = nullptr;
+                b->object = (reg4 == -1 && reg5 == -1) ? new Connection(box) : new Connection(box, reg4, reg5);
+                b->type = SocketDescriptor;
+                
+                if (b->object == nullptr){
+                    DEBUG('c', "Unable to open socket %d:%d\n", reg4, reg5);
+                    delete b;
+                    machine->WriteRegister(2, 0);                    
+                    break;
+                } else {
+                    int fd = currentThread->space->store_fd(b);
+                    if (fd)
+                        machine->WriteRegister(2, fd);    
+                    else {
+                        delete (Connection*)b->object;
+                        delete b;
+                    }
+                }    
+                
+                break;
+            }
+            
+            case SC_Connect: {
+                DEBUG('c', "Connect syscall on sd %p with %d tick timeout, initiated by user program.\n", reg5, reg4);
+                
+                machine->WriteRegister(2, 0);                    
+                   
+                fd_bundle_t* b = currentThread->space->get_fd(reg5);
+                if (b && b->type == SocketDescriptor && ((Connection*)b->object)->status() == Connection::IDLE)
+                    machine->WriteRegister(2, ((Connection*)b->object)->Connect(reg4));
+                
+                break;
+            }
+            
+            case SC_Accept: {
+                DEBUG('c', "Accept syscall on sd %p with %d tick timeout, initiated by user program.\n", reg6, reg5);
+                
+                machine->WriteRegister(2, -1);
+                   
+                fd_bundle_t* b = currentThread->space->get_fd(reg6);
+                if (b && b->type == SocketDescriptor){
+                    if (((Connection*)b->object)->Accept(reg5)){
+                        remote_peer_struct info = {((Connection*)b->object)->remoteAddr(),
+                                                 ((Connection*)b->object)->remotePort()};
+                        for (unsigned int i = 0; i < sizeof(remote_peer_struct); i++)
+                            machine->WriteMem(reg4 + i, 1, *(((char*)&info) + i));
+                    }
+                }
+                
+                break;
+            }
 
             default: {
                 printf("Unexpected user mode exception %d %ud\n", which, type);
@@ -548,8 +640,8 @@ ExceptionHandler (ExceptionType which)
         /*! \todo error code */
         do_UserProcessExit(-1);
     } else if (which == PageFaultException){        
-        char *buffer = new char[64];
-        snprintf(buffer, 64, "SIGSEGV on process %d, thread %d: Address %p (page %d) is invalid.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid(), (void*)reg4, divRoundDown(reg4, PageSize));
+        char *buffer = new char[96];
+        snprintf(buffer, 96, "SIGSEGV on process %d, thread %d: Address %p (page %d) is invalid.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid(), (void*)reg4, divRoundDown(reg4, PageSize));
         
         synchconsole->AcquireOutput();
         synchconsole->PutString(buffer);        
@@ -561,8 +653,8 @@ ExceptionHandler (ExceptionType which)
         /*! \todo error code */
         do_UserProcessExit(-1);
     } else if (which == ReadOnlyException){
-        char *buffer = new char[64];
-        snprintf(buffer, 64, "SIGSEGV on process %d, thread %d: Address %p is readOnly.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid(), (void*)reg4);
+        char *buffer = new char[80];
+        snprintf(buffer, 80, "SIGSEGV on process %d, thread %d: Address %p is readOnly.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid(), (void*)reg4);
         
         synchconsole->AcquireOutput();
         synchconsole->PutString(buffer);        
@@ -585,8 +677,8 @@ ExceptionHandler (ExceptionType which)
         /*! \todo error code */
         do_UserProcessExit(-1);
     } else if (which == AddressErrorException){
-        char *buffer = new char[64];
-        snprintf(buffer, 64, "SIGSEGV on process %d, thread %d: Address %p is not aligned on the size requested %d.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid(), (void*)reg4, reg5);
+        char *buffer = new char[108];
+        snprintf(buffer, 108, "SIGSEGV on process %d, thread %d: Address %p is not aligned on the size requested %d.\n", (currentThread->space ? currentThread->space->pid() : 0), currentThread->tid(), (void*)reg4, reg5);
         
         synchconsole->AcquireOutput();
         synchconsole->PutString(buffer);        

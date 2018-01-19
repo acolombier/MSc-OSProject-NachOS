@@ -1,26 +1,26 @@
-// post.h 
+// post.h
 //	Data structures for providing the abstraction of unreliable,
-//	ordered, fixed-size message delivery to mailboxes on other 
+//	ordered, fixed-size message delivery to mailboxes on other
 //	(directly connected) machines.  Messages can be dropped by
 //	the network, but they are never corrupted.
 //
-// 	The US Post Office delivers mail to the addressed mailbox. 
-// 	By analogy, our post office delivers packets to a specific buffer 
+// 	The US Post Office delivers mail to the addressed mailbox.
+// 	By analogy, our post office delivers packets to a specific buffer
 // 	(MailBox), based on the mailbox number stored in the packet header.
 // 	Mail waits in the box until a thread asks for it; if the mailbox
-//      is empty, threads can wait for mail to arrive in it. 
+//      is empty, threads can wait for mail to arrive in it.
 //
-// 	Thus, the service our post office provides is to de-multiplex 
+// 	Thus, the service our post office provides is to de-multiplex
 // 	incoming packets, delivering them to the appropriate thread.
 //
 //      With each message, you get a return address, which consists of a "from
 // 	address", which is the id of the machine that sent the message, and
-// 	a "from box", which is the number of a mailbox on the sending machine 
-//	to which you can send an acknowledgement, if your protocol requires 
+// 	a "from box", which is the number of a mailbox on the sending machine
+//	to which you can send an acknowledgement, if your protocol requires
 //	this.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
@@ -30,20 +30,24 @@
 
 #include "network.h"
 #include "synchlist.h"
+#include "bitmap.h"
 
 // Mailbox address -- uniquely identifies a mailbox on a given machine.
 // A mailbox is just a place for temporary storage for messages.
 typedef int MailBoxAddress;
 
-// The following class defines part of the message header.  
-// This is prepended to the message by the PostOffice, before the message 
+// The following class defines part of the message header.
+// This is prepended to the message by the PostOffice, before the message
 // is sent to the Network.
 
 class MailHeader {
   public:
+    MailHeader(MailBoxAddress _to = -1, MailBoxAddress _from = -1, unsigned _l = 0):
+        to(_to), from(_from), length(_l){}
+        
     MailBoxAddress to;		// Destination mail box
     MailBoxAddress from;	// Mail box to reply to
-    unsigned length;		// Bytes of message data (excluding the 
+    unsigned length;		// Bytes of message data (excluding the
 				// mail header)
 };
 
@@ -53,10 +57,10 @@ class MailHeader {
 #define MaxMailSize 	(MaxPacketSize - sizeof(MailHeader))
 
 
-// The following class defines the format of an incoming/outgoing 
-// "Mail" message.  The message format is layered: 
-//	network header (PacketHeader) 
-//	post office header (MailHeader) 
+// The following class defines the format of an incoming/outgoing
+// "Mail" message.  The message format is layered:
+//	network header (PacketHeader)
+//	post office header (MailHeader)
 //	data
 
 class Mail {
@@ -71,33 +75,39 @@ class Mail {
 };
 
 // The following class defines a single mailbox, or temporary storage
-// for messages.   Incoming messages are put by the PostOffice into the 
+// for messages.   Incoming messages are put by the PostOffice into the
 // appropriate mailbox, and these messages can then be retrieved by
 // threads on this machine.
 
 class MailBox {
-  public: 
+  public:
     MailBox();			// Allocate and initialize mail box
     ~MailBox();			// De-allocate mail box
-
+    
     void Put(PacketHeader pktHdr, MailHeader mailHdr, char *data);
    				// Atomically put a message into the mailbox
-    void Get(PacketHeader *pktHdr, MailHeader *mailHdr, char *data); 
-   				// Atomically get a message out of the 
-				// mailbox (and wait if there is no message 
+    /*!
+     * \return true if it has been parsed
+     */
+    bool Get(PacketHeader *pktHdr, MailHeader *mailHdr, char *data, int timeout = -1);
+   				// Atomically get a message out of the
+				// mailbox (and wait if there is no message
 				// to get!)
+    inline int size () const { return messages->size(); }
+    
   private:
     SynchList *messages;	// A mailbox is just a list of arrived messages
 };
 
-// The following class defines a "Post Office", or a collection of 
+// The following class defines a "Post Office", or a collection of
 // mailboxes.  The Post Office is a synchronization object that provides
-// two main operations: Send -- send a message to a mailbox on a remote 
-// machine, and Receive -- wait until a message is in the mailbox, 
+// two main operations: Send -- send a message to a mailbox on a remote
+// machine, and Receive -- wait until a message is in the mailbox,
 // then remove and return it.
 //
-// Incoming messages are put by the PostOffice into the 
+// Incoming messages are put by the PostOffice into the
 // appropriate mailbox, waking up any threads waiting on Receive.
+class Connection;
 
 class PostOffice {
   public:
@@ -106,27 +116,56 @@ class PostOffice {
 				//   "reliability" is how many packets
 				//   get dropped by the underlying network
     ~PostOffice();		// De-allocate Post Office data
-    
-    void Send(PacketHeader pktHdr, MailHeader mailHdr, const char *data);
-    				// Send a message to a mailbox on a remote 
-				// machine.  The fromBox in the MailHeader is 
+
+    /*!
+     * \return true if it has been sent
+     */
+    bool Send(PacketHeader pktHdr, MailHeader mailHdr, const char *data, int timeout = -1);
+    				// Send a message to a mailbox on a remote
+				// machine.  The fromBox in the MailHeader is
 				// the return box for ack's.
-    
-    void Receive(int box, PacketHeader *pktHdr, 
-		MailHeader *mailHdr, char *data);
+
+    /*!
+     * \return true if it has been sent
+     */
+    bool Receive(int box, PacketHeader *pktHdr,
+		MailHeader *mailHdr, char *data, int timeout = -1);
     				// Retrieve a message from "box".  Wait if
 				// there is no message in the box.
 
-    void PostalDelivery();	// Wait for incoming messages, 
+    void PostalDelivery();	// Wait for incoming messages,
 				// and then put them in the correct mailbox
 
-    void PacketSent();		// Interrupt handler, called when outgoing 
-				// packet has been put on network; next 
+    void PacketSent();		// Interrupt handler, called when outgoing
+				// packet has been put on network; next
 				// packet can now be sent
     void IncomingPacket();	// Interrupt handler, called when incoming
    				// packet has arrived and can be pulled
-				// off of network (i.e., time to call 
+				// off of network (i.e., time to call
 				// PostalDelivery)
+       
+    /*!
+     * \todo doc
+     */         
+    MailBoxAddress assignateBox();
+    
+    /*!
+     * \todo doc
+     */         
+    bool acquireBox(MailBoxAddress);
+    
+    /*!
+     * \todo doc
+     */         
+    void releaseBox(MailBoxAddress);
+    
+    void registerCloseHandler(MailBoxAddress, Connection*);    
+
+    inline int lastPacket () const { return _last_item_cnt; }
+    
+    void Unlock ();
+
+    static void TimeoutHandler (int tmb_ptr);
 
   private:
     Network *network;		// Physical network connection
@@ -136,6 +175,18 @@ class PostOffice {
     Semaphore *messageAvailable;// V'ed when message has arrived from network
     Semaphore *messageSent;	// V'ed when next message can be sent to network
     Lock *sendLock;		// Only one outgoing message at a time
+    
+    char _sending_msg;
+    int _last_item_cnt;
+    
+    BitMap* _availableBoxes;
+    Connection** closeHandler;
 };
+
+
+typedef struct po_timeout_struct {
+    PostOffice* that;
+    int packet_number;
+} po_timeout_t;
 
 #endif

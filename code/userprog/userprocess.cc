@@ -105,6 +105,10 @@ int do_UserProcessJoin(SpaceId pid, int result_code_ptr){
 	return currentThread->space->join(pid, result_code_ptr);
 }
 
+/*! \brief When a user process calls exit one of the two things happen: /
+ * a) if there are more threads in the address space we just finish the current thread /
+ * b) if this was the last thread, we also shut down the machine
+ */
 void do_UserProcessExit(int code){
 	DEBUG('a', "Going to delete a process, %d currently remaining.\n", AddrSpace::ADDR_SPACE_COUNT());
 	if (AddrSpace::ADDR_SPACE_COUNT() > 1)
@@ -115,9 +119,14 @@ void do_UserProcessExit(int code){
 	}
 }
 
+/*! \brief if a thread calls Halt and it's not the only process still running inside of this /
+ * address space, the shutdown gets cancelled and only the calling thread (e.g. current thread) gets finished. /
+ * otherwise we wait until all of the threads sharing the same address space have finished and been joined /
+ * and only then does the machine shuts down.
+ */
 void do_UserHalt(){
 	if (AddrSpace::ADDR_SPACE_COUNT() > 1){
-		DEBUG('a', "Shutdown cancelled, other processus are still running.\n");
+		DEBUG('a', "Shutdown cancelled, other processes are still running.\n");
 		currentThread->Finish();
 		return;
 	}
@@ -125,13 +134,14 @@ void do_UserHalt(){
 	ListElement*e = currentThread->space->threadList()->getFirst();
 	do {
 		tid_t thread_to_join = ((Thread*)e->item)->tid();	
-		if (thread_to_join != currentThread->tid()){				
+		if (thread_to_join && thread_to_join != currentThread->tid()){				
 			DEBUG('t', "--Halt call: Joining with thread #%d...\n", thread_to_join);
 			currentThread->join(thread_to_join, 0);
 			DEBUG('t', "--Halt call: Thread #%d has joined\n", thread_to_join);
 			e = currentThread->space->threadList()->getFirst(); // To be sure that we don't have a de-allocated 'e'
 		}
 	} while (currentThread->space->countThread() > 1 && (e = e->next));
+    currentThread->space->removeThread(currentThread, 255);
 	interrupt->Halt();
 }
 

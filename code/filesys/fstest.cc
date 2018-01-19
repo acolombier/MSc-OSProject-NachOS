@@ -37,13 +37,17 @@ Copy(const char *from, const char *to)
     FILE *fp;
     OpenFile* openFile;
     char *buffer;
-    int amountRead;
+    int amountRead, fileLength;
 
 // Open UNIX file
     if ((fp = fopen(from, "r")) == NULL) {     
         printf("Copy: couldn't open input file %s\n", from);
         return;
     }
+    
+    fseek(fp, 0, 2);		
+    fileLength = ftell(fp);
+    fseek(fp, 0, 0);
     
     OpenFile* ofile = fileSystem->Open(from);
     if (ofile){
@@ -56,7 +60,7 @@ Copy(const char *from, const char *to)
 
 // Create a Nachos file of the same length
     printf("Copying file %s, to file %s\n", from, to);
-    switch (fileSystem->Create(to, 0, FileHeader::File, FileHeader::Write)) {     // Create Nachos file
+    switch (fileSystem->Create(to, fileLength, FileHeader::File, FileHeader::Write)) {     // Create Nachos file
     case E_PERM:        
         printf("Copy: couldn't create output file %s: permission denied.\n", to);
         fclose(fp);
@@ -154,7 +158,7 @@ MakeDirectory(const char *path)
     
     OpenFile* openFile = fileSystem->Open(path);
     ASSERT(openFile != NULL);
-    delete openFile;
+    fileSystem->Close(openFile);
 }
 
 //----------------------------------------------------------------------
@@ -347,6 +351,22 @@ QuickTest()
       printf("Perf test: cannot remove the file\n");
       return;
     }
+    if ((errorCode = fileSystem->Create("/test_file_1", 0, FileHeader::File, FileHeader::Read | FileHeader::Write))) {
+      printf("Perf test: can't create /test_file_1 again: %d\n", errorCode);
+      return;
+    }
+    file = fileSystem->Open("/test_file_1");
+    if (!file) {
+      printf("Perf test: can't open /test_file_1 again: %d\n", errorCode);
+      return;
+    }
+    
+    for (int i = 0; i < 1024; i++)
+    data[i] = 'a' + (char)(i % 26);
+    file->WriteAt(data, 1024);
+    delete [] data;
+    
+    fileSystem->Close(file);
     
     if (!(errorCode = fileSystem->Remove("/" DirName "/" DirName "/my_super_long_file_name"))) {
       printf("Perf test: cannot remove the file\n");

@@ -18,7 +18,7 @@ void* f(void *s){
 }
 
 int main(int argc, char** argv){
-    int nb_thread = argc ? atoi(argv[0]) : NB_THREAD;
+    int nb_thread = argc > 1 ? atoi(argv[1]) : NB_THREAD;
     char threads[nb_thread];
     
     PutString("Running ");PutInt(nb_thread);PutString(" threads...\n");

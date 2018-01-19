@@ -77,6 +77,7 @@
 */
 #define NULL_TID    0xFFFFFFFF
 
+#ifdef IN_USER_MODE
 
 /* File utils */
 /*! \def FILE_TYPE_DIR
@@ -107,10 +108,15 @@ typedef int MailBoxAddress;
 typedef struct remote_peer_struct {
     NetworkAddress addr;
     MailBoxAddress port;
-    int attemps; /**< This value holds the number of attemps that have to be done before the conncetion did actually syncronise */
 } remote_peer_t;
 
-#ifdef IN_USER_MODE
+/*!
+ * Unique identifier for the process. 
+ */
+typedef int OpenFileId; /**< Used type to describ a open file. */
+typedef int OpenSocketId; /**< Used type to describ a open file. */
+typedef int SpaceId;  /**< Used type to describ a concurrent process on the system. */
+typedef int ThreadId;  /**< Used type to describ a concurrent process on the system. */
 
 /* C standard */
 #define EXIT_SUCCESS 0
@@ -174,15 +180,6 @@ void Exit (int status) __attribute__((noreturn));
  * \return Returns 0 if the process has been joined, otherwise returns -1.
  */
 int Join (SpaceId id, int* result_code_ptr);
-
-/*!
- * Unique identifier for the process. 
- */
-typedef int OpenFileId; /**< Used type to describ a open file. */
-typedef int OpenSocketId; /**< Used type to describ a open file. */
-typedef int SpaceId;  /**< Used type to describ a concurrent process on the system. */
-typedef int ThreadId;  /**< Used type to describ a concurrent process on the system. */
-
 
 /*!
  * \brief Create a file name at path "name".
@@ -421,15 +418,17 @@ int ForkExec(char *s, char** args);
 void *Sbrk(int size);
 
 /*! \brief Create a socket object and return its stream descriptor.
- *  \param machineId the address of the remote machine
- *  \param port the port of the remote machine
+ *  \param machineId the address of the remote machine. -1 for a listening socket
+ *  \param port the port of the remote machine. -1 for a listening socket
+ *  \param localport force the usage of this port on the local endpoint. -1 for auto assignation
  *  \return Returns the stream descriptor on success, 0 on error.
  */
-OpenSocketId Socket(NetworkAddress machineId, MailBoxAddress port);
+OpenSocketId Socket(NetworkAddress machineId, MailBoxAddress port, MailBoxAddress localport);
+
 
 /*! \brief Block the socket until a client has procceded to synchronisation with the given socket (by calling \ref Connect).
  *  \param *client the structure to store information about the client
- *  \param timeout the maximun time to wait for (in msec ?). 0 to be none blocking
+ *  \param timeout the maximun time to wait for (in tick). 0 to be none blocking
  *  \param sd the socket descriptor
  *  \return Returns \ref E_SUCCESS if a peer has syncronised, \ref E_NOTFOUND if timeout
  */
@@ -438,7 +437,7 @@ int Accept(remote_peer_t* client, unsigned int timeout, OpenSocketId sd);
 /*! \brief Block the socket until a server has procceded to synchronisation with the given socket (by calling \ref Accept).
  *  \param timeout the maximum time to wait for (in msec ?). 0 to be none blocking
  *  \param sd the socket descriptor
- *  \return Returns \ref E_SUCCESS if a peer has syncronised, \ref E_NOTFOUND if timeout.
+ *  \return Returns true if a peer has syncronised, false otherwise.
  */
 int Connect(unsigned int timeout, OpenSocketId sd);
 

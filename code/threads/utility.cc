@@ -107,6 +107,9 @@ DEBUG (char flag, const char *format, ...)
 		case 'f':
 		  fprintf(stderr, !IS_UPPER(flag) ? KBLU : KBLU_BLD);
 		  break;
+		case 'n':
+		  fprintf(stderr, !IS_UPPER(flag) ? KCYN : KCYN_BLD);
+		  break;
 	  }
 	  va_start (ap, format);
 	  vfprintf (stderr, format, ap);
@@ -118,6 +121,7 @@ DEBUG (char flag, const char *format, ...)
 		case 'd':
 		case 'f':
 		case 'e':
+		case 'n':
 		  fprintf(stderr, EOL);
 		  break;
 	  }

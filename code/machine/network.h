@@ -30,6 +30,9 @@ typedef int NetworkAddress;
 
 class PacketHeader {
   public:
+    PacketHeader(NetworkAddress _to = -1, NetworkAddress _from = -1, unsigned _l = 0):
+        to(_to), from(_from), length(_l){}
+    
     NetworkAddress to;		// Destination machine ID
     NetworkAddress from;	// source machine ID
     unsigned length;	 	// bytes of packet data, excluding the 

@@ -113,16 +113,23 @@ Network::Send(PacketHeader hdr, char* data)
     interrupt->Schedule(NetworkSendDone, (int)this, NetworkTime, NetworkSendInt);
 
     if (Random() % 100 >= chanceToWork * 100) { // emulate a lost packet
-	DEBUG('n', "oops, lost it!\n");
-	return;
+		DEBUG('n', "oops, lost it!\n");
+		return;
     }
 
     // concatenate hdr and data into a single buffer, and send it out
     char *buffer = new char[MaxWireSize];
-    *(PacketHeader *)buffer = hdr;
+
+    memcpy(buffer, &hdr, sizeof(PacketHeader));
+    memset(buffer + sizeof(PacketHeader), 0, MaxWireSize - sizeof(PacketHeader)); 
+    // bzero, depreciated since 2001, 17 years now... 
+    
     bcopy(data, buffer + sizeof(PacketHeader), hdr.length);
+    
+    DEBUG('n', "Network send to socket %s:%d\n", toName, sock);
     SendToSocket(sock, buffer, MaxWireSize, toName);
-    delete []buffer;
+    
+    delete [] buffer;
 }
 
 // read a packet, if one is buffered

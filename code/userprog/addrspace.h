@@ -25,6 +25,9 @@
  */
 #define UserStackSize        768    // increase this as necessary!
 
+#define SocketDescriptor 1
+#define FileDescriptor 0
+
 class Thread;
 
 extern "C" {
@@ -45,7 +48,7 @@ extern "C" {
     typedef struct fd_bundle_struct {
         char* pathname;
         void* object;
-        /*int type; if we want to handle socket on the same way */
+        int type; /*if we want to handle socket on the same way */
         int fd;
     } fd_bundle_t;
 }
@@ -83,14 +86,14 @@ class AddrSpace
     int Sbrk(int n);
     
     unsigned int countThread() const;
-    
+
     inline SpaceId pid() const { return mPid; }
     inline SpaceId ppid() const { return mPpid; }
-    
+
     inline void ppid(SpaceId arg_pid) { mPpid = arg_pid; }
-    
+
     static unsigned int ADDR_SPACE_COUNT();
-    
+
     static addrspace_bundle_t* INC_REF(SpaceId);
     static void DEC_REF(SpaceId);
 
@@ -99,21 +102,21 @@ class AddrSpace
      * \param t The Thread which is sleeping, waiting to this one to finish
      */
     void appendToJoin(Thread*t);
-    
+
     /*!
      * Join the current process, with the other process
      * \param pid The process to join
      * \param result_code_pnt the pointer where to store the result code (optionnal)
      */
     int join(SpaceId pid, int result_code_pnt = 0);
-    
+
     /*!
      * Increase the reference counter of the bundle
      * \param t The thread TID
      * \return the bundle it refers to
      */
     thread_bundle_t* inc_ref_thread(tid_t tid);
-    
+
     /*!
      * Decrease the reference counter of the bundle
      * \param t The thread TID
@@ -165,7 +168,7 @@ class AddrSpace
 
     static SpaceId _LAST_PID;
     static List* _SPACE_LIST;
-    
+
     // address space
 };
 
