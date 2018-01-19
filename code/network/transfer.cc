@@ -16,25 +16,25 @@ Connection::~Connection() {
         Close(TEMPO);
 
     delete _lock;
-    
+
     postOffice->registerCloseHandler(lcl_box, nullptr);
     postOffice->releaseBox(lcl_box);
 }
 
 bool Connection::Send(const char *data, size_t length) {
-    
+
     ASSERT(_status == ESTABLISHED);
-    
+
     unsigned int attempts = 0, num_chunks = divRoundUp(length, MAX_MESSAGE_SIZE), starting = _last_local_seq_number;
     char chunk[MAX_MESSAGE_SIZE];
-    
+
 
     for (unsigned int i = 0; i < num_chunks && _status == ESTABLISHED;){
         unsigned int chunk_size = i == num_chunks - 1 ? length % MAX_MESSAGE_SIZE : MAX_MESSAGE_SIZE;
         memcpy(chunk, data + (i * MAX_MESSAGE_SIZE), chunk_size);
-        
+
         attempts = 0;
-        
+
         _lock->Acquire();
         while (_status == ESTABLISHED){
             char flag;
@@ -74,24 +74,24 @@ bool Connection::Send(const char *data, size_t length) {
 }
 
 bool Connection::Receive(char *data, size_t length) {
-    
+
     ASSERT(_status == ESTABLISHED);
-    
+
     unsigned int attempts = 0, current_chunk = 0, num_chunks = (unsigned int)divRoundUp(length, MAX_MESSAGE_SIZE), starting = _last_remote_seq_number + 1,
         chunk_size = MAX_MESSAGE_SIZE;
     char chunk[MAX_MESSAGE_SIZE];
-    
+
     memset(data, 0, length);
-    
-    
+
+
     DEBUG('L', "Connection::Receive -- %d to receive. Last seq was %d\n", num_chunks, _last_remote_seq_number);
-    
-    while (true){        
+
+    while (true){
         if (current_chunk == num_chunks - 1) // If it's the last chunk, the size might be smaller
             chunk_size = length % MAX_MESSAGE_SIZE;
-            
+
         attempts = 0;
-        
+
         DEBUG('L', "Connection::Receive -- Receiving %d...\n", current_chunk);
         _lock->Acquire();
         while (_status == ESTABLISHED){
@@ -102,13 +102,13 @@ bool Connection::Receive(char *data, size_t length) {
                     DEBUG('L', "Chunk %d on %d is been aknowledged (data=%p) (seq=%d), next is %d for %d\n", current_chunk, num_chunks, (void*)(((int*)(data + (current_chunk * MAX_MESSAGE_SIZE)))[0]), _last_remote_seq_number, _last_remote_seq_number - starting, length - (current_chunk * MAX_MESSAGE_SIZE));
                     break;
                 } else
-                    DEBUG('L', "Connection::Receive -- ACK -> Timeout\n"); 
+                    DEBUG('L', "Connection::Receive -- ACK -> Timeout\n");
             } else if (flag == ACK && current_chunk + 1 == num_chunks){
-                DEBUG('L', "Connection::Receive -- Finish with %d on %d\n", current_chunk, num_chunks); 
+                DEBUG('L', "Connection::Receive -- Finish with %d on %d\n", current_chunk, num_chunks);
                 _lock->Release();
                 return true;
             } else if (flag != TIMEOUT){
-                DEBUG('L', "Attempt %d on %d failed: after acking seq is %d at chunk %d\n", attempts+1, MAXREEMISSIONS, _last_remote_seq_number, current_chunk); 
+                DEBUG('L', "Attempt %d on %d failed: after acking seq is %d at chunk %d\n", attempts+1, MAXREEMISSIONS, _last_remote_seq_number, current_chunk);
             }
             if (++attempts == MAXREEMISSIONS) {
                 DEBUG('L', "Connection::Receive -- too many attempts\n");
@@ -121,7 +121,7 @@ bool Connection::Receive(char *data, size_t length) {
             break;
     }
     DEBUG('L', "Connection::Receive -- chunk %d %d\n", _last_remote_seq_number - starting + 1, num_chunks);
-    
+
     return _last_remote_seq_number - starting == num_chunks;
 }
 
@@ -129,38 +129,38 @@ bool Connection::Accept(int timeout){
     ASSERT(_status == IDLE);
 
     unsigned long start_time = stats->totalTicks, current_time;
-    
+
     unsigned int attempts;
-    
+
     _status = ACCEPTING;
 
     _lock->Acquire();
     do {
-        NetworkAddress remoteAddr;
-        MailBoxAddress remotePort;
+        NetworkAddress rmtAddr;
+        MailBoxAddress rmtPort;
         char flags;
-        
-        attempts = 0;      
+
+        attempts = 0;
         _last_local_seq_number =  0;
-          
+
         do {
             current_time = stats->totalTicks - start_time;
             if ((flags = _read_worker(timeout == -1 ? -1 : timeout - current_time, nullptr, 0,
-                    &remoteAddr, &remotePort)) == START) //We strongly want only a start flag, otherwise we consider it as flood
+                    &rmtAddr, &rmtPort)) == START) //We strongly want only a start flag, otherwise we consider it as flood
                 break;
             else {
-                rmt_adr = remoteAddr;
-                rmt_box = remotePort;
+                rmt_adr = rmtAddr;
+                rmt_box = rmtPort;
                 DEBUG('L', "Peer sending data without synch -- reset request\n");
                 _last_local_seq_number--;
                 _send_worker(RESET, TEMPO);
             }
-            
+
         } while (++attempts < MAXREEMISSIONS);
         DEBUG('L', "Connection::Accept -- START\n");
-        
-        rmt_adr = remoteAddr;
-        rmt_box = remotePort;
+
+        rmt_adr = rmtAddr;
+        rmt_box = rmtPort;
         _last_local_seq_number =  0;
         _last_remote_seq_number = 0;
         attempts = 0;
@@ -173,7 +173,7 @@ bool Connection::Accept(int timeout){
 
         attempts = 0;
         while (true) {
-            current_time = stats->totalTicks - start_time; 
+            current_time = stats->totalTicks - start_time;
             char flag;
             unsigned int acked_seq;
             if ((flag = _read_worker(SYNC_TEMPO, (char*)&acked_seq, sizeof(int))) == ACK && acked_seq == _last_local_seq_number){ // If final ACK, or if we had lost it, data packet
@@ -184,7 +184,7 @@ bool Connection::Accept(int timeout){
                 return true;
             }
             else if (flag != TIMEOUT){
-                DEBUG('L', "Attempt %d on %d failed: after acking seq is %d instead of %d\n", attempts+1, MAXREEMISSIONS, acked_seq, _last_local_seq_number); 
+                DEBUG('L', "Attempt %d on %d failed: after acking seq is %d instead of %d\n", attempts+1, MAXREEMISSIONS, acked_seq, _last_local_seq_number);
                 _send_worker(RESET, TEMPO);
                 break;
             }
@@ -194,7 +194,7 @@ bool Connection::Accept(int timeout){
         DEBUG('L', "Connection::Accept -- TIMEOUT\n");
     } while (timeout < 0 || current_time < (unsigned int)timeout);
     _lock->Release();
-    
+
     rmt_adr = -1;
     rmt_box = -1;
     _status = IDLE;
@@ -204,53 +204,53 @@ bool Connection::Accept(int timeout){
 
 bool Connection::Connect(int timeout){
     ASSERT(_status == IDLE);
-    
+
     unsigned int attempts = 0;
-    
+
     _status = CONNECTING;
     _last_local_seq_number =  0;
     _last_remote_seq_number = 0;
 
     do {
         char flags;
-        
+
         if (_send_worker(START, timeout) != 0) // Timeout
             continue;
         DEBUG('L', "Connection::Connect -- START\n");
-        
+
         if ((flags = _read_worker(timeout)) < 0 || flags != (START | ACK)){ // We strongly want only a start +ack flag, otherwise we abort. We should maybe try again
             continue;
         }
         DEBUG('L', "Connection::Connect -- START | ACK\n");
-        
+
         if (_send_worker(ACK, timeout, (char*)&_last_remote_seq_number, sizeof(int)) != sizeof(int)) // Timeout
             continue;
         DEBUG('L', "Connection::Connect -- ACK\n");
-            
+
         postOffice->registerCloseHandler(lcl_box, this);
         _status = ESTABLISHED;
         return true;
     } while (++attempts < MAXREEMISSIONS);
-    
+
     return false;
 }
 
 bool Connection::Close(int timeout, bool receiving){
     ASSERT(_status == ESTABLISHED);
-    
+
     unsigned int attempts = 0;
-    
+
     _status = CLOSING;
     DEBUG('L', "Closing connection...\n");
 
     do {
         char flags;
-        
+
         DEBUG('L', "Connection::Close: %s END...\n", receiving ? "receving" : "sending");
         if (receiving ? (_read_worker(timeout) == END): (_send_worker(END, timeout) != 0)) // Timeout
             continue;
         DEBUG('L', "Connection::Close: %s END\n", receiving ? "recv" : "sent");
-        
+
         if (!receiving){
             DEBUG('L', "Connection::Close: receving END | ACK...\n");
             if ((flags = _read_worker(timeout)) != (END | ACK)){
@@ -262,33 +262,33 @@ bool Connection::Close(int timeout, bool receiving){
             }
             DEBUG('L', "Connection::Close: recv ACK|END\n");
         }
-        
+
         DEBUG('L', "Connection::Close: sending END | ACK...\n");
         _send_worker(END | ACK, timeout);
         DEBUG('L', "Connection::Close: sent END | ACK\n");
-        
+
         if (receiving){
             DEBUG('L', "Connection::Close: receving END | ACK...\n");
             flags = _read_worker(timeout);
             DEBUG('L', "Receive %d\n", flags);
             DEBUG('L', "Connection::Close: asuming recv ACK|END\n");
-            
+
             DEBUG('L', "Connection::Close: sending END | ACK...\n");
             if ((flags = _send_worker(ACK, timeout)) > 0) // Timeout
                 DEBUG('L', "Connection::Close: recv ACK\n");
         } else if ((flags = _read_worker(timeout)) > 0) // Timeout
             DEBUG('L', "Connection::Close: recv ACK\n");
-                
+
         DEBUG('N', "Disconnect has got success\n");
-        
+
         _status = CLOSED;
-        
+
         DEBUG('L', "Connection closed\n");
         return true;
     } while (++attempts < MAXREEMISSIONS);
-    
+
     DEBUG('L', "Connection not closed\n");
-        
+
     return false;
 }
 
@@ -313,7 +313,7 @@ int Connection::_send_worker(char flags, int timeout, char* data, size_t length)
     return postOffice->Send(outPktHdr, outMailHdr, outBuffer, timeout) ? length : -1;
 }
 
-char Connection::_read_worker(int timeout, char* data, size_t length, NetworkAddress* remoteAddr, MailBoxAddress* remotePort){
+char Connection::_read_worker(int timeout, char* data, size_t length, NetworkAddress* rmtAddr, MailBoxAddress* rmtPort){
 
     ASSERT(length <= MAX_MESSAGE_SIZE);
 
@@ -332,11 +332,11 @@ char Connection::_read_worker(int timeout, char* data, size_t length, NetworkAdd
                                                       // `-> inMailHdr.length?
         _last_remote_seq_number = inTrHdr.seq_num;
         DEBUG('L', "Connection::_read_worker -- Receiving %d as %d...\n", inTrHdr.flags, _last_remote_seq_number);
-        
-        if (remoteAddr)
-            *remoteAddr = inPktHdr.from;
-        if (remotePort)
-            *remotePort = inMailHdr.from;
+
+        if (rmtAddr)
+            *rmtAddr = inPktHdr.from;
+        if (rmtPort)
+            *rmtPort = inMailHdr.from;
 
         return inTrHdr.flags;
     }

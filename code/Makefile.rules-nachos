@@ -48,10 +48,10 @@ LDLIBS+=$($(TG)LDLIBS)
 define deploy_task =
   NACHOS_BIN="cat chmod ls touch rm mv mkdir df"
   if [ ! -e "DISK" ]; then
-      echo "Formating the harddrive" && ./nachos-filesys -f > /dev/null;
-      echo "Creating bin directory" && ./nachos-filesys --mkdir bin --chmod bin 7 > /dev/null;
+      echo "Formating the harddrive" && ./nachos-final -f > /dev/null;
+      echo "Creating bin directory" && ./nachos-final --mkdir bin --chmod bin 7 > /dev/null;
   fi
-  for d in $(ls | grep -v '\.o' | grep -v 'DISK' | grep -v "SOCKET_" | grep -v "Makefile" | grep -v "nachos-"); do    
+  for d in $(ls | grep -v '\.o' | grep -v 'DISK' | grep -v "SOCKET_" | grep -v "Makefile" | grep -v "nachos-"); do
     if [ ! "$d" = "1" ]; then
 	  path="$d";
 	  perm="rw";
@@ -59,10 +59,10 @@ define deploy_task =
 		path="/bin/$path";
 	    perm="rx";
 	  fi;
-      echo ./nachos-filesys -r "$path" > /dev/null && ./nachos-filesys -cp "$d" "$path" | head -n 2 | tail -n 1 && ./nachos-filesys --chmod "$path" "$perm" > /dev/null;
+      echo ./nachos-final -r "$path" > /dev/null && ./nachos-final -cp "$d" "$path" | head -n 2 | tail -n 1 && ./nachos-final --chmod "$path" "$perm" > /dev/null;
     fi;
   done;
-  echo "Setting special permissions" && ./nachos-filesys --chmod shell rx > /dev/null && ./nachos-filesys --chmod bin r > /dev/null;
+  echo "Setting special permissions" && ./nachos-final --chmod shell rx > /dev/null && ./nachos-final --chmod bin r > /dev/null;
 endef
 
 deploy: ; @$(value deploy_task)
@@ -223,7 +223,7 @@ clean::
 	$$(RM) $$(call addprefix-dir,$2,$4)
 	$$(RM) $$(call addprefix-dir,$2,$(4:%.o=%.s))
 	$$(RM) $$(call objs-to-depends,$4,$2)
-	
+
 
 
 # Add include directories from the list in INCDIRS
